@@ -1,7 +1,7 @@
 ---
 name: 기능 구현
 about: 기능 구현 시 사용
-title: "[feat/refacotr/...] "
+title: "[feat/refactor/...] "
 labels: ""
 assignees: ""
 ---
