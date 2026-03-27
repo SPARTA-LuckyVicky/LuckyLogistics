@@ -6,9 +6,9 @@ services:
     image: postgres:16
     container_name: lucky-postgres
     environment:
-      POSTGRES_USER: lucky
-      POSTGRES_PASSWORD: lucky7777
-      POSTGRES_DB: lucky_logistics
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
@@ -26,7 +26,7 @@ services:
     image: redis:7
     container_name: lucky-redis
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     networks:
       - lucky-network
 
@@ -42,8 +42,8 @@ services:
     image: quay.io/keycloak/keycloak:24.0.0
     container_name: lucky-keycloak
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin7777
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
     command: start-dev
     ports:
       - "9090:8080" #(접속할 때 http://localhost:9090 사용)
