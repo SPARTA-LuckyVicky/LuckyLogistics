@@ -4,7 +4,6 @@
 ## Slack GitHub Bot 연동
 - PR 오픈, 업데이트, 머지, 클로즈시
 - PR 리뷰 제출 (Approve / Request changes)
-- PR 및 이슈 댓글
 - 이슈 오픈, 클로즈, 재오픈
 
 이벤트 시
