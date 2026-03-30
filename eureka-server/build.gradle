@@ -4,3 +4,7 @@ dependencies {
 	// docker-compose healthcheck 엔드포인트
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }
+
+bootJar {
+	archiveFileName = 'eureka-server.jar'
+}

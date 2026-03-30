@@ -22,7 +22,7 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 # 1단계에서 생성된 JAR만 복사
-COPY --from=build /app/eureka-server/build/libs/*.jar app.jar
+COPY --from=build /app/eureka-server/build/libs/eureka-server.jar app.jar
 
 EXPOSE 19090
 
