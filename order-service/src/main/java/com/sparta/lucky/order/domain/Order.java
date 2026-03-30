@@ -65,4 +65,65 @@ public class Order extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status;
+
+    // 주문 생성 메서드
+    public static Order create(
+            UUID requesterCompanyId,
+            UUID receiverCompanyId,
+            UUID productId,
+            String productName,
+            Integer quantity,
+            BigDecimal unitPrice,
+            String requestNote,
+            LocalDateTime requestedDeadline
+    ) {
+        Order order = new Order();
+        order.requesterCompanyId = requesterCompanyId;
+        order.receiverCompanyId = receiverCompanyId;
+        order.productId = productId;
+        order.productName = productName;
+        order.quantity = quantity;
+        order.unitPrice = unitPrice;
+        order.totalPrice = unitPrice.multiply(BigDecimal.valueOf(quantity));
+        order.requestNote = requestNote;
+        order.requestedDeadline = requestedDeadline;
+        order.status = OrderStatus.CREATED;
+        return order;
+    }
+
+    // 배송 정보 받아오면 정보 업데이트
+    public void updateDeliveryInfo(
+            UUID deliveryId,
+            String originHubName,
+            String destinationHubName,
+            String deliveryAddress,
+            String recipientName,
+            String recipientSlackId,
+            String hubManagerSlackId
+    ) {
+        this.deliveryId = deliveryId;
+        this.originHubName = originHubName;
+        this.destinationHubName = destinationHubName;
+        this.deliveryAddress = deliveryAddress;
+        this.recipientName = recipientName;
+        this.recipientSlackId = recipientSlackId;
+        this.hubManagerSlackId = hubManagerSlackId;
+    }
+
+    // 수정
+    public void update(String requestNote, LocalDateTime requestedDeadline) {
+        if (requestNote != null) this.requestNote = requestNote;
+        if (requestedDeadline != null) this.requestedDeadline = requestedDeadline;
+    }
+
+    // 취소
+    public void cancel(String deletedBy) {
+        this.status = OrderStatus.CANCELLED;
+        this.delete(deletedBy);
+    }
+
+    // 완료
+    public void complete() {
+        this.status = OrderStatus.COMPLETED;
+    }
 }
