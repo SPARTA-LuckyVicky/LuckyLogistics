@@ -54,6 +54,7 @@ configure(subprojects.findAll { it.name.endsWith("-service") }) {
         implementation 'org.springframework.retry:spring-retry'
         implementation 'org.springframework.boot:spring-boot-starter-aop'
         implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+        implementation 'org.springframework.boot:spring-boot-starter-validation'
     }
 }
 
