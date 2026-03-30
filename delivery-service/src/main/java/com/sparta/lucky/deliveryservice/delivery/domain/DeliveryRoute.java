@@ -1,0 +1,69 @@
+package com.sparta.lucky.deliveryservice.delivery.domain;
+
+import com.sparta.lucky.deliveryservice.delivery.code.DeliveryRouteStatus;
+import com.sparta.lucky.deliveryservice.driver.domain.DeliveryDriver;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UuidGenerator;
+
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "p_delivery_route")
+public class DeliveryRoute {
+
+    @Id
+    @GeneratedValue
+    @UuidGenerator
+    @Column(name="id", updatable = false, nullable = false)
+    private UUID id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="delivery_id", updatable = false, nullable = false)
+    private Delivery delivery;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="hub_driver_id", nullable = false)
+    private DeliveryDriver deliveryDriver;
+
+    @Column(name="sequence", nullable = false)
+    private Integer sequence;
+
+    @Column(name="from_hub_id", nullable = false)
+    private UUID fromHubId;
+
+    @Column(name="to_hub_id", nullable = false)
+    private UUID toHubId;
+
+    @Column(name="status", nullable = false)
+    private DeliveryRouteStatus status;
+
+    @Column(name="expected_distance", updatable = false,nullable = false)
+    private Long expectedDistance;
+
+    @Column(name="expected_duration_seconds", updatable = false, nullable = false)
+    private Long expectedDurationSeconds;
+
+    @Column(name="actual_distance")
+    private Long actualDistance;
+
+    @Column(name="actual_duration_seconds")
+    private Long actualDurationSeconds;
+
+    @Column(name="started_at")
+    private LocalDateTime startedAt;
+
+    @Column(name="arrived_at")
+    private LocalDateTime arrivedAt;
+}
