@@ -66,6 +66,21 @@ services:
       timeout: 5s
       retries: 5
 
+  hub-service:
+    build:
+      context: .
+      dockerfile: hub-service/Dockerfile
+    container_name: lucky-hub
+    ports:
+      - "${HUB_SERVICE_PORT}:${HUB_SERVICE_PORT}"
+    env_file:
+      - .env
+    networks:
+      - lucky-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 networks:
   lucky-network:
     driver: bridge
