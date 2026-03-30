@@ -16,13 +16,22 @@ COPY eureka-server ./eureka-server
 RUN gradle :eureka-server:bootJar -x test --no-daemon
 
 # 2단계 - 실행
-# JDK 전체가 아닌 JRE만 포함한 경량 이미지 사용
 FROM eclipse-temurin:21-jre
+
+# 보안: root 대신 전용 non-root 사용자로 실행
+RUN addgroup --system appgroup \
+    && adduser --system --ingroup appgroup appuser
 
 WORKDIR /app
 
 # 1단계에서 생성된 JAR만 복사
 COPY --from=build /app/eureka-server/build/libs/eureka-server.jar app.jar
+
+# appuser가 JAR를 읽을 수 있도록 소유권 부여
+RUN chown appuser:appgroup /app/app.jar
+
+# 이후 모든 명령은 appuser로 실행
+USER appuser
 
 EXPOSE 19090
 
