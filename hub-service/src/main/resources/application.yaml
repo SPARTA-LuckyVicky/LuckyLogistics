@@ -6,7 +6,7 @@ spring:
     name: ${HUB_SERVICE_NAME}
 
   datasource:
-    url: jdbc:postgresql://lucky-postgres:5432/${POSTGRES_DB}?currentSchema=${HUB_SERVICE_NAME}_schema
+    url: jdbc:postgresql://lucky-postgres:5432/${POSTGRES_DB}?currentSchema=${HUB_SERVICE_SCHEMA}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -16,7 +16,7 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
-        default_schema: ${HUB_SERVICE_NAME}_schema
+        default_schema: ${HUB_SERVICE_SCHEMA}
     show-sql: true
 
   threads:
