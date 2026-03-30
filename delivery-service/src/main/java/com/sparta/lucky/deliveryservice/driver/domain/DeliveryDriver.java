@@ -4,7 +4,10 @@ import com.sparta.lucky.deliveryservice.driver.code.DriverStatus;
 import com.sparta.lucky.deliveryservice.driver.code.DriverType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -29,6 +32,7 @@ public class DeliveryDriver {
     @Column(name="hub_id", nullable = false)
     private UUID hubId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name="type", nullable = false)
     private DriverType type;
 
@@ -36,9 +40,11 @@ public class DeliveryDriver {
         name="DRIVER_SEQUENCE_GENERATOR",
         sequenceName = "DRIVER_SEQUENCE_GENERATOR"
     )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "DRIVER_SEQUENCE_GENERATOR")
     @Column(name="assignment_order", updatable = false, nullable = false)
     private Integer assignmentSequence;
 
+    @Enumerated(EnumType.STRING)
     @Column(name="status", nullable = false)
     private DriverStatus status;
 }
