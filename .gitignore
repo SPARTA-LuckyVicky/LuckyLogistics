@@ -22,3 +22,24 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+.env
+*.env
+!.env.example
+# 예외! example은 올려야 함
+
+application-local.yml
+application-secret.yml
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+

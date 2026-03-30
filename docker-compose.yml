@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # ===== 인프라 =====
+  postgres:
+    image: postgres:16
+    container_name: lucky-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - lucky-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lucky}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    container_name: lucky-redis
+    ports:
+      - "127.0.0.1:6379:6379"
+    networks:
+      - lucky-network
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: lucky-zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - lucky-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.0
+    container_name: lucky-keycloak
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    command: start-dev
+    ports:
+      - "9090:8080" #(접속할 때 http://localhost:9090 사용)
+    networks:
+      - lucky-network
+
+networks:
+  lucky-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
