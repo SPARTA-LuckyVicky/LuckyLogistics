@@ -89,6 +89,7 @@ services:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
+    restart: unless-stopped
 
 networks:
   lucky-network:
