@@ -1,8 +1,6 @@
 rootProject.name = 'LuckyLogistics'
 
 // 서비스 추가할 때 마다 추가 :
-// 인프라 관련 모듈
 include 'eureka-server'
 
-// 서비스 모듈
 include 'order-service'
