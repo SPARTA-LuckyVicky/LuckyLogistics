@@ -4,4 +4,4 @@ rootProject.name = 'LuckyLogistics'
 // 예시
 // include 'order-service'
  include 'eureka-server'
-// include 'api-gateway'
+ include 'company-service'
