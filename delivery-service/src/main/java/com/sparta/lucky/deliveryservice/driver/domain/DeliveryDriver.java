@@ -36,13 +36,8 @@ public class DeliveryDriver {
     @Column(name="type", nullable = false)
     private DriverType type;
 
-    @SequenceGenerator(
-        name="DRIVER_SEQUENCE_GENERATOR",
-        sequenceName = "DRIVER_SEQUENCE_GENERATOR"
-    )
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "DRIVER_SEQUENCE_GENERATOR")
-    @Column(name="assignment_order", updatable = false, nullable = false)
-    private Integer assignmentSequence;
+    @Column(name="assignment_order", updatable = false, nullable = false, insertable = false)
+    private Integer assignmentOrder;
 
     @Enumerated(EnumType.STRING)
     @Column(name="status", nullable = false)
