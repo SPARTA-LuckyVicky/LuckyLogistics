@@ -20,7 +20,7 @@ import org.hibernate.annotations.UuidGenerator;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "p_delivery_driver")
+@Table(name = "p_delivery_driver", schema = "delivery_schema")
 public class DeliveryDriver {
 
     @Id

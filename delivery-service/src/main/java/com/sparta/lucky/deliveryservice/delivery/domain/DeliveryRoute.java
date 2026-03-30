@@ -22,7 +22,7 @@ import org.hibernate.annotations.UuidGenerator;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "p_delivery_route")
+@Table(name = "p_delivery_route", schema = "delivery_schema")
 public class DeliveryRoute {
 
     @Id
