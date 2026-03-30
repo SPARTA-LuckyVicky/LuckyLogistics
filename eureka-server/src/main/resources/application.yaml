@@ -4,12 +4,6 @@ server:
 spring:
   application:
     name: eureka-server
-  autoconfigure:
-    exclude:
-      # 루트 build.gradle의 JPA/DB 공통 의존성이 자동 적용되는 것을 Eureka Server에서 제외
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
 
 eureka:
   client:
