@@ -1,9 +1,5 @@
-dependencies {
-	// Eureka Server 기능
-	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-server'
-	// docker-compose healthcheck 엔드포인트
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-}
+// eureka-server/build.gradle
+// 공통 의존성은 루트/build.gradle configure 블록에서 관리합니다
 
 bootJar {
 	archiveFileName = 'eureka-server.jar'
