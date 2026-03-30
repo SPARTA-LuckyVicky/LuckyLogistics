@@ -1,0 +1,43 @@
+server:
+  port: ${HUB_SERVICE_PORT}
+
+spring:
+  application:
+    name: ${HUB_SERVICE_NAME}
+
+  datasource:
+    url: jdbc:postgresql://lucky-postgres:5432/${POSTGRES_DB}?currentSchema=${HUB_SERVICE_NAME}_schema
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        default_schema: ${HUB_SERVICE_NAME}_schema
+    show-sql: true
+
+  threads:
+    virtual:
+      enabled: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://lucky-eureka:19090/eureka
+  instance:
+    prefer-ip-address: true
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
