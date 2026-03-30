@@ -50,6 +50,22 @@ services:
     networks:
       - lucky-network
 
+  eureka-server:
+    build:
+      context: .
+      dockerfile: eureka-server/Dockerfile
+    container_name: lucky-eureka
+    restart: unless-stopped
+    ports:
+      - "19090:19090"
+    networks:
+      - lucky-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:19090/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 networks:
   lucky-network:
     driver: bridge

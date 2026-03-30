@@ -1,0 +1,10 @@
+dependencies {
+	// Eureka Server 기능
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-server'
+	// docker-compose healthcheck 엔드포인트
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+}
+
+bootJar {
+	archiveFileName = 'eureka-server.jar'
+}
