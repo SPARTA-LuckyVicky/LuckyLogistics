@@ -5,6 +5,7 @@ include 'delivery-service'
 // 서비스 추가할 때 마다 추가 :
 // 예시
 // include 'order-service'
- include 'eureka-server'
 // include 'api-gateway'
+include 'eureka-server'
+include 'company-service'
 include 'hub-service'
