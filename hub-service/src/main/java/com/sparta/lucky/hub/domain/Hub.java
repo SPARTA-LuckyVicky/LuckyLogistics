@@ -36,4 +36,24 @@ public class Hub extends BaseEntity {
 
     @Column(name = "longitude", nullable = false, precision = 10, scale = 7)
     private BigDecimal longitude;
+
+    public static Hub create(String name, String address, BigDecimal latitude, BigDecimal longitude) {
+        Hub hub = new Hub();
+        hub.name = name;
+        hub.address = address;
+        hub.latitude = latitude;
+        hub.longitude = longitude;
+        return hub;
+    }
+
+    public void update(String name, String address, BigDecimal latitude, BigDecimal longitude) {
+        this.name = name;
+        this.address = address;
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    public void assignManager(UUID managerId) {
+        this.managerId = managerId;
+    }
 }
