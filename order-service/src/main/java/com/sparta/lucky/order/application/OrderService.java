@@ -26,8 +26,12 @@ public class OrderService {
     @Transactional
     public OrderResponse createOrder(CreateOrderCommand request) {
 
-        // TODO: FeignClient 연동 후 실제 값으로 교체
-        // 주문 당시의 상품 이름&가격 으로 저장
+    /*
+     * TODO: FeignClient 연동 시 구현 company-service 호출
+     * 1. 상품 조회: companyClient.getProduct(productId, "true")
+     * 2. 재고 차감: companyClient.decreaseStock(productId, quantity, "true")
+     *
+     * */
         String productName = "더미상품";
         BigDecimal unitPrice = BigDecimal.valueOf(1000);
 
@@ -42,7 +46,11 @@ public class OrderService {
                 request.getRequestedDeadline()
         );
 
-        // TODO: FeignClient 연동 후 delivery-service, hub-service 호출 -> 실제 응답으로 교체
+    /*
+    * TODO: FeignClient 연동 시 구현 delivery-service, hub-service 호출 -> 실제 응답으로 교체
+    * 3. 배송 생성: deliveryClient.createDelivery(...)
+    * 4. 허브 조회: hubClient.getHub(hubId, "true")
+    * */
         order.updateDeliveryInfo(
                 UUID.randomUUID(),      // deliveryId
                 "더미출발허브",           // originHubName
@@ -52,8 +60,14 @@ public class OrderService {
                 "더미수신자슬랙ID",            // recipientSlackId
                 "더미허브매니저슬랙ID"    // hubManagerSlackId
         );
+        Order savedOrder = orderRepository.save(order); // ← 저장 먼저!
 
-        return OrderResponse.from(orderRepository.save(order));
+        /*
+         * TODO: FeignClient 연동 시 구현 notification-service
+         * 5. 알림 발송: notificationClient.sendOrderAlert(savedOrder.getId(), ...)
+         *    → 알림 발송이 실패해도 주문은 성공 (try-catch로 처리)
+         */
+        return OrderResponse.from(savedOrder);
     }
 
     // 주문 목록 조회 (페이징 + status 필터)
@@ -83,7 +97,13 @@ public class OrderService {
     @Transactional
     public OrderResponse cancelOrder(UUID id) {
         Order order = findOrderById(id);
-        // TODO: FeignClient 연동 후 배송 상태 체크하는 로직 추가
+    /*
+    * TODO: FeignClient 연동 시 구현
+    * 1. 배송 상태 확인: deliveryClient.getDeliveryStatus(orderId)
+    *    → WAITING이 아니면 에러
+    * 2. 재고 복원: companyClient.restoreStock(productId, quantity, "true")
+    * 3. 배송 취소: deliveryClient.cancelDelivery(deliveryId)
+    */
         order.cancel();
         return OrderResponse.from(order);
     }
