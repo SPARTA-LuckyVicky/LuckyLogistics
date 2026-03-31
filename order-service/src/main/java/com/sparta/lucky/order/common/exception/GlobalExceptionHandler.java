@@ -36,7 +36,10 @@ public class GlobalExceptionHandler {
     // Enum, UUID 등 타입 변환 실패 (@RequestParam, @PathVariable)
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
-        String message = e.getName() + "의 값이 올바르지 않습니다: " + e.getValue();
+        String expectedType = e.getRequiredType() != null
+                               ? e.getRequiredType().getSimpleName()
+                               : "요청 형식";
+        String message = e.getName() + " 파라미터 형식이 올바르지 않습니다. 기대 형식: " + expectedType;
         return ResponseEntity.badRequest()
                 .body(ApiResponse.error("VALIDATION_002", message));
     }

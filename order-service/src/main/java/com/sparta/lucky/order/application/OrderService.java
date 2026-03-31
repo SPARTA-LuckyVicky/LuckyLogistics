@@ -3,10 +3,13 @@ package com.sparta.lucky.order.application;
 import com.sparta.lucky.order.application.dto.request.CreateOrderCommand;
 import com.sparta.lucky.order.application.dto.request.UpdateOrderCommand;
 import com.sparta.lucky.order.application.dto.response.OrderResponse;
+import com.sparta.lucky.order.common.exception.BusinessException;
+import com.sparta.lucky.order.common.exception.OrderErrorCode;
 import com.sparta.lucky.order.domain.Order;
 import com.sparta.lucky.order.domain.OrderRepository;
 import com.sparta.lucky.order.domain.OrderStatus;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -110,10 +114,8 @@ public class OrderService {
 
     // 주문 삭제 (soft delete, 비노출)
     @Transactional
-    public void deleteOrder(UUID id, String deletedBy) {
+    public void deleteOrder(UUID id, UUID deletedBy) {
         Order order = findOrderById(id);
-        // 나중에 JWT 연동 시 수정 필요
-        // 지금은 defaultValue = "system"
         order.softDelete(deletedBy);
     }
 
@@ -127,7 +129,11 @@ public class OrderService {
 
     // 공통: ID로 주문 조회
     private Order findOrderById(UUID id) {
+        log.debug("주문 조회 - orderId: {}", id);
         return orderRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다. id=" + id));
+                .orElseThrow(() -> {
+                    log.warn("주문 조회 실패 - orderId: {}", id);
+                    return new BusinessException(OrderErrorCode.ORDER_NOT_FOUND);
+                });
     }
 }

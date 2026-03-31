@@ -85,9 +85,12 @@ public class OrderController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteOrder(
             @PathVariable UUID id,
-            @RequestHeader(value = "X-User-Id", defaultValue = "system") String deletedBy
+            @RequestHeader(value = "X-User-Id", required = false) String deletedBy
     ) {
-        orderService.deleteOrder(id, deletedBy);
+        UUID deletedByUUID = (deletedBy != null)
+                ? UUID.fromString(deletedBy)
+                : null;
+        orderService.deleteOrder(id, deletedByUUID);
         return ResponseEntity.noContent().build();
     }
 

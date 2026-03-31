@@ -1,6 +1,7 @@
 package com.sparta.lucky.order.presentation.dto.request;
 
 import com.sparta.lucky.order.application.dto.request.UpdateOrderCommand;
+import jakarta.validation.constraints.Future;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,8 @@ import java.time.LocalDateTime;
 public class PatchOrderReqDto {
 
     private String requestNote;
+
+    @Future(message = "납기일은 현재 이후여야 합니다.")
     private LocalDateTime requestedDeadline;
 
     public UpdateOrderCommand toCommand() {

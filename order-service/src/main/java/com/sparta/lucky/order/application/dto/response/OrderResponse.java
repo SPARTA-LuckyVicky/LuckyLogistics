@@ -38,9 +38,9 @@ public class OrderResponse {
     private OrderStatus status;
 
     private LocalDateTime createdAt;
-    private String createdBy;
+    private UUID createdBy;
     private LocalDateTime updatedAt;
-    private String updatedBy;
+    private UUID updatedBy;
 
     public static OrderResponse from(Order order) {
         return OrderResponse.builder()
