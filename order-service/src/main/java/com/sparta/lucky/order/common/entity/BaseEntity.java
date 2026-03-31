@@ -11,6 +11,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @MappedSuperclass
@@ -18,25 +19,35 @@ import java.time.LocalDateTime;
 public abstract class BaseEntity {
 
     @CreatedDate
-    @Column(updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @CreatedBy
-    @Column(updatable = false)
-    private String createdBy;
+    @Column(name = "created_by", nullable = false, updatable = false, columnDefinition = "uuid")
+    private UUID createdBy;
 
     @LastModifiedDate
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @LastModifiedBy
-    private String updatedBy;
+    @Column(name = "updated_by", columnDefinition = "uuid")
+    private UUID updatedBy;
 
+    @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    private String deletedBy;
+    @Column(name = "deleted_by", columnDefinition = "uuid")
+    private UUID deletedBy;
 
-    public void delete(String deletedBy) {
+    // Soft Delete 처리 메서드 — 상속받는 엔티티에서 호출
+    public void softDelete(UUID deletedBy) {
         this.deletedAt = LocalDateTime.now();
         this.deletedBy = deletedBy;
+    }
+
+    // 삭제 여부 확인
+    public boolean isDeleted() {
+        return this.deletedAt != null;
     }
 }
