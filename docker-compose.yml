@@ -66,6 +66,27 @@ services:
       timeout: 5s
       retries: 5
 
+  hub-service:
+    build:
+      context: .
+      dockerfile: hub-service/Dockerfile
+    container_name: lucky-hub
+    ports:
+      - "${HUB_SERVICE_PORT}:${HUB_SERVICE_PORT}"
+    environment:
+      HUB_SERVICE_PORT: ${HUB_SERVICE_PORT}
+      HUB_SERVICE_NAME: ${HUB_SERVICE_NAME}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - lucky-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+
 networks:
   lucky-network:
     driver: bridge
