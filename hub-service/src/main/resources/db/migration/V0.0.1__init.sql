@@ -37,3 +37,20 @@ VALUES
     (gen_random_uuid(), NULL, '전라남도 센터',        '전라남도 무안군 삼향읍 오룡길 1',            34.8108000, 126.4217000, NOW(), '00000000-0000-0000-0000-000000000000'),
     (gen_random_uuid(), NULL, '경상북도 센터',        '경상북도 안동시 풍천면 도청대로 455',        36.5760000, 128.5055000, NOW(), '00000000-0000-0000-0000-000000000000'),
     (gen_random_uuid(), NULL, '경상남도 센터',        '경상남도 창원시 의창구 중앙대로 300',        35.2278000, 128.6817000, NOW(), '00000000-0000-0000-0000-000000000000');
+
+-- p_hub_route 테이블 생성
+CREATE TABLE hub_schema.p_hub_route (
+    id                  UUID PRIMARY KEY,
+    origin_hub_id       UUID         NOT NULL,
+    destination_hub_id  UUID         NOT NULL,
+    duration            INTEGER      NOT NULL,
+    distance            INTEGER      NOT NULL,
+    created_at          TIMESTAMP    NOT NULL,
+    created_by          UUID         NOT NULL,
+    updated_at          TIMESTAMP,
+    updated_by          UUID,
+    deleted_at          TIMESTAMP,
+    deleted_by          UUID,
+    CONSTRAINT fk_hub_route_origin      FOREIGN KEY (origin_hub_id)      REFERENCES hub_schema.p_hub(id),
+    CONSTRAINT fk_hub_route_destination FOREIGN KEY (destination_hub_id) REFERENCES hub_schema.p_hub(id)
+);
