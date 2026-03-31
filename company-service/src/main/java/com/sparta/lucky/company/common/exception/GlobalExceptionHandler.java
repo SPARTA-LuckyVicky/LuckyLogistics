@@ -4,6 +4,8 @@ import com.sparta.lucky.company.common.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -38,6 +40,14 @@ public class GlobalExceptionHandler {
         String message = e.getName() + "의 값이 올바르지 않습니다: " + e.getValue();
         return ResponseEntity.badRequest()
                 .body(ApiResponse.error("VALIDATION_002", message));
+    }
+
+    // 헤더 누락 (MissingRequestHeaderException) / 요청 바디 파싱 실패 (HttpMessageNotReadableException) - 400
+    @ExceptionHandler({MissingRequestHeaderException.class, HttpMessageNotReadableException.class})
+    public ResponseEntity<ApiResponse<Void>> handleBadRequest(Exception e) {
+        log.warn("[BadRequest] {}", e.getMessage());
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.error("VALIDATION_003", "요청 형식이 올바르지 않습니다."));
     }
 
     // 그 외 예상치 못한 서버 에러

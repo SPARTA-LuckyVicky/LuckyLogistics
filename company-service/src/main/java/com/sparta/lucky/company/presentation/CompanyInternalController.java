@@ -6,6 +6,8 @@ import com.sparta.lucky.company.application.dto.AssignManagerCommand;
 import com.sparta.lucky.company.presentation.dto.GetCompanyResDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
 
@@ -32,9 +34,9 @@ public class CompanyInternalController {
     @PatchMapping("/{companyId}/manager")
     public ApiResponse<Void> assignManager(
             @PathVariable UUID companyId,
-            @RequestBody AssignManagerReqBody body,
+            @Valid @RequestBody AssignManagerReqBody body,  // @Valid 추가
             @RequestHeader("X-Internal-Request") String internalFlag
-    ) {
+    )  {
         companyService.assignManager(
                 AssignManagerCommand.builder()
                         .companyId(companyId)
@@ -47,6 +49,7 @@ public class CompanyInternalController {
     // 내부 API 전용 Request Body (Presentation 레이어 내부 static 클래스로 관리)
     @lombok.Getter
     static class AssignManagerReqBody {
+        @NotNull(message = "managerId는 필수입니다.")  // null이면 400 반환
         private UUID managerId;
     }
 }

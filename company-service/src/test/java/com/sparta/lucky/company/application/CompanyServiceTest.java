@@ -1,6 +1,7 @@
 package com.sparta.lucky.company.application;
 
 import com.sparta.lucky.company.application.dto.CreateCompanyCommand;
+import com.sparta.lucky.company.application.dto.CreateCompanyResult;
 import com.sparta.lucky.company.application.dto.UpdateCompanyCommand;
 import com.sparta.lucky.company.common.exception.BusinessException;
 import com.sparta.lucky.company.domain.Company;
@@ -15,11 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
-import org.springframework.data.domain.AuditorAware;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -47,21 +43,10 @@ class CompanyServiceTest {
     @Mock
     private CompanyRepository companyRepository;
 
-    // 테스트용 AuditorAware - AuditConfig의 빈을 덮어씀
-    @TestConfiguration
-    @EnableJpaAuditing
-    static class TestAuditConfig {
-        @Bean
-        @Primary
-        public AuditorAware<UUID> auditorAware() {
-            return () -> Optional.of(UUID.fromString("00000000-0000-0000-0000-000000000001"));
-        }
-    }
-
     // 테스트용 고정 UUID
-    private static final UUID COMPANY_ID   = UUID.randomUUID();
-    private static final UUID HUB_A        = UUID.randomUUID();
-    private static final UUID HUB_B        = UUID.randomUUID();
+    private static final UUID COMPANY_ID = UUID.randomUUID();
+    private static final UUID HUB_A = UUID.randomUUID();
+    private static final UUID HUB_B = UUID.randomUUID();
     private static final UUID REQUESTER_ID = UUID.randomUUID();
 
     // 테스트마다 재사용할 기본 업체 엔티티
@@ -86,7 +71,7 @@ class CompanyServiceTest {
         @Test
         @DisplayName("MASTER는 어떤 허브에도 업체 생성 가능")
         void master_canCreateInAnyHub() {
-            //given
+            // given
             CreateCompanyCommand command = CreateCompanyCommand.builder()
                     .name("테스트업체")
                     .companyType(CompanyType.SUPPLIER)
@@ -98,10 +83,12 @@ class CompanyServiceTest {
                     .build();
             given(companyRepository.save(any())).willReturn(company);
 
-            //when & then - 예외 없이 실행
-            assertThatCode(() -> companyService.createCompany(command))
-                    .doesNotThrowAnyException();
+            // when
+            CreateCompanyResult result = companyService.createCompany(command);
 
+            // then — 반환값 검증
+            assertThat(result).isNotNull();
+            assertThat(result.getName()).isEqualTo("테스트업체");
         }
 
         @Test
@@ -112,12 +99,16 @@ class CompanyServiceTest {
                     .name("테스트업체").companyType(CompanyType.SUPPLIER)
                     .hubId(HUB_A).address("주소")
                     .requesterId(REQUESTER_ID).requesterRole("HUB_MANAGER")
-                    .requesterHubId(HUB_A) // 올바른 허브
+                    .requesterHubId(HUB_A)
                     .build();
             given(companyRepository.save(any())).willReturn(company);
 
-            assertThatCode(() -> companyService.createCompany(command))
-                    .doesNotThrowAnyException();
+            // when
+            CreateCompanyResult result = companyService.createCompany(command);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.getHubId()).isEqualTo(HUB_A);
         }
 
         @Test

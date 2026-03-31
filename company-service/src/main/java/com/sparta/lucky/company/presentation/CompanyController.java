@@ -159,7 +159,7 @@ public class CompanyController {
     }
 
     /**
-     * 업제 삭제
+     * 업체 삭제
      * [권한]
      * MASTER - 모두 가능
      * HUB_MANAGER - 담당 허브 업체만 가능

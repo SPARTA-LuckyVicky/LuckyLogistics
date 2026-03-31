@@ -38,9 +38,18 @@ public class CompanyService {
     public CreateCompanyResult createCompany(CreateCompanyCommand command) {
         log.info("업체 생성 요청 - requester: {}, role: {}, hubId: {}",
                 command.getRequesterId(), command.getRequesterRole(), command.getHubId());
+
+        // MASTER, HUB_MANAGER만 생성 가능
+        if (!ROLE_MASTER.equals(command.getRequesterRole())
+                && !ROLE_HUB_MANAGER.equals(command.getRequesterRole())) {
+            log.warn("업체 생성 권한 없음 - requester: {}, role: {}",
+                    command.getRequesterId(), command.getRequesterRole());
+            throw new BusinessException(CompanyErrorCode.COMPANY_ACCESS_DENIED);
+        }
+
         // HUB_MANAGER는 자신의 허브에만 업체 생성 가능
         if (ROLE_HUB_MANAGER.equals(command.getRequesterRole())) {
-            if (!command.getHubId().equals(command.getRequesterHubId())) {
+            if (command.getHubId() == null || !command.getHubId().equals(command.getRequesterHubId())) {
                 log.warn("업체 생성 권한 없음 - requester: {}, 요청 hubId: {}, 소속 hubId: {}",
                         command.getRequesterId(), command.getHubId(), command.getRequesterHubId());
                 throw new BusinessException(CompanyErrorCode.COMPANY_HUB_MISMATCH);
@@ -166,6 +175,12 @@ public class CompanyService {
      * COMPANY_MANAGER — 자기 소속 업체만
      */
     private void validateUpdateAccess(Company company, UpdateCompanyCommand command) {
+        // null 체크 우선 진행
+        if (command.getRequesterRole() == null) {
+            log.warn("업체 수정 권한 없음 - 역할 정보 없음, requester: {}", command.getRequesterId());
+            throw new BusinessException(CompanyErrorCode.COMPANY_ACCESS_DENIED);
+        }
+
         switch (command.getRequesterRole()) {
             case ROLE_MASTER -> { /* 전체 허용 */ }
             case ROLE_HUB_MANAGER -> {

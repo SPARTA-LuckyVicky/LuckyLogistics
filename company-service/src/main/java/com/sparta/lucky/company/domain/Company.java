@@ -3,6 +3,7 @@ package com.sparta.lucky.company.domain;
 import com.sparta.lucky.company.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.Objects;
 
 import java.util.UUID;
 
@@ -55,7 +56,8 @@ public class Company extends BaseEntity {
      * hub_id 변경 시 product/product_stock의 hub_id는 동기화되지 않음
      */
     public void changeHub(UUID newHubId) {
-        this.hubId = newHubId;
+        // null이 들어오면 DB 저장 시점에 실패하지 않고 즉시 실패로 수정
+        this.hubId = Objects.requireNonNull(newHubId, "newHubId 값 누락");
     }
 
     /**

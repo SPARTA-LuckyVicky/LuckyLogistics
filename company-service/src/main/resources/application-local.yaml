@@ -1,4 +1,4 @@
-#application-loacl.yaml
+#application-local.yaml
 
 server:
   port: 19300
@@ -7,13 +7,12 @@ spring:
   application:
     name: company-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/lucky_logistics?currentSchema=company_schema
-    username: lucky
-    password: lucky7777
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:lucky_logistics}?currentSchema=${COMPANY_SERVICE_SCHEMA:company_schema}
+    username: ${POSTGRES_USER:lucky}
+    password: ${POSTGRES_PASSWORD:lucky7777}
   jpa:
     hibernate:
       ddl-auto: create
-      # 재시작마다 초기화
 
 # 로깅 설정
 logging:
