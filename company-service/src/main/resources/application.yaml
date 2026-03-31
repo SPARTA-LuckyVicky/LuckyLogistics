@@ -1,0 +1,41 @@
+server:
+  port: ${COMPANY_SERVICE_PORT:19300}
+
+spring:
+  application:
+    name: ${COMPANY_SERVICE_NAME:company-service}
+
+  datasource:
+    url: jdbc:postgresql://lucky-postgres:5432/${POSTGRES_DB:lucky_logistics}?currentSchema=${COMPANY_SERVICE_SCHEMA:company_schema}
+    username: ${POSTGRES_USER:lucky}
+    password: ${POSTGRES_PASSWORD:lucky7777}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+     hibernate:
+        default_schema: ${COMPANY_SERVICE_SCHEMA:company_schema}
+    show-sql: true
+  threads:
+   virtual:
+    enabled: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://lucky-eureka:19090/eureka
+  instance:
+    prefer-ip-address: true
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000

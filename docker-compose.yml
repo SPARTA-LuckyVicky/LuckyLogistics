@@ -17,7 +17,7 @@ services:
     networks:
       - lucky-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lucky}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lucky}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -50,6 +50,7 @@ services:
     networks:
       - lucky-network
 
+  # ============ eureka-server ==============
   eureka-server:
     build:
       context: .
@@ -61,10 +62,57 @@ services:
     networks:
       - lucky-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:19090/actuator/health || exit 1"]
+      test: [ "CMD-SHELL", "wget --spider -q http://localhost:19090/actuator/health || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # ============ company-service ==============
+  company-service:
+    build:
+      context: .
+      dockerfile: company-service/Dockerfile
+    container_name: lucky-company
+    ports:
+      - "${COMPANY_SERVICE_PORT}:${COMPANY_SERVICE_PORT}"
+    environment:
+      COMPANY_SERVICE_PORT: ${COMPANY_SERVICE_PORT}
+      COMPANY_SERVICE_NAME: ${COMPANY_SERVICE_NAME}
+      COMPANY_SERVICE_SCHEMA: ${COMPANY_SERVICE_SCHEMA}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - lucky-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ============ hub-service ==============
+  hub-service:
+    build:
+      context: .
+      dockerfile: hub-service/Dockerfile
+    container_name: lucky-hub
+    ports:
+      - "${HUB_SERVICE_PORT}:${HUB_SERVICE_PORT}"
+    environment:
+      HUB_SERVICE_PORT: ${HUB_SERVICE_PORT}
+      HUB_SERVICE_NAME: ${HUB_SERVICE_NAME}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - lucky-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    restart: unless-stopped
 
 networks:
   lucky-network:
