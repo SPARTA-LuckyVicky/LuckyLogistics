@@ -4,6 +4,9 @@ import com.sparta.lucky.hub.application.HubService;
 import com.sparta.lucky.hub.application.dto.*;
 import com.sparta.lucky.hub.common.response.ApiResponse;
 import com.sparta.lucky.hub.presentation.dto.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+@Tag(name = "Hub", description = "허브 관리 API")
 @RestController
 @RequestMapping("/api/hubs")
 @RequiredArgsConstructor
@@ -23,6 +27,7 @@ public class HubController {
     private final HubService hubService;
 
     // Todo: 권한 설정
+    @Operation(summary = "허브 생성", description = "새로운 허브를 생성합니다.")
     @PostMapping
     public ResponseEntity<ApiResponse<PostHubResDto>> createHub(@Valid @RequestBody PostHubReqDto request) {
         CreateHubCommand command = CreateHubCommand.of(
@@ -32,19 +37,24 @@ public class HubController {
                 .body(ApiResponse.success(PostHubResDto.from(hubService.createHub(command))));
     }
 
+    @Operation(summary = "허브 단건 조회", description = "허브 ID로 허브 정보를 조회합니다.")
     @GetMapping("/{hubId}")
-    public ResponseEntity<ApiResponse<GetHubResDto>> getHub(@PathVariable UUID hubId) {
+    public ResponseEntity<ApiResponse<GetHubResDto>> getHub(
+            @Parameter(description = "허브 ID") @PathVariable UUID hubId
+    ) {
         return ResponseEntity.ok(ApiResponse.success(GetHubResDto.from(hubService.getHub(hubId))));
     }
 
+    @Operation(summary = "허브 목록 조회", description = "허브 목록을 페이지 단위로 조회합니다.")
     @GetMapping
     public ResponseEntity<ApiResponse<Page<GetHubResDto>>> getHubs(@PageableDefault(size = 10) Pageable pageable) {
         return ResponseEntity.ok(ApiResponse.success(hubService.getHubs(pageable).map(GetHubResDto::from)));
     }
 
+    @Operation(summary = "허브 정보 수정", description = "허브의 이름, 주소, 위경도를 수정합니다.")
     @PatchMapping("/{hubId}")
     public ResponseEntity<ApiResponse<GetHubResDto>> updateHub(
-            @PathVariable UUID hubId,
+            @Parameter(description = "허브 ID") @PathVariable UUID hubId,
             @Valid @RequestBody PatchHubReqDto request
     ) {
         UpdateHubCommand command = UpdateHubCommand.of(
@@ -53,19 +63,21 @@ public class HubController {
         return ResponseEntity.ok(ApiResponse.success(GetHubResDto.from(hubService.updateHub(command))));
     }
 
+    @Operation(summary = "허브 매니저 배정", description = "허브에 매니저를 배정합니다.")
     @PatchMapping("/{hubId}/manager")
     public ResponseEntity<ApiResponse<Void>> assignManager(
-            @PathVariable UUID hubId,
+            @Parameter(description = "허브 ID") @PathVariable UUID hubId,
             @Valid @RequestBody PatchHubManagerReqDto request
     ) {
         hubService.assignManager(AssignManagerCommand.of(hubId, request.getManagerId()));
         return ResponseEntity.ok(ApiResponse.success());
     }
 
+    @Operation(summary = "허브 삭제", description = "허브를 소프트 삭제합니다.")
     @DeleteMapping("/{hubId}")
     public ResponseEntity<ApiResponse<Void>> deleteHub(
-            @PathVariable UUID hubId,
-            @RequestHeader("X-User-Id") UUID deletedBy // Todo: 추후 수정
+            @Parameter(description = "허브 ID") @PathVariable UUID hubId,
+            @Parameter(description = "요청자 ID", hidden = true) @RequestHeader("X-User-Id") UUID deletedBy // Todo: 추후 수정
     ) {
         hubService.deleteHub(hubId, deletedBy);
         return ResponseEntity.noContent().build();
