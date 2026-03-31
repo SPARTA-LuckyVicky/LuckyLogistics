@@ -1,0 +1,28 @@
+#application-loacl.yaml
+
+server:
+  port: 19300
+
+spring:
+  application:
+    name: company-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/lucky_logistics?currentSchema=company_schema
+    username: lucky
+    password: lucky7777
+  jpa:
+    hibernate:
+      ddl-auto: create
+      # 재시작마다 초기화
+
+# 로깅 설정
+logging:
+  level:
+    com.sparta.lucky.company: DEBUG # 본 패키지
+    org.hibernate.SQL: DEBUG # SQL 쿼리 출력
+    org.hibernate.jdbc.bind: TRACE # 바인딩 파라미터
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka
