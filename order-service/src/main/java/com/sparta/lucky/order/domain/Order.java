@@ -77,6 +77,14 @@ public class Order extends BaseEntity {
             String requestNote,
             LocalDateTime requestedDeadline
     ) {
+        // 생성 시점에서 수량과 가격 검증
+        if (quantity == null || quantity <= 0) {
+            throw new IllegalArgumentException("수량은 1 이상이어야 합니다.");
+        }
+        if (unitPrice == null || unitPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("단가는 0보다 커야 합니다.");
+        }
+
         Order order = new Order();
         order.requesterCompanyId = requesterCompanyId;
         order.receiverCompanyId = receiverCompanyId;
@@ -101,6 +109,7 @@ public class Order extends BaseEntity {
             String recipientSlackId,
             String hubManagerSlackId
     ) {
+        assertEditable();
         this.deliveryId = deliveryId;
         this.originHubName = originHubName;
         this.destinationHubName = destinationHubName;
@@ -112,18 +121,33 @@ public class Order extends BaseEntity {
 
     // 수정
     public void update(String requestNote, LocalDateTime requestedDeadline) {
+        assertEditable();
         if (requestNote != null) this.requestNote = requestNote;
         if (requestedDeadline != null) this.requestedDeadline = requestedDeadline;
     }
 
-    // 취소
-    public void cancel(String deletedBy) {
+    // 주문 취소 (상태만 변경,노출)
+    public void cancel() {
         this.status = OrderStatus.CANCELLED;
+    }
+
+    // 주문 삭제 (비노출)
+    public void softDelete(String deletedBy) {
         this.delete(deletedBy);
     }
 
     // 완료
     public void complete() {
+        if(this.status != OrderStatus.CREATED){
+            throw new IllegalStateException("Only CREATED order can be completed");
+        }
         this.status = OrderStatus.COMPLETED;
+    }
+
+    // 상태 확인 메서드
+    private void assertEditable() {
+        if (this.status == OrderStatus.CANCELLED || this.status == OrderStatus.COMPLETED) {
+            throw new IllegalStateException("Finalized order cannot be modified");
+        }
     }
 }
