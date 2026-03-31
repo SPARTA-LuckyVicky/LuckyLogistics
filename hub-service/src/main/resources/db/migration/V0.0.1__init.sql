@@ -8,7 +8,7 @@ CREATE TABLE hub_schema.p_hub (
     name        VARCHAR(50)      NOT NULL,
     address     VARCHAR(100)     NOT NULL,
     latitude    DECIMAL(10, 7)   NOT NULL,
-    longitude   DECIMAL(11, 7)   NOT NULL,
+    longitude   DECIMAL(10, 7)   NOT NULL,
     created_at  TIMESTAMP        NOT NULL,
     created_by  UUID             NOT NULL,
     updated_at  TIMESTAMP,
