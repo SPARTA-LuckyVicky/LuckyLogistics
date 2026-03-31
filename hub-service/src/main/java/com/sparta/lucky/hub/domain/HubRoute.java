@@ -1,4 +1,4 @@
-package com.sparta.lucky.hub.hub.domain;
+package com.sparta.lucky.hub.domain;
 
 import com.sparta.lucky.hub.common.entity.BaseEntity;
 import jakarta.persistence.*;
