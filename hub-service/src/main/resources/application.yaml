@@ -13,11 +13,17 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         default_schema: ${HUB_SERVICE_SCHEMA}
     show-sql: true
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    default-schema: ${HUB_SERVICE_SCHEMA}
 
   threads:
     virtual:
