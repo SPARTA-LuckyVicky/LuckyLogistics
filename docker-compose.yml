@@ -115,6 +115,27 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+    # ============ api-gateway ==============
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: lucky-gateway
+    ports:
+      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
+    environment:
+      GATEWAY_NAME: ${GATEWAY_NAME}
+      GATEWAY_PORT: ${GATEWAY_PORT}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      EUREKA_SERVER: lucky-eureka
+    env_file:
+      - .env
+    networks:
+      - lucky-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    restart: unless-stopped
 networks:
   lucky-network:
     driver: bridge
