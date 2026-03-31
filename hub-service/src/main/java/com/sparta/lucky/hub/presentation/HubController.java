@@ -7,6 +7,7 @@ import com.sparta.lucky.hub.presentation.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -47,7 +48,7 @@ public class HubController {
 
     @Operation(summary = "허브 목록 조회", description = "허브 목록을 페이지 단위로 조회합니다.")
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<GetHubResDto>>> getHubs(@PageableDefault(size = 10) Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<GetHubResDto>>> getHubs(@ParameterObject @PageableDefault(size = 10) Pageable pageable) {
         return ResponseEntity.ok(ApiResponse.success(hubService.getHubs(pageable).map(GetHubResDto::from)));
     }
 
