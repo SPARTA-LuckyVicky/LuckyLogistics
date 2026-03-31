@@ -1,0 +1,14 @@
+server:
+  port: 19000 # Gateway 포트
+
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/ # Eureka 서버 주소
+  instance:
+    prefer-ip-address: true
+jwt:
+  secret:
+    key: ${JWT_SECRET_KEY}
