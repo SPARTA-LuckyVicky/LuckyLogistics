@@ -7,8 +7,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://lucky-postgres:5432/${POSTGRES_DB:lucky_logistics}?currentSchema=${ORDER_SERVICE_SCHEMA:order_schema}
-    username: ${POSTGRES_USER:lucky}
-    password: ${POSTGRES_PASSWORD:lucky7777}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:

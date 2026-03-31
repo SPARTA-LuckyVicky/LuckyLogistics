@@ -7,10 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -27,8 +24,11 @@ public class InternalController {
     @Operation(summary = "[내부] 주문 완료 처리", description = "delivery-service가 배송 완료 시 호출")
     @PatchMapping("/{id}/complete")
     public ResponseEntity<OrderResponse> completeOrder(
-            @PathVariable UUID id
+            @PathVariable UUID id,
+            @RequestHeader(value = "X-Internal-Request", required = false) String internalRequest
     ) {
+        // TODO: JWT 연동 후 실제 인증 추가
+        // 지금은 헤더 존재 여부만 확인
         return ResponseEntity.ok(orderService.completeOrder(id));
     }
 }

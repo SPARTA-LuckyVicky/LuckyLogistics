@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -46,7 +47,11 @@ public class OrderController {
         // 허용 페이지 사이즈: 10, 30, 50 — 그 외는 10으로 고정
         int pageSize = pageable.getPageSize();
         if (pageSize != 10 && pageSize != 30 && pageSize != 50) {
-            pageable = Pageable.ofSize(10).withPage(pageable.getPageNumber());
+            pageable = PageRequest.of(
+                    pageable.getPageNumber(),
+                    10,
+                    pageable.getSort()
+            );
         }
         return ResponseEntity.ok(orderService.getOrders(status, pageable));
     }
@@ -63,7 +68,7 @@ public class OrderController {
     @PatchMapping("/{id}")
     public ResponseEntity<OrderResponse> updateOrder(
             @PathVariable UUID id,
-            @RequestBody PatchOrderReqDto request
+            @RequestBody @Valid PatchOrderReqDto request
     ) {
         return ResponseEntity.ok(orderService.updateOrder(id, request.toCommand()));
     }
