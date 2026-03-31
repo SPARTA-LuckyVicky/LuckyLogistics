@@ -128,26 +128,32 @@ public class Order extends BaseEntity {
 
     // 주문 취소 (상태만 변경,노출)
     public void cancel() {
+        assertEditable();
         this.status = OrderStatus.CANCELLED;
     }
 
     // 주문 삭제 (비노출)
     public void softDelete(String deletedBy) {
+        assertDeletable();
         this.delete(deletedBy);
     }
 
     // 완료
     public void complete() {
-        if(this.status != OrderStatus.CREATED){
-            throw new IllegalStateException("Only CREATED order can be completed");
-        }
+        assertEditable();
         this.status = OrderStatus.COMPLETED;
     }
 
-    // 상태 확인 메서드
+    // 상태 확인(CREATED) 메서드
     private void assertEditable() {
         if (this.status == OrderStatus.CANCELLED || this.status == OrderStatus.COMPLETED) {
-            throw new IllegalStateException("Finalized order cannot be modified");
+            throw new IllegalStateException("완료된 주문은 수정이 불가능 합니다.");
+        }
+    }
+    // 삭제 가능 상태(CANCELLED/COMPLETED) 확인
+    private void assertDeletable() {
+        if (this.status == OrderStatus.CREATED) {
+            throw new IllegalStateException("진행 중인 주문은 삭제할 수 없습니다. 먼저 취소 해주세요.");
         }
     }
 }
