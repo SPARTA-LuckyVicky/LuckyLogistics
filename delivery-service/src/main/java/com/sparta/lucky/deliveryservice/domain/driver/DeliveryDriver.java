@@ -58,8 +58,12 @@ public class DeliveryDriver extends BaseEntity {
         return driver;
     }
 
-    public void softDelete(UUID id) {
+    /**
+     * 배송 담당자 데이터를 soft delete합니다.
+     * @param accessId 요청한 사용자의 ID
+     */
+    public void softDelete(UUID accessId) {
         this.deletedAt = LocalDateTime.now();
-        this.deletedBy = id;
+        this.deletedBy = accessId;
     }
 }
