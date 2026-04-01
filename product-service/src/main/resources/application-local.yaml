@@ -1,0 +1,27 @@
+#application-local.yaml
+
+server:
+  port: 19400
+
+spring:
+  application:
+    name: product-service
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:lucky_logistics}?currentSchema=${PRODUCT_SERVICE_SCHEMA:product_schema}
+    username: ${POSTGRES_USER:lucky}
+    password: ${POSTGRES_PASSWORD:lucky7777}
+  jpa:
+    hibernate:
+      ddl-auto: create
+
+# 로깅 설정
+logging:
+  level:
+    com.sparta.lucky.company: DEBUG # 본 패키지
+    org.hibernate.SQL: DEBUG # SQL 쿼리 출력
+    org.hibernate.jdbc.bind: TRACE # 바인딩 파라미터
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka

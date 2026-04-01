@@ -137,6 +137,30 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # ============ product-service ==============
+  product-service:
+    build:
+      context: .
+      dockerfile: product-service/Dockerfile
+    container_name: lucky-company
+    ports:
+      - "${PRODUCT_SERVICE_PORT}:${PRODUCT_SERVICE_PORT}"
+    environment:
+      COMPANY_SERVICE_PORT: ${PRODUCT_SERVICE_PORT}
+      COMPANY_SERVICE_NAME: ${PRODUCT_SERVICE_NAME}
+      COMPANY_SERVICE_SCHEMA: ${PRODUCT_SERVICE_SCHEMA}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - lucky-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    restart: unless-stopped
+
 networks:
   lucky-network:
     driver: bridge
