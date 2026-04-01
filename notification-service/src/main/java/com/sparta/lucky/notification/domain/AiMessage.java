@@ -11,7 +11,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "p_ai_message", schema = "notification_schema")
+@Table(name = "p_ai_message")
 @SQLRestriction("deleted_at IS NULL")
 public class AiMessage extends BaseEntity {
 
