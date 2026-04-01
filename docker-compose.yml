@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # ===== 인프라 =====
   postgres:
@@ -103,6 +101,30 @@ services:
       HUB_SERVICE_PORT: ${HUB_SERVICE_PORT}
       HUB_SERVICE_NAME: ${HUB_SERVICE_NAME}
       HUB_SERVICE_SCHEMA: ${HUB_SERVICE_SCHEMA}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - lucky-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ============ order-service ==============
+  order-service:
+    build:
+      context: .
+      dockerfile: order-service/Dockerfile
+    container_name: lucky-order
+    ports:
+      - "${ORDER_SERVICE_PORT}:${ORDER_SERVICE_PORT}"
+    environment:
+      ORDER_SERVICE_PORT: ${ORDER_SERVICE_PORT}
+      ORDER_SERVICE_NAME: ${ORDER_SERVICE_NAME}
+      ORDER_SERVICE_SCHEMA: ${ORDER_SERVICE_SCHEMA}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

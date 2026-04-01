@@ -133,9 +133,9 @@ public class Order extends BaseEntity {
     }
 
     // 주문 삭제 (비노출)
-    public void softDelete(String deletedBy) {
+    public void softDelete(UUID deletedBy) {
         assertDeletable();
-        this.delete(deletedBy);
+        super.softDelete(deletedBy);
     }
 
     // 완료
