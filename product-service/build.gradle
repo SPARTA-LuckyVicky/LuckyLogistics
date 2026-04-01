@@ -1,5 +1,5 @@
 bootJar {
-	archiveFileName = 'company-service.jar'
+	archiveFileName = 'product-service.jar'
 }
 // Java 21 + Mockito 조합에서 Mockito가 동적으로 agent를 로드하는 방식이
 // 추후 JDK에서 막힐거라는 경고문 발생 (테스트시)

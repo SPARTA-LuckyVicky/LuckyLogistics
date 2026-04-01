@@ -1,4 +1,4 @@
-package com.sparta.lucky.company.common.entity;
+package com.sparta.lucky.product.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
