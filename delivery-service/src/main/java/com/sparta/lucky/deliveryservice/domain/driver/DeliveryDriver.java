@@ -1,15 +1,13 @@
-package com.sparta.lucky.deliveryservice.driver.domain;
+package com.sparta.lucky.deliveryservice.domain.driver;
 
-import com.sparta.lucky.deliveryservice.driver.code.DriverStatus;
-import com.sparta.lucky.deliveryservice.driver.code.DriverType;
+import com.sparta.lucky.deliveryservice.domain.driver.code.DriverStatus;
+import com.sparta.lucky.deliveryservice.domain.driver.code.DriverType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.AccessLevel;
