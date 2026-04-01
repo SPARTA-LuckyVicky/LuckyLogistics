@@ -3,12 +3,6 @@ package com.sparta.lucky.gateway.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.lucky.gateway.common.exception.AuthErrorCode;
 import com.sparta.lucky.gateway.common.response.ApiResponse;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -17,24 +11,27 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-
-import java.security.Key;
 
 @Component
 @Slf4j
 public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAuthenticationFilter.Config> {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ReactiveJwtDecoder jwtDecoder;
 
-    @Value("${jwt.secret.key}")
-    private String secretKey;
+    @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
+    private String jwkSetUri;
 
-    public JwtAuthenticationFilter(){
+    public JwtAuthenticationFilter(ReactiveJwtDecoder jwtDecoder){
         super(Config.class);
+        this.jwtDecoder = jwtDecoder;
     }
 
     public static class Config{
@@ -83,17 +80,6 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                 });
     }
 
-    // 토큰 검증 로직 분리, 문제 있을 경우 예외 던짐 (throws)
-    private Claims validateAndParseToken(String token) throws ExpiredJwtException, JwtException {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        Key key = Keys.hmacShaKeyFor(keyBytes);
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
-
 
     @Override
     public GatewayFilter apply(Config config) {
@@ -106,28 +92,28 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
             String token = extractToken(request);
             if(token == null) return onError(exchange, AuthErrorCode.TOKEN_NOT_FOUND);
 
-            return Mono.just(token)
-                    .map(this::validateAndParseToken) // 토큰 파싱 후 Claims 반환
-                    .flatMap(claims -> {
-                        // 하위 서비스(User, Order 등)가 유저 정보 알 수 있게 헤더 삽입
-                        // mutate() 를 사용하여 복사본 생성 후 정보 삽입
+            JwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+
+            return Mono.fromCallable(() -> jwtDecoder.decode(token))
+                    .flatMap(jwt -> {
+                        String userId = jwt.getSubject();
+                        String role = jwt.getClaimAsString("role");
+
                         ServerHttpRequest modifiedRequest = request.mutate()
-                                .header("X-User-Id", claims.getSubject()) //유저 ID (UUID 등)
-                                .header("X-User-Role",claims.get("role", String.class)) // 유저 권한
+                                .header("X-User-Id", userId)
+                                .header("X-User-Role", role)
                                 .build();
                         return chain.filter(exchange.mutate().request(modifiedRequest).build());
                     })
                     .onErrorResume(e -> {
-                        if (e instanceof ExpiredJwtException) {
-                            return onError(exchange, AuthErrorCode.TOKEN_EXPIRED);
-                        }
-                        if (e instanceof JwtException) {
-                            return onError(exchange, AuthErrorCode.INVALID_TOKEN);
-                        }
-                        return Mono.error(e);
+                       if(e.getMessage() != null && e.getMessage().contains("Jwt expired")){
+                           return onError(exchange, AuthErrorCode.TOKEN_EXPIRED);
+                       }
+                       if(e instanceof org.springframework.security.oauth2.jwt.JwtException){
+                           return onError(exchange, AuthErrorCode.INVALID_TOKEN);
+                       }
+                       return Mono.error(e);
                     });
-
-
         });
     }
 }
