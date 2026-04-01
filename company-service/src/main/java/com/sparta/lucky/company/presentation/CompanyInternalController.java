@@ -1,8 +1,10 @@
 package com.sparta.lucky.company.presentation;
 
+import com.sparta.lucky.company.common.exception.BusinessException;
 import com.sparta.lucky.company.common.response.ApiResponse;
 import com.sparta.lucky.company.application.CompanyService;
 import com.sparta.lucky.company.application.dto.AssignManagerCommand;
+import com.sparta.lucky.company.domain.CompanyErrorCode;
 import com.sparta.lucky.company.presentation.dto.GetCompanyResDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +21,15 @@ public class CompanyInternalController {
 
     private final CompanyService companyService;
 
+    private static final String INTERNAL_REQUEST_VALUE = "true";
+
     // order-service, product-service, user-service가 업체 검증 시 사용
     @GetMapping("/{companyId}")
     public ApiResponse<GetCompanyResDto> getCompany(
             @PathVariable UUID companyId,
-            @RequestHeader("X-Internal-Request") String internalFlag  // 내부 요청 식별
+            @RequestHeader("X-Internal-Request") String internalFlag
     ) {
+        validateInternalRequest(internalFlag);
         return ApiResponse.success(
                 GetCompanyResDto.from(companyService.getCompany(companyId))
         );
@@ -34,9 +39,10 @@ public class CompanyInternalController {
     @PatchMapping("/{companyId}/manager")
     public ApiResponse<Void> assignManager(
             @PathVariable UUID companyId,
-            @Valid @RequestBody AssignManagerReqBody body,  // @Valid 추가
+            @Valid @RequestBody AssignManagerReqBody body,
             @RequestHeader("X-Internal-Request") String internalFlag
     )  {
+        validateInternalRequest(internalFlag);
         companyService.assignManager(
                 AssignManagerCommand.builder()
                         .companyId(companyId)
@@ -51,5 +57,13 @@ public class CompanyInternalController {
     static class AssignManagerReqBody {
         @NotNull(message = "managerId는 필수입니다.")  // null이면 400 반환
         private UUID managerId;
+    }
+
+    // 내부 요청 검증 private 메서드
+    private void validateInternalRequest(String internalFlag) {
+        if (!INTERNAL_REQUEST_VALUE.equalsIgnoreCase(internalFlag)) {
+            throw new BusinessException(CompanyErrorCode.COMPANY_ACCESS_DENIED);
+            // 또는 ResponseStatusException(HttpStatus.FORBIDDEN, "내부 요청만 허용됩니다.")
+        }
     }
 }
