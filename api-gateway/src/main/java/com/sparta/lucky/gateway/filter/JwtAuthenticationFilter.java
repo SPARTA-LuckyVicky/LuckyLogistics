@@ -48,7 +48,7 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                 path.contains("/swagger-ui");
     }
 
-    // 토큰 추출 로직 , "Barer " 뒷부분의 문자열만 추출
+    // 토큰 추출 로직 , "Bearer " 뒷부분의 문자열만 추출
     private String extractToken(ServerHttpRequest request){
         String bearerToken = request.getHeaders().getFirst("Authorization");
         if(StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")){
