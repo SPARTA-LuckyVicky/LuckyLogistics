@@ -2,13 +2,16 @@ package com.sparta.lucky.deliveryservice.application;
 
 import com.sparta.lucky.deliveryservice.application.dto.DeliveryDriverCreateCommand;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.ConflictException;
+import com.sparta.lucky.deliveryservice.common.error.exceptions.NotFoundException;
 import com.sparta.lucky.deliveryservice.common.response.ResponseCode;
 import com.sparta.lucky.deliveryservice.domain.driver.DeliveryDriver;
 import com.sparta.lucky.deliveryservice.domain.repos.DeliveryDriverRepository;
 import com.sparta.lucky.deliveryservice.infrastructure.JpaDeliveryDriverRepository;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -22,6 +25,7 @@ public class DeliveryDriverService {
      * 존재하지 않는 User 또는 Hub의 ID로 시도하거나, 이미 존재하는 배송 담당자가 있는 경우 추가되지 않습니다.
      * @param command 생성할 배송 담당자의 정보를 담은 dto
      */
+    // TODO : add Transactional
     public void createDriver(DeliveryDriverCreateCommand command) {
         // TODO : add validation logic
         // Check if the User and Hub exist.
@@ -34,5 +38,17 @@ public class DeliveryDriverService {
 
         // save new delivery driver.
         deliveryDriverRepository.save(DeliveryDriver.create(command));
+    }
+
+    /**
+     * 배송 담당자 데이터를 삭제합니다.
+     * @param driverId 삭제하려는 배송 담당자의 ID
+     * @param accessId 삭제처리를 시도한 사용자의 ID
+     */
+    @Transactional
+    public void deleteDriver(UUID driverId, UUID accessId) {
+        DeliveryDriver deliveryDriver = deliveryDriverRepository.findActiveById(driverId)
+            .orElseThrow(() -> new NotFoundException(ResponseCode.DRIVER_NOT_FOUND));
+        deliveryDriver.softDelete(accessId);
     }
 }

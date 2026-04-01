@@ -10,6 +10,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -55,5 +56,10 @@ public class DeliveryDriver extends BaseEntity {
         driver.type = command.type();
         driver.status = DriverStatus.IDLE;
         return driver;
+    }
+
+    public void softDelete(UUID id) {
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = id;
     }
 }

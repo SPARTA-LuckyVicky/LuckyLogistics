@@ -17,6 +17,7 @@ public enum ResponseCode {
     // DRIVER(3)
     DRIVER_CREATED("DELIVERY_300", HttpStatus.CREATED, "Driver Created"),
     DRIVER_EXISTS("DELIVERY_301", HttpStatus.CONFLICT, "Driver already exists"),
+    DRIVER_NOT_FOUND("DELIVERY_302", HttpStatus.NOT_FOUND, "Driver not found"),
     ;
 
     private final String code;
