@@ -24,15 +24,15 @@ public class DeliveryDriverController {
 
     private final DeliveryDriverService deliveryDriverService;
 
+    // TODO : Need to add method to implement the logic below.
+    // If user's role is HUB_MANAGER, check request.hubId and user.hubId
+    // If request.hubId is different from `user.hubId`, throw forbidden exception
+
     @Operation(summary = "배송 담당자 생성", description = "새로운 배송 담당자를 생성합니다.")
     @PostMapping
     public CommonApiResponse<Void> createDriver(
         @RequestBody @Valid final DeliveryDriverCreateRequest request
     ) {
-        // TODO : Need to add code to implement the logic below.
-        // If user's role is HUB_MANAGER, check request.hubId and user.hubId
-        // If request.hubId is different from `user.hubId`, throw forbidden exception
-
         deliveryDriverService.createDriver(request.toCommand());
 
         return CommonApiResponse.success(ResponseCode.DRIVER_CREATED);
@@ -43,10 +43,6 @@ public class DeliveryDriverController {
     public CommonApiResponse<LocalDateTime> deleteDriver(
         @PathVariable UUID driverId
     ) {
-        // TODO : Need to add code to implement the logic below.
-        // If user's role is HUB_MANAGER, check request.hubId and user.hubId
-        // If request.hubId is different from `user.hubId`, throw forbidden exception
-
         // Authentication logic has not yet been added, random UUID is used
         deliveryDriverService.deleteDriver(driverId, UUID.randomUUID());
 
