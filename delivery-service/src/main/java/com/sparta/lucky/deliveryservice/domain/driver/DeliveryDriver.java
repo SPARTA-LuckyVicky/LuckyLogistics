@@ -1,29 +1,27 @@
 package com.sparta.lucky.deliveryservice.domain.driver;
 
+import com.sparta.lucky.deliveryservice.application.dto.DeliveryDriverCreateCommand;
+import com.sparta.lucky.deliveryservice.common.entity.BaseEntity;
 import com.sparta.lucky.deliveryservice.domain.driver.code.DriverStatus;
 import com.sparta.lucky.deliveryservice.domain.driver.code.DriverType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "p_delivery_driver", schema = "delivery_schema")
-public class DeliveryDriver {
+public class DeliveryDriver extends BaseEntity {
 
     @Id
-    @GeneratedValue
-    @UuidGenerator
     @Column(name="id", updatable = false, nullable = false)
     private UUID id;
 
@@ -40,4 +38,22 @@ public class DeliveryDriver {
     @Enumerated(EnumType.STRING)
     @Column(name="status", nullable = false)
     private DriverStatus status;
+
+
+    // Factory Methods ====================================================
+
+    /**
+     * 배송 담당자 객체를 생성합니다.<br>
+     * 새로 생성되는 배송 담당자의 status는 {@code IDLE}입니다.
+     * @param command 생성할 배송 담당자의 정보를 담은 dto
+     * @return {@link DeliveryDriver}
+     */
+    public static DeliveryDriver create(DeliveryDriverCreateCommand command) {
+        DeliveryDriver driver = new DeliveryDriver();
+        driver.id = command.driverId();
+        driver.hubId = command.hubId();
+        driver.type = command.type();
+        driver.status = DriverStatus.IDLE;
+        return driver;
+    }
 }
