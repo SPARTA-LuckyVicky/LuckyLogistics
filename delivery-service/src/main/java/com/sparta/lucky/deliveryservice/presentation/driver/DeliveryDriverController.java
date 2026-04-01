@@ -22,7 +22,7 @@ public class DeliveryDriverController {
 
     private final DeliveryDriverService deliveryDriverService;
 
-    @Operation(summary = "배송 담당자 생성", description = "새로운 배송 담당자를 생성합니다.\n허브 담당자의 경우 request param으로 hub_id가 필요합니다.")
+    @Operation(summary = "배송 담당자 생성", description = "새로운 배송 담당자를 생성합니다.")
     @PostMapping
     public CommonApiResponse<Void> createDriver(
         @RequestBody @Valid final DeliveryDriverCreateRequest request
