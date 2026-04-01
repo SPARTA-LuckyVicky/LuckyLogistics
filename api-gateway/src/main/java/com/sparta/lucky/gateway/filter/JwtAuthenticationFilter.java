@@ -43,9 +43,10 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
 
     // 인증 제외 목록 ( 필요할 경우 추가 )
     private boolean isWhiteList(String path){
-        return path.contains("/api/v1/auth/login")||
-                path.contains("/api/v1/auth/signup")||
-                path.contains("/swagger-ui");
+        return path.startsWith("/api/v1/auth/login") ||
+                path.startsWith("/api/v1/auth/signup") ||
+                path.startsWith("/swagger-ui") ||
+                path.startsWith("/v3/api-docs");
     }
 
     // 토큰 추출 로직 , "Bearer " 뒷부분의 문자열만 추출
