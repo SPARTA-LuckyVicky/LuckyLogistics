@@ -42,6 +42,9 @@ public class SlackClient {
                     SLACK_API_URL, request, Map.class
             );
 
+            if (response.getBody() == null) {
+                throw new BusinessException(NotificationErrorCode.SLACK_SEND_FAILED);
+            }
             // Slack API는 항상 200을 반환하고
             // 성공 여부는 body의 "ok" 필드로 확인해야 함
             // { "ok": true } or { "ok": false, "error": "channel_not_found" }

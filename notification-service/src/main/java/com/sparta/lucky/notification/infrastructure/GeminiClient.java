@@ -46,8 +46,10 @@ public class GeminiClient {
             ResponseEntity<Map> response = restTemplate.postForEntity(
                     GEMINI_URL + apiKey, request, Map.class
             );
+            if (response.getBody() == null) {
+                throw new BusinessException(NotificationErrorCode.GEMINI_API_FAILED);
+            }
 
-            // candidates[0].content.parts[0].text 파싱
             List<Map> candidates = (List<Map>) response.getBody().get("candidates");
             Map content = (Map) candidates.get(0).get("content");
             List<Map> parts = (List<Map>) content.get("parts");
@@ -56,6 +58,8 @@ public class GeminiClient {
             log.debug("Gemini API 응답 수신 완료");
             return result;
 
+        } catch (BusinessException e) {
+            throw e;  // ← 먼저 잡아서 그대로 던지기
         } catch (Exception e) {
             log.warn("Gemini API 호출 실패", e);
             throw new BusinessException(NotificationErrorCode.GEMINI_API_FAILED);
