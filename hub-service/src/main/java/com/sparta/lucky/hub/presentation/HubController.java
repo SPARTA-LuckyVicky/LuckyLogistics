@@ -21,7 +21,7 @@ import java.util.UUID;
 
 @Tag(name = "Hub", description = "허브 관리 API")
 @RestController
-@RequestMapping("/api/hubs")
+@RequestMapping("/api/v1/hubs")
 @RequiredArgsConstructor
 public class HubController {
 
@@ -62,16 +62,6 @@ public class HubController {
                 hubId, request.getName(), request.getAddress(), request.getLatitude(), request.getLongitude()
         );
         return ResponseEntity.ok(ApiResponse.success(GetHubResDto.from(hubService.updateHub(command))));
-    }
-
-    @Operation(summary = "허브 매니저 배정", description = "허브에 매니저를 배정합니다.")
-    @PatchMapping("/{hubId}/manager")
-    public ResponseEntity<ApiResponse<Void>> assignManager(
-            @Parameter(description = "허브 ID") @PathVariable UUID hubId,
-            @Valid @RequestBody PatchHubManagerReqDto request
-    ) {
-        hubService.assignManager(AssignManagerCommand.of(hubId, request.getManagerId()));
-        return ResponseEntity.ok(ApiResponse.success());
     }
 
     @Operation(summary = "허브 삭제", description = "허브를 소프트 삭제합니다.")
