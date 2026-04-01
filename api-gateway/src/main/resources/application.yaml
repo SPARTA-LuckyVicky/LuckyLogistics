@@ -71,7 +71,12 @@ spring:
           discovery:
             locator:
               enabled: true # 서비스 디스커버리를 통한 동적 라우팅 허용
-
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://lucky-keycloak:8080/realms/lucky-logistics
+          jwk-set-uri: http://lucky-keycloak:8080/realms/lucky-logistics/protocol/openid-connect/certs
 
 eureka:
   client:
@@ -79,6 +84,4 @@ eureka:
       defaultZone: http://lucky-eureka:19090/eureka # Eureka 서버 주소
   instance:
     prefer-ip-address: true
-jwt:
-  secret:
-    key: ${JWT_SECRET_KEY}
+
