@@ -1,5 +1,6 @@
-package com.sparta.lucky.notification.domain;
+package com.sparta.lucky.notification.infrastructure;
 
+import com.sparta.lucky.notification.domain.AiMessage;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -7,13 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface AiMessageRepository {
-
-    AiMessage save(AiMessage aiMessage);
-
-    Optional<AiMessage> findById(UUID id);
-
-    Page<AiMessage> findAll(Pageable pageable);
+public interface AiMessageJpaRepository extends JpaRepository<AiMessage, UUID> {
 
     Page<AiMessage> findByRelatedOrderId(UUID relatedOrderId, Pageable pageable);
 
