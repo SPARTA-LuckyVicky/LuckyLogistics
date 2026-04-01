@@ -1,11 +1,8 @@
 rootProject.name = 'LuckyLogistics'
-
-include 'delivery-service'
-
 // 서비스 추가할 때 마다 추가 :
 // 예시
 // include 'order-service'
-// include 'api-gateway'
+// include 'api-gatewgay'
 
 include 'delivery-service'
 include 'eureka-server'
@@ -13,3 +10,4 @@ include 'company-service'
 include 'hub-service'
 include 'order-service'
 include 'product-service'
+include 'api-gateway'
