@@ -142,13 +142,13 @@ services:
     build:
       context: .
       dockerfile: product-service/Dockerfile
-    container_name: lucky-company
+    container_name: lucky-product
     ports:
       - "${PRODUCT_SERVICE_PORT}:${PRODUCT_SERVICE_PORT}"
     environment:
-      COMPANY_SERVICE_PORT: ${PRODUCT_SERVICE_PORT}
-      COMPANY_SERVICE_NAME: ${PRODUCT_SERVICE_NAME}
-      COMPANY_SERVICE_SCHEMA: ${PRODUCT_SERVICE_SCHEMA}
+      PRODUCT_SERVICE_PORT: ${PRODUCT_SERVICE_PORT}
+      PRODUCT_SERVICE_NAME: ${PRODUCT_SERVICE_NAME}
+      PRODUCT_SERVICE_SCHEMA: ${PRODUCT_SERVICE_SCHEMA}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

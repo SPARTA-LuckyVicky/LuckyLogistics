@@ -17,7 +17,7 @@ spring:
 # 로깅 설정
 logging:
   level:
-    com.sparta.lucky.company: DEBUG # 본 패키지
+    com.sparta.lucky.product: DEBUG # 본 패키지
     org.hibernate.SQL: DEBUG # SQL 쿼리 출력
     org.hibernate.jdbc.bind: TRACE # 바인딩 파라미터
 

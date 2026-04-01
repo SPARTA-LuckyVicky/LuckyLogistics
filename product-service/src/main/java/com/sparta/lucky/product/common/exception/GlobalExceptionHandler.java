@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
     // 헤더 누락 (MissingRequestHeaderException) / 요청 바디 파싱 실패 (HttpMessageNotReadableException) - 400
     @ExceptionHandler({MissingRequestHeaderException.class, HttpMessageNotReadableException.class})
     public ResponseEntity<ApiResponse<Void>> handleBadRequest(Exception e) {
-        log.warn("[BadRequest] {}", e.getMessage());
+        log.warn("[BadRequest] type={}", e.getClass().getSimpleName());
         return ResponseEntity.badRequest()
                 .body(ApiResponse.error("VALIDATION_003", "요청 형식이 올바르지 않습니다."));
     }

@@ -11,6 +11,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @Getter
@@ -41,9 +42,13 @@ public abstract class BaseEntity {
     private UUID deletedBy;
 
     // Soft Delete 처리 메서드 — 상속받는 엔티티에서 호출
+    // 재호출 시 최초 감사정보(삭제일시/삭제자) 보호를 위해 이미 삭제된 경우 early return
     public void softDelete(UUID deletedBy) {
+        if (this.deletedAt != null) {
+            return;
+        }
         this.deletedAt = LocalDateTime.now();
-        this.deletedBy = deletedBy;
+        this.deletedBy = Objects.requireNonNull(deletedBy, "deletedBy 값 누락");
     }
 
     // 삭제 여부 확인
