@@ -1,11 +1,14 @@
 package com.sparta.lucky.hub.presentation;
 
 import com.sparta.lucky.hub.application.HubService;
+import com.sparta.lucky.hub.application.dto.AssignManagerCommand;
 import com.sparta.lucky.hub.common.response.ApiResponse;
 import com.sparta.lucky.hub.presentation.dto.GetHubResDto;
+import com.sparta.lucky.hub.presentation.dto.PatchHubManagerReqDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,5 +39,15 @@ public class HubInternalController {
     @GetMapping
     public ResponseEntity<ApiResponse<Page<GetHubResDto>>> getHubs(@ParameterObject @PageableDefault(size = 10) Pageable pageable) {
         return ResponseEntity.ok(ApiResponse.success(hubService.getHubs(pageable).map(GetHubResDto::from)));
+    }
+
+    @Operation(summary = "[Internal] 허브 매니저 배정", description = "허브에 매니저를 배정합니다.")
+    @PatchMapping("/{hubId}/manager")
+    public ResponseEntity<ApiResponse<Void>> assignManager(
+            @Parameter(description = "허브 ID") @PathVariable UUID hubId,
+            @Valid @RequestBody PatchHubManagerReqDto request
+    ) {
+        hubService.assignManager(AssignManagerCommand.of(hubId, request.getManagerId()));
+        return ResponseEntity.ok(ApiResponse.success());
     }
 }
