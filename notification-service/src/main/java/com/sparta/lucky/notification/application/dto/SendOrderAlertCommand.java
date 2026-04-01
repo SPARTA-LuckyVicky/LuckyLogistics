@@ -29,6 +29,10 @@ public class SendOrderAlertCommand {
 
     private String hubManagerSlackId;
 
+    private List<RouteSegment> routeSegments;
+
+    public record RouteSegment(String startNode, String endNode, int durationMinutes) {
+    }
 
 }
 
