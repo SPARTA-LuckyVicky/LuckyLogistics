@@ -23,8 +23,9 @@ public abstract class BaseEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    // 내부 API/시스템 컨텍스트에서 X-User-Id 헤더 없이 저장 시 NOT NULL 위반 방지
     @CreatedBy
-    @Column(name = "created_by", nullable = false, updatable = false, columnDefinition = "uuid")
+    @Column(name = "created_by", nullable = true, updatable = false, columnDefinition = "uuid")
     private UUID createdBy;
 
     @LastModifiedDate

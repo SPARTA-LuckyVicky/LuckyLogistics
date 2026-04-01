@@ -14,12 +14,12 @@ spring:
     hibernate:
       ddl-auto: update
     properties:
-     hibernate:
+      hibernate:
         default_schema: ${COMPANY_SERVICE_SCHEMA:company_schema}
     show-sql: true
   threads:
-   virtual:
-    enabled: true
+    virtual:
+      enabled: true
 
 eureka:
   client:
