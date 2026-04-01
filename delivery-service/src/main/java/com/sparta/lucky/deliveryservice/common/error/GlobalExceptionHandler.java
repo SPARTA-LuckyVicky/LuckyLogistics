@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<CommonApiResponse<String>> notFoundExceptionHandler(NotFoundException ex) {
         return ResponseEntity
             .status(ex.code().status())
-            .body(CommonApiResponse.error(ex.code()));
+            .body(CommonApiResponse.error(ResponseCode.NOT_FOUND, ex.getMessage()));
     }
 
     // Conflict
@@ -68,7 +68,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MissingRequestHeaderException.class)
-    public ResponseEntity<CommonApiResponse<String>> missingRequestHeaderHandler(Exception ex) {
+    public ResponseEntity<CommonApiResponse<String>> missingRequestHeaderHandler(MissingRequestHeaderException ex) {
         log.warn("[WARN] MissingRequestHeaderException :: {}", ex.getMessage());
         return ResponseEntity
             .badRequest()
@@ -80,7 +80,15 @@ public class GlobalExceptionHandler {
     methodNotSupportedHandler(HttpRequestMethodNotSupportedException ex) {
         log.warn("[WARN] HttpRequestMethodNotSupportedException :: {}",ex.getMessage(), ex);
         return ResponseEntity
-            .badRequest()
+            .status(ResponseCode.METHOD_NOT_ALLOWED.status())
             .body(CommonApiResponse.error(ResponseCode.METHOD_NOT_ALLOWED, ex.getMessage()));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<CommonApiResponse<String>> exceptionHandler(Exception ex) {
+        log.error("[ERROR] Exception :: {}", ex.getMessage(), ex);
+        return ResponseEntity
+            .internalServerError()
+            .body(CommonApiResponse.error(ResponseCode.INTERNAL_ERROR, "Internal server error"));
     }
 }

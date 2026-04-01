@@ -39,12 +39,6 @@ public abstract class BaseEntity {
     @Column(name = "deleted_by", columnDefinition = "uuid")
     private UUID deletedBy;
 
-    // Soft Delete 처리 메서드 — 상속받는 엔티티에서 호출
-    public void softDelete(UUID deletedBy) {
-        this.deletedAt = LocalDateTime.now();
-        this.deletedBy = deletedBy;
-    }
-
     // 삭제 여부 확인
     public boolean isDeleted() {
         return this.deletedAt != null;

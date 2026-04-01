@@ -10,8 +10,9 @@ public enum ResponseCode {
     NOT_READABLE("DELIVERY_4002", HttpStatus.BAD_REQUEST, "Incorrect request body"),
     MISSING_HEADER("DELIVERY_4003", HttpStatus.BAD_REQUEST, "Incorrect request header"),
     FORBIDDEN("DELIVERY_403", HttpStatus.FORBIDDEN, "Access Denied"),
+    NOT_FOUND("DELIVERY_404", HttpStatus.NOT_FOUND, "Resource Not Found"),
     METHOD_NOT_ALLOWED("DELIVERY_405", HttpStatus.METHOD_NOT_ALLOWED, "Method Not Allowed"),
-
+    INTERNAL_ERROR("DELIVERY_500", HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"),
 
     DRIVER_EXISTS("DELIVERY_4093", HttpStatus.CONFLICT, "Driver already exists"),
     ;
