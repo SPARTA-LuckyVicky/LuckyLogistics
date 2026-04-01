@@ -1,6 +1,6 @@
-package com.sparta.lucky.company.common.exception;
+package com.sparta.lucky.product.common.exception;
 
-import com.sparta.lucky.company.common.response.ApiResponse;
+import com.sparta.lucky.product.common.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;

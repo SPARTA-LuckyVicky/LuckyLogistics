@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -138,7 +139,7 @@ public class CompanyService {
 
         // HUB_MANAGER는 자기 허브 업체만 삭제 가능
         if (ROLE_HUB_MANAGER.equals(requesterRole)) {
-            if (!company.getHubId().equals(requesterHubId)) {
+            if (!Objects.equals(company.getHubId(), requesterHubId)) {
                 log.warn("업체 삭제 권한 없음 - 허브 불일치, requester: {}, 업체 hubId: {}, 소속 hubId: {}",
                         requesterId, company.getHubId(), requesterHubId);
                 throw new BusinessException(CompanyErrorCode.COMPANY_HUB_MISMATCH);
@@ -184,7 +185,7 @@ public class CompanyService {
         switch (command.getRequesterRole()) {
             case ROLE_MASTER -> { /* 전체 허용 */ }
             case ROLE_HUB_MANAGER -> {
-                if (!company.getHubId().equals(command.getRequesterHubId())) {
+                if (!Objects.equals(company.getHubId(), command.getRequesterHubId())) {
                     log.warn("업체 수정 권한 없음 - 허브 불일치, requester: {}, 업체 hubId: {}, 소속 hubId: {}",
                             command.getRequesterId(), company.getHubId(), command.getRequesterHubId());
                     throw new BusinessException(CompanyErrorCode.COMPANY_HUB_MISMATCH);
