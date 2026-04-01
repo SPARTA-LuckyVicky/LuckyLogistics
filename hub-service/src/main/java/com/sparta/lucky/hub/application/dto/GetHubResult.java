@@ -3,12 +3,13 @@ package com.sparta.lucky.hub.application.dto;
 import com.sparta.lucky.hub.domain.Hub;
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
-public class GetHubResult {
+public class GetHubResult implements Serializable {
 
     private final UUID id;
     private final UUID managerId;

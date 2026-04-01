@@ -26,6 +26,14 @@ spring:
     default-schema: ${HUB_SERVICE_SCHEMA}
     validate-on-migrate: false
 
+  data:
+    redis:
+      host: ${REDIS_HOST:lucky-redis}
+      port: ${REDIS_PORT:6379}
+
+  cache:
+    type: redis
+
   threads:
     virtual:
       enabled: true
