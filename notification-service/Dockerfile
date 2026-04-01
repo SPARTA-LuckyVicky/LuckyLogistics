@@ -21,7 +21,7 @@ RUN addgroup --system appgroup \
     && adduser --system --ingroup appgroup appuser
 
 # 빌드된 JAR 복사
-COPY --from=build /app/notification-service/build/libs/*.jar app.jar
+COPY --from=build /app/notification-service/build/libs/app.jar app.jar
 
 RUN chown appuser:appgroup /app/app.jar
 

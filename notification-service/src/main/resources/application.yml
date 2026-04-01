@@ -26,7 +26,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:19090/eureka
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://lucky-eureka:19090/eureka}
   instance:
     prefer-ip-address: true
 
@@ -34,10 +34,3 @@ management:
   tracing:
     sampling:
       probability: 1.0
-
-feign:
-  client:
-    config:
-      default:
-        connectTimeout: 5000
-        readTimeout: 5000

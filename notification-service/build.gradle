@@ -1,3 +1,11 @@
+bootJar {
+	archiveFileName = 'app.jar'
+}
+
+jar {
+	enabled = false
+}
+
 dependencies {
 	testImplementation 'com.h2database:h2'
 }

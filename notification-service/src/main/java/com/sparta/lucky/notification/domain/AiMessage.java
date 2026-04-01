@@ -11,7 +11,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "p_ai_message", schema = "notification_schema")
+@Table(name = "p_ai_message")
 @SQLRestriction("deleted_at IS NULL")
 public class AiMessage extends BaseEntity {
 
@@ -38,7 +38,7 @@ public class AiMessage extends BaseEntity {
     private String deadlineResult;
 
     // 이 AI 결과를 기반으로 발송된 슬랙 메시지 ID
-    @Column(columnDefinition = "uuid")
+    @Column(unique = true, columnDefinition = "uuid")
     private UUID slackMessageId;
 
     public static AiMessage create(
