@@ -33,6 +33,8 @@ public class DeliveryDriverController {
     public CommonApiResponse<Void> createDriver(
         @RequestBody @Valid final DeliveryDriverCreateRequest request
     ) {
+        // TODO : Need to add role validation and processing method here
+
         deliveryDriverService.createDriver(request.toCommand());
 
         return CommonApiResponse.success(ResponseCode.DRIVER_CREATED);
@@ -43,6 +45,8 @@ public class DeliveryDriverController {
     public CommonApiResponse<LocalDateTime> deleteDriver(
         @PathVariable UUID driverId
     ) {
+        // TODO : Need to add role validation and processing method here
+
         // Authentication logic has not yet been added, random UUID is used
         deliveryDriverService.deleteDriver(driverId, UUID.randomUUID());
 
