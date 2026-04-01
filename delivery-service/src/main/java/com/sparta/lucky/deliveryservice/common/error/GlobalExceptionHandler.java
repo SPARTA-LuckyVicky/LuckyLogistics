@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<CommonApiResponse<String>> notFoundExceptionHandler(NotFoundException ex) {
         return ResponseEntity
             .status(ex.code().status())
-            .body(CommonApiResponse.error(ResponseCode.NOT_FOUND, ex.getMessage()));
+            .body(CommonApiResponse.error(ex.code(), ex.getMessage()));
     }
 
     // Conflict
