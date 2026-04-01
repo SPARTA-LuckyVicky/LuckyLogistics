@@ -1,4 +1,4 @@
-package com.sparta.lucky.company.common.exception;
+package com.sparta.lucky.product.common.exception;
 
 import lombok.Getter;
 import java.util.Objects;

@@ -3,7 +3,9 @@ package com.sparta.lucky.company.presentation;
 import com.sparta.lucky.company.application.CompanyService;
 import com.sparta.lucky.company.application.dto.CreateCompanyCommand;
 import com.sparta.lucky.company.application.dto.UpdateCompanyCommand;
+import com.sparta.lucky.company.common.exception.BusinessException;
 import com.sparta.lucky.company.common.response.ApiResponse;
+import com.sparta.lucky.company.domain.CompanyErrorCode;
 import com.sparta.lucky.company.domain.CompanyType;
 import com.sparta.lucky.company.presentation.dto.*;
 import jakarta.validation.Valid;
@@ -55,6 +57,8 @@ public class CompanyController {
             @RequestHeader("X-User-Role") String userRole,
             @RequestHeader(value = "X-Hub-Id", required = false) UUID hubId
     ) {
+        // HUB_MANAGER는 X-Hub-Id 헤더 필수 — 없으면 즉시 거절
+        validateHubHeader(userRole, hubId);
         // command로 감싸서 service에 전달 (Http 종속성 제거)
         CreateCompanyCommand command = CreateCompanyCommand.builder()
                 .name(reqDto.getName())
@@ -141,6 +145,7 @@ public class CompanyController {
             @RequestHeader(value = "X-Hub-Id", required = false) UUID hubId,
             @RequestHeader(value = "X-Company-Id", required = false) UUID companyIdHeader
     ) {
+        validateHubHeader(userRole, hubId);
         UpdateCompanyCommand command = UpdateCompanyCommand.builder()
                 .companyId(companyId)
                 .name(reqDto.getName())
@@ -176,10 +181,19 @@ public class CompanyController {
             @RequestHeader("X-User-Role") String userRole,
             @RequestHeader(value = "X-Hub-Id", required = false) UUID hubId
     ) {
+        validateHubHeader(userRole, hubId);
         return ApiResponse.success(
                 DeleteCompanyResDto.from(
                         companyService.deleteCompany(companyId, userId, userRole, hubId)
                 )
         );
+    }
+
+    // HUB_MANAGER 역할인데 X-Hub-Id 헤더가 없으면 즉시 거절 — 서비스 레이어 NPE 방지
+    private static final String ROLE_HUB_MANAGER = "HUB_MANAGER";
+    private void validateHubHeader(String userRole, UUID hubId) {
+        if (ROLE_HUB_MANAGER.equals(userRole) && hubId == null) {
+            throw new BusinessException(CompanyErrorCode.COMPANY_HUB_MISMATCH);
+        }
     }
 }
