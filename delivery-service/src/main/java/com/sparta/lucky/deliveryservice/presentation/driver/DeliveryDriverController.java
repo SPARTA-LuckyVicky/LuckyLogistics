@@ -27,6 +27,7 @@ public class DeliveryDriverController {
     // TODO : Need to add method to implement the logic below.
     // If user's role is HUB_MANAGER, check request.hubId and user.hubId
     // If request.hubId is different from `user.hubId`, throw forbidden exception
+    // To ensure authorization, add logic that throws an exception if the user's role is not MASTER or HUB_MANAGER
 
     @Operation(summary = "배송 담당자 생성", description = "새로운 배송 담당자를 생성합니다.")
     @PostMapping
