@@ -21,7 +21,7 @@ import java.util.UUID;
 
 @Tag(name = "Hub", description = "허브 관리 API")
 @RestController
-@RequestMapping("/api/hubs")
+@RequestMapping("/api/v1/hubs")
 @RequiredArgsConstructor
 public class HubController {
 

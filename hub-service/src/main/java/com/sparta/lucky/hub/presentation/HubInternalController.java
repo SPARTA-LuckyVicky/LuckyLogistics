@@ -21,7 +21,7 @@ import java.util.UUID;
 
 @Tag(name = "Hub Internal", description = "허브 내부 서비스 간 통신 API")
 @RestController
-@RequestMapping("/internal/hubs")
+@RequestMapping("/internal/api/v1/hubs")
 @RequiredArgsConstructor
 public class HubInternalController {
 
