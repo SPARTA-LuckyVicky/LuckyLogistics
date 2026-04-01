@@ -20,12 +20,7 @@ public class PostSlackReqDto {
     private UUID relatedOrderId;
 
     public SendSlackCommand toCommand(UUID senderId) {
-        return new SendSlackCommand(
-                this.receiverSlackId,
-                this.messageContent,
-                this.relatedOrderId,
-                senderId
-        );
+        return SendSlackCommand.of(this, senderId);
     }
 
 }
