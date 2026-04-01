@@ -35,9 +35,9 @@ management:
     sampling:
       probability: 1.0
 
-feign:
-  client:
-    config:
-      default:
-        connectTimeout: 5000
-        readTimeout: 5000
+gemini:
+  api:
+    key: ${GEMINI_API_KEY}
+
+slack:
+  token: ${SLACK_TOKEN}
