@@ -28,7 +28,7 @@ public class SlackMessage extends BaseEntity {
     @Column(nullable = false)
     private String receiverSlackId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 2000)
     private String messageContent;
 
     @Enumerated(EnumType.STRING)

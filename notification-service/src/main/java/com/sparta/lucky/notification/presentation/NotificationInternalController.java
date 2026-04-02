@@ -4,7 +4,6 @@ import com.sparta.lucky.notification.application.NotificationService;
 import com.sparta.lucky.notification.application.dto.SendOrderAlertCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +19,7 @@ public class NotificationInternalController {
     @Operation(summary = "[내부] 주문 알림 발송", description = "order-service가 주문 생성 시 호출")
     @PostMapping("/order-alert")
     public ResponseEntity<Void> sendOrderAlert(
-            @RequestBody @Valid SendOrderAlertCommand request,
+            @RequestBody SendOrderAlertCommand request,
             @RequestHeader(value = "X-Internal-Request", required = false) String internalRequest
     ) {
         notificationService.sendOrderAlert(request);
