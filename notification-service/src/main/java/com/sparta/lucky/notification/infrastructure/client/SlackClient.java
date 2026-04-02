@@ -44,7 +44,7 @@ public class SlackClient {
                     SLACK_API_URL,
                     HttpMethod.POST,
                     request,
-                    new ParameterizedTypeReference<Map<String, Object>>() {}
+                    new ParameterizedTypeReference<>() {}
             );
             if (response.getBody() == null) {
                 throw new BusinessException(NotificationErrorCode.SLACK_SEND_FAILED);
