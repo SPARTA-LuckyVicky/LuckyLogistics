@@ -84,7 +84,7 @@ public class OrderController {
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteOrder(
             @PathVariable UUID id,
-            @RequestHeader(value = "X-User-Id", required = true) UUID deletedBy
+            @RequestHeader(value = "X-User-Id") UUID deletedBy
     ) {
         orderService.deleteOrder(id, deletedBy);
         return ResponseEntity.ok(ApiResponse.success());
