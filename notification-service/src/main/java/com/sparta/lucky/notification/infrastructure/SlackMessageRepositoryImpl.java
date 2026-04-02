@@ -18,8 +18,8 @@ public class SlackMessageRepositoryImpl implements SlackMessageRepository {
     private final SlackMessageJpaRepository jpaRepository;
 
     @Override
-    public SlackMessage save(SlackMessage slackMessage) {
-        return jpaRepository.save(slackMessage);
+    public SlackMessage saveAndFlush(SlackMessage slackMessage) {
+        return jpaRepository.saveAndFlush(slackMessage);
     }
 
     @Override

@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface SlackMessageRepository {
 
-    SlackMessage save(SlackMessage slackMessage);
+    SlackMessage saveAndFlush(SlackMessage slackMessage);
 
     Optional<SlackMessage> findById(UUID id);
 

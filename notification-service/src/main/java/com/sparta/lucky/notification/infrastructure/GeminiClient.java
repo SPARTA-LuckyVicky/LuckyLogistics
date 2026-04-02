@@ -22,16 +22,17 @@ public class GeminiClient {
     private String apiKey;
 
     private static final String GEMINI_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=";
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent";
 
     private final RestTemplate restTemplate;
 
     @SuppressWarnings("unchecked")
     public String ask(String prompt) {
         log.debug("Gemini API 요청 시작");
-
+        // 헤더에 키 추가
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("x-goog-api-key", apiKey);  // ← 추가
 
         // Gemini REST API 요청 형식
         Map<String, Object> body = Map.of(
@@ -45,8 +46,8 @@ public class GeminiClient {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
         try {
-            ResponseEntity<Map> response = restTemplate.exchange(
-                    GEMINI_URL + apiKey,
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    GEMINI_URL,
                     HttpMethod.POST,
                     request,
                     new ParameterizedTypeReference<>() {}

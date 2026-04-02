@@ -65,7 +65,7 @@ public class NotificationService {
                 request.getOrderId(),
                 SYSTEM_ID  // 내부 시스템 발송
         );
-        slackMessageRepository.save(slack);
+        SlackMessage savedMessage = slackMessageRepository.saveAndFlush(slack);
 
         // 7. AiMessage 저장
         AiMessage ai = AiMessage.create(
@@ -99,7 +99,7 @@ public class NotificationService {
                 request.getRelatedOrderId(),
                 request.getSenderId()
         );
-        slackMessageRepository.save(msg);
+        SlackMessage savedMessage = slackMessageRepository.saveAndFlush(msg);
 
         return SlackMessageResult.from(msg);
     }
