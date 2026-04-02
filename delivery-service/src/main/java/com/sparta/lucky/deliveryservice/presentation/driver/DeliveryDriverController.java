@@ -118,7 +118,7 @@ public class DeliveryDriverController {
                 deliveryDriverReadService.getDrivers(pageable)
             );
         }
-        if (!role.equals(Role.HUB_MANAGER)) {
+        else if (!role.equals(Role.HUB_MANAGER)) {
             response = DeliveryDriverReadPageResponse.from(
                   deliveryDriverReadService.getDrivers(pageable, userId)
                 );
