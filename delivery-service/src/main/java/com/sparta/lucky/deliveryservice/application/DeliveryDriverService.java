@@ -1,8 +1,8 @@
 package com.sparta.lucky.deliveryservice.application;
 
 import com.sparta.lucky.deliveryservice.application.dto.DeliveryDriverCreateCommand;
+import com.sparta.lucky.deliveryservice.application.dto.DeliveryDriverUpdateCommand;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.ConflictException;
-import com.sparta.lucky.deliveryservice.common.error.exceptions.NotFoundException;
 import com.sparta.lucky.deliveryservice.common.response.ResponseCode;
 import com.sparta.lucky.deliveryservice.domain.driver.DeliveryDriver;
 import com.sparta.lucky.deliveryservice.domain.repos.DeliveryDriverRepository;
@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeliveryDriverService {
 
     private final DeliveryDriverRepository deliveryDriverRepository;
+    private final DeliveryDriverReadService deliveryDriverReadService;
 
     /**
      * 배송 담당자를 DB에 추가합니다.<br>
@@ -46,8 +47,34 @@ public class DeliveryDriverService {
      */
     @Transactional
     public void deleteDriver(UUID driverId, UUID accessId) {
-        DeliveryDriver deliveryDriver = deliveryDriverRepository.findActiveByUserId(driverId)
-            .orElseThrow(() -> new NotFoundException(ResponseCode.DRIVER_NOT_FOUND));
-        deliveryDriver.softDelete(accessId);
+        deliveryDriverReadService.getActiveDriverOrThrow(driverId).softDelete(accessId);
+    }
+
+    /**
+     * 배송 담당자 정보를 업데이트 합니다.
+     * @param driverId 배송 담당자 ID(userId)
+     * @param command 업데이트하는 내용
+     */
+    @Transactional
+    public void updateDriver(UUID driverId, DeliveryDriverUpdateCommand command) {
+        deliveryDriverReadService.getActiveDriverOrThrow(driverId).update(command);
+    }
+
+    /**
+     * (WIP)<br>
+     * {@code Role.HUB_MANAGER}가 업데이트를 시도하는 경우 사용합니다.<br>
+     * 본인의 허브 소속이 아닌 배송담당자의 정보 수정을 시도하는 경우 예외를 발생시킵니다.
+     * @param driverId 배송 담당자 ID(userId)
+     * @param accessId 업데이트 시도하는 사용자의 ID
+     * @param command 업데이트 내용
+     */
+    @Transactional
+    public void updateDriver(UUID driverId, UUID accessId, DeliveryDriverUpdateCommand command) {
+        DeliveryDriver driver = deliveryDriverReadService.getActiveDriverOrThrow(driverId);
+
+        // TODO : add validation logic
+        // driver.hubId != accessId.hubId ? throw forbidden exception
+
+        driver.update(command);
     }
 }
