@@ -32,4 +32,9 @@ public class HubRoute extends BaseEntity {
 
     @Column(name = "distance", nullable = false)
     private Integer distance;
+
+    public void updateRouteInfo(int distance, int duration) {
+        this.distance = distance;
+        this.duration = duration;
+    }
 }

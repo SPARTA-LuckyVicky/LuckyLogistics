@@ -4,6 +4,8 @@ import com.sparta.lucky.hub.application.dto.GetHubResult;
 import com.sparta.lucky.hub.application.dto.GetRouteResult;
 import com.sparta.lucky.hub.common.exception.BusinessException;
 import com.sparta.lucky.hub.common.exception.HubErrorCode;
+import com.sparta.lucky.hub.domain.HubRoute;
+import com.sparta.lucky.hub.infrastructure.HubRouteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,7 @@ import java.util.UUID;
 public class RouteService {
 
     private final HubService hubService;
+    private final HubRouteRepository hubRouteRepository;
 
     @Transactional(readOnly = true)
     public GetRouteResult getRoute(UUID originHubId, BigDecimal destinationLat, BigDecimal destinationLong) {
@@ -37,6 +40,16 @@ public class RouteService {
         // TODO: Dijkstra 구현 예정
 
         return GetRouteResult.of(originHubId, destinationHubId, 100, 100, List.of());
+    }
+
+    @Transactional(readOnly = true)
+    public List<HubRoute> getHubRoutes() {
+        return hubRouteRepository.findAllByDeletedAtIsNull();
+    }
+
+    @Transactional
+    public void saveHubRoute(HubRoute hubRoute) {
+        hubRouteRepository.save(hubRoute);
     }
 
     private GetHubResult findNearestHub(List<GetHubResult> hubs, BigDecimal targetLat, BigDecimal targetLong) {
