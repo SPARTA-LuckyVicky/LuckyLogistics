@@ -49,7 +49,7 @@ public class HubController {
     @Operation(summary = "허브 목록 조회", description = "허브 목록을 페이지 단위로 조회합니다.")
     @GetMapping
     public ResponseEntity<ApiResponse<Page<GetHubResDto>>> getHubs(@ParameterObject @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(ApiResponse.success(hubService.getHubs(pageable).map(GetHubResDto::from)));
+        return ResponseEntity.ok(ApiResponse.success(hubService.getHubsByPage(pageable).map(GetHubResDto::from)));
     }
 
     @Operation(summary = "허브 정보 수정", description = "허브의 이름, 주소, 위경도를 수정합니다.")

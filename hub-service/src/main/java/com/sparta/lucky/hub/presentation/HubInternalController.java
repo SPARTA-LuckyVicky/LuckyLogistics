@@ -38,7 +38,7 @@ public class HubInternalController {
     @Operation(summary = "[Internal] 허브 목록 조회", description = "서비스 내부에서 허브 목록을 페이지 단위로 조회합니다.")
     @GetMapping
     public ResponseEntity<ApiResponse<Page<GetHubResDto>>> getHubs(@ParameterObject @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(ApiResponse.success(hubService.getHubs(pageable).map(GetHubResDto::from)));
+        return ResponseEntity.ok(ApiResponse.success(hubService.getHubsByPage(pageable).map(GetHubResDto::from)));
     }
 
     @Operation(summary = "[Internal] 허브 매니저 배정", description = "허브에 매니저를 배정합니다.")

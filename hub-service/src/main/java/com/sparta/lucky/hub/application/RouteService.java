@@ -23,7 +23,7 @@ public class RouteService {
     public GetRouteResult getRoute(UUID originHubId, BigDecimal destinationLat, BigDecimal destinationLong) {
 
         // 1. destinationLat, destinationLong 기준으로 가장 가까운 destinationHub 찾기
-        List<GetHubResult> hubs = hubService.getAllHubs();
+        List<GetHubResult> hubs = hubService.getHubs();
         UUID destinationHubId = findNearestHub(hubs, destinationLat, destinationLong).getId();
 
         // 2. originHub에서 destinationHub까지 경로 찾기

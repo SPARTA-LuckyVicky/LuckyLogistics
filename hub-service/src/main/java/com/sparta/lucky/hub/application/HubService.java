@@ -37,14 +37,14 @@ public class HubService {
     }
 
     @Transactional(readOnly = true)
-    public Page<GetHubResult> getHubs(Pageable pageable) {
+    public Page<GetHubResult> getHubsByPage(Pageable pageable) {
         return hubRepository.findAllByDeletedAtIsNull(pageable)
                 .map(GetHubResult::from);
     }
 
     @Cacheable(cacheNames = "hub")
     @Transactional(readOnly = true)
-    public List<GetHubResult> getAllHubs() {
+    public List<GetHubResult> getHubs() {
         return hubRepository.findAllByDeletedAtIsNull().stream()
                 .map(GetHubResult::from)
                 .toList();
