@@ -1,6 +1,7 @@
-package com.sparta.lucky.notification.infrastructure;
+package com.sparta.lucky.notification.infrastructure.client;
 
-import com.sparta.lucky.notification.infrastructure.dto.OrderResponse;
+import com.sparta.lucky.notification.infrastructure.client.dto.ApiResponse;
+import com.sparta.lucky.notification.infrastructure.client.dto.OrderResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,7 +13,7 @@ import java.util.UUID;
 public interface OrderClient {
 
     @GetMapping("/internal/api/v1/orders/{orderId}")
-    OrderResponse getOrder(
+    ApiResponse<OrderResponse> getOrder(
             @PathVariable UUID orderId,
             @RequestHeader("X-Internal-Request") String internalRequest
     );

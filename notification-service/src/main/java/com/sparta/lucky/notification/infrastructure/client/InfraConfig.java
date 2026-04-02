@@ -1,4 +1,4 @@
-package com.sparta.lucky.notification.infrastructure;
+package com.sparta.lucky.notification.infrastructure.client;
 
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.config.RequestConfig;

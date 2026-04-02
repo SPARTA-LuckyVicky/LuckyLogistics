@@ -1,4 +1,4 @@
-package com.sparta.lucky.notification.infrastructure.dto;
+package com.sparta.lucky.notification.infrastructure.client.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
