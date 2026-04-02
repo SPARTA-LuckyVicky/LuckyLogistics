@@ -21,10 +21,17 @@ public class RouteService {
 
     @Transactional(readOnly = true)
     public GetRouteResult getRoute(UUID originHubId, BigDecimal destinationLat, BigDecimal destinationLong) {
+        int totalDuration = 0;
+        int totalDistance = 0;
 
         // 1. destinationLat, destinationLong 기준으로 가장 가까운 destinationHub 찾기
         List<GetHubResult> hubs = hubService.getHubs();
         UUID destinationHubId = findNearestHub(hubs, destinationLat, destinationLong).getId();
+
+        // 출발허브 == 도착허브인 경우
+        if (originHubId == destinationHubId) {
+            return GetRouteResult.of(originHubId, destinationHubId, totalDuration, totalDistance, List.of());
+        }
 
         // 2. originHub에서 destinationHub까지 경로 찾기
         // TODO: Dijkstra 구현 예정
