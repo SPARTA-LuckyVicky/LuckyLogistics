@@ -1,6 +1,7 @@
 package com.sparta.lucky.deliveryservice.domain.driver;
 
 import com.sparta.lucky.deliveryservice.application.dto.DeliveryDriverCreateCommand;
+import com.sparta.lucky.deliveryservice.application.dto.DeliveryDriverUpdateCommand;
 import com.sparta.lucky.deliveryservice.common.entity.BaseEntity;
 import com.sparta.lucky.deliveryservice.domain.driver.code.DriverStatus;
 import com.sparta.lucky.deliveryservice.domain.driver.code.DriverType;
@@ -72,5 +73,11 @@ public class DeliveryDriver extends BaseEntity {
     public void softDelete(UUID accessId) {
         this.deletedAt = LocalDateTime.now();
         this.deletedBy = accessId;
+    }
+
+    public void update(DeliveryDriverUpdateCommand command) {
+        this.hubId = command.hubId() != null ? command.hubId() : this.hubId;
+        this.type = command.type() != null ? command.type() : this.type;
+        this.status = command.status() != null ? command.status() : this.status;
     }
 }

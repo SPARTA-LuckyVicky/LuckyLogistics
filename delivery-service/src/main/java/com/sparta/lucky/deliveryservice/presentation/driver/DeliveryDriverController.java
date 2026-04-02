@@ -8,6 +8,7 @@ import com.sparta.lucky.deliveryservice.common.response.ResponseCode;
 import com.sparta.lucky.deliveryservice.presentation.driver.payload.DeliveryDriverCreateRequest;
 import com.sparta.lucky.deliveryservice.presentation.driver.payload.DeliveryDriverReadPageResponse;
 import com.sparta.lucky.deliveryservice.presentation.driver.payload.DeliveryDriverReadResponse;
+import com.sparta.lucky.deliveryservice.presentation.driver.payload.DeliveryDriverUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -125,5 +127,21 @@ public class DeliveryDriverController {
         }
 
         return ResponseEntity.ok(CommonApiResponse.success(ResponseCode.OK, response));
+    }
+
+    @Operation(summary = "배송 담당자 정보 업데이트", description = "배송담당자의 정보를 업데이트합니다.")
+    @PatchMapping("/{driverId}")
+    public ResponseEntity<CommonApiResponse<?>> updateDriver(
+        @PathVariable UUID driverId,
+        @RequestBody final DeliveryDriverUpdateRequest request,
+        @RequestHeader("X-User-Id") UUID userId,
+        @RequestHeader("X-User-Role") Role role
+    ) {
+        // TODO : add authorization checking logic
+        // if user's role is not MASTER or HUB_MANAGER, return forbidden
+
+        deliveryDriverService.updateDriver(driverId, request.toCommand());
+
+        return ResponseEntity.ok(CommonApiResponse.success(ResponseCode.OK));
     }
 }
