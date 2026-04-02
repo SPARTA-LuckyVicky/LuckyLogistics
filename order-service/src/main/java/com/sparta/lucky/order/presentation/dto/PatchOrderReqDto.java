@@ -1,6 +1,6 @@
-package com.sparta.lucky.order.presentation.dto.request;
+package com.sparta.lucky.order.presentation.dto;
 
-import com.sparta.lucky.order.application.dto.request.UpdateOrderCommand;
+import com.sparta.lucky.order.application.dto.UpdateOrderCommand;
 import jakarta.validation.constraints.Future;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

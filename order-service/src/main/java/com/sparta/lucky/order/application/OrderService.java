@@ -1,8 +1,8 @@
 package com.sparta.lucky.order.application;
 
-import com.sparta.lucky.order.application.dto.request.CreateOrderCommand;
-import com.sparta.lucky.order.application.dto.request.UpdateOrderCommand;
-import com.sparta.lucky.order.application.dto.response.OrderResponse;
+import com.sparta.lucky.order.application.dto.CreateOrderCommand;
+import com.sparta.lucky.order.application.dto.UpdateOrderCommand;
+import com.sparta.lucky.order.application.dto.OrderResponse;
 import com.sparta.lucky.order.common.exception.BusinessException;
 import com.sparta.lucky.order.common.exception.OrderErrorCode;
 import com.sparta.lucky.order.domain.Order;

@@ -2,7 +2,7 @@ package com.sparta.lucky.order.presentation;
 
 
 import com.sparta.lucky.order.application.OrderService;
-import com.sparta.lucky.order.application.dto.response.OrderResponse;
+import com.sparta.lucky.order.application.dto.OrderResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

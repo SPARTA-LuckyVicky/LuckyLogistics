@@ -1,4 +1,4 @@
-package com.sparta.lucky.order.application.dto.request;
+package com.sparta.lucky.order.application.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
