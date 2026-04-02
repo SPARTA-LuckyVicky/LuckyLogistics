@@ -10,11 +10,11 @@ import java.util.UUID;
 public class GetRouteReqDto {
 
     @NotNull
-    private UUID startHubId;
+    private UUID originHubId;
 
     @NotNull
-    private BigDecimal endLat;
+    private BigDecimal destinationLat;
 
     @NotNull
-    private BigDecimal endLong;
+    private BigDecimal destinationLong;
 }
