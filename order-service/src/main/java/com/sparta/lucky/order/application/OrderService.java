@@ -1,6 +1,7 @@
 package com.sparta.lucky.order.application;
 
 import com.sparta.lucky.order.application.dto.CreateOrderCommand;
+import com.sparta.lucky.order.application.dto.OrderInternalResponse;
 import com.sparta.lucky.order.application.dto.UpdateOrderCommand;
 import com.sparta.lucky.order.application.dto.OrderResponse;
 import com.sparta.lucky.order.common.exception.BusinessException;
@@ -63,13 +64,8 @@ public class OrderService {
                 "더미수신자슬랙ID",            // recipientSlackId
                 "더미허브매니저슬랙ID"    // hubManagerSlackId
         );
-        Order savedOrder = orderRepository.save(order); // ← 저장 먼저!
+        Order savedOrder = orderRepository.save(order);
 
-        /*
-         * TODO: FeignClient 연동 시 구현 notification-service
-         * 5. 알림 발송: notificationClient.sendOrderAlert(savedOrder.getId(), ...)
-         *    → 알림 발송이 실패해도 주문은 성공 (try-catch로 처리)
-         */
         return OrderResponse.from(savedOrder);
     }
 
@@ -124,6 +120,11 @@ public class OrderService {
         Order order = findOrderById(id);
         order.complete();
         return OrderResponse.from(order);
+    }
+
+    // [내부 API] 주문 조회 -> notification-service 알림 발송을 위해 orderId로 정보 조회
+    public OrderInternalResponse getOrderInternal(UUID id) {
+        return OrderInternalResponse.from(findOrderById(id));
     }
 
     // 공통: ID로 주문 조회
