@@ -1,5 +1,8 @@
 package com.sparta.lucky.notification.application.dto;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,14 +13,18 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 public class SendOrderAlertCommand {
-
+    @NotNull
     private UUID orderId;
     private LocalDateTime orderedAt;
+    @NotBlank
     private String productName;
+    @NotNull
     private Integer quantity;
     private String requestNote;
+    @NotNull
     private LocalDateTime requestedDeadline;
     private String recipientName;
+    @NotBlank
     private String recipientSlackId;
 
     private String originHubName;
@@ -29,6 +36,7 @@ public class SendOrderAlertCommand {
 
     private String hubManagerSlackId;
 
+    @Valid
     private List<RouteSegment> routeSegments;
 
     public record RouteSegment(String startNode, String endNode, int durationMinutes) {

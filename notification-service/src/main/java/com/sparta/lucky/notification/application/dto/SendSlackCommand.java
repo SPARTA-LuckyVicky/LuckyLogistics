@@ -1,7 +1,6 @@
 package com.sparta.lucky.notification.application.dto;
 
 import com.sparta.lucky.notification.presentation.dto.PostSlackReqDto;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -16,12 +15,11 @@ public class SendSlackCommand {
     private UUID relatedOrderId;
     private UUID senderId;
 
-    public static SendSlackCommand of(PostSlackReqDto dto, UUID senderId) {
-        SendSlackCommand cmd = new SendSlackCommand();
-        cmd.receiverSlackId = dto.getReceiverSlackId();
-        cmd.messageContent = dto.getMessageContent();
-        cmd.relatedOrderId = dto.getRelatedOrderId();
-        cmd.senderId = senderId;
-        return cmd;
+    public SendSlackCommand(String receiverSlackId, String messageContent,
+                            UUID relatedOrderId, UUID senderId) {
+        this.receiverSlackId = receiverSlackId;
+        this.messageContent = messageContent;
+        this.relatedOrderId = relatedOrderId;
+        this.senderId = senderId;
     }
 }

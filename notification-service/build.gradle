@@ -9,4 +9,5 @@ jar {
 
 dependencies {
 	testImplementation 'com.h2database:h2'
+	implementation 'org.apache.httpcomponents.client5:httpclient5'
 }

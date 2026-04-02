@@ -84,6 +84,10 @@ public class NotificationService {
 
     @Transactional
     public SlackMessageResult sendSlack(SendSlackCommand request) {
+        if (request.getReceiverSlackId() == null || request.getReceiverSlackId().isBlank()) {
+            throw new BusinessException(NotificationErrorCode.SLACK_ID_INVALID);
+        }
+
         log.debug("슬랙 직접 발송 - receiverSlackId: {}", request.getReceiverSlackId());
 
         slackClient.sendMessage(request.getReceiverSlackId(), request.getMessageContent());
@@ -157,7 +161,7 @@ public class NotificationService {
             }
         }
         return """
-                당신은 1분 단위까지 정확하게 계산하는 **물류 전문 배차 알고리즘**입니다. 
+                당신은 1분 단위까지 정확하게 계산하는 **물류 전문 배차 알고리즘**입니다.
                 아래 규칙에 따라 '최종 발송 시한(출발 시각)'을 **역산(Backwards Calculation)** 하세요.
             
                 [핵심 계산 규칙]
@@ -179,7 +183,7 @@ public class NotificationService {
                 [구간별 상세 소요 시간]
                 %11$s
             
-                [미션] 
+                [미션]
                 납기일시부터 거꾸로 계산하여, 위 모든 제약을 만족하는 '최종 출발 시각'을 산출하세요.
                 결과는 반드시 '최종 발송 시한: MM월 DD일 오전/오후 HH시 mm분' 형식으로만 한 줄로 출력하세요.
                 """.formatted(
