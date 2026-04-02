@@ -75,7 +75,6 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://lucky-keycloak:8080/realms/lucky-logistics
           jwk-set-uri: http://lucky-keycloak:8080/realms/lucky-logistics/protocol/openid-connect/certs
 
 eureka:
