@@ -15,7 +15,7 @@ services:
     networks:
       - lucky-network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lucky}" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lucky} -d ${POSTGRES_DB}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -193,6 +193,8 @@ services:
     ports:
         - "${NOTIFICATION_SERVICE_PORT}:${NOTIFICATION_SERVICE_PORT}"
     environment:
+      SLACK_TOKEN: ${SLACK_TOKEN}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
       NOTIFICATION_SERVICE_PORT: ${NOTIFICATION_SERVICE_PORT}
       NOTIFICATION_SERVICE_NAME: ${NOTIFICATION_SERVICE_NAME}
       NOTIFICATION_SERVICE_SCHEMA: ${NOTIFICATION_SERVICE_SCHEMA}

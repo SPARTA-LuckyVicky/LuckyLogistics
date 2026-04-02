@@ -26,7 +26,8 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_DEFAULT_ZONE:http://lucky-eureka:19090/eureka}
+      defaultZone: http://lucky-eureka:19090/eureka
+
   instance:
     prefer-ip-address: true
 
@@ -34,3 +35,12 @@ management:
   tracing:
     sampling:
       probability: 1.0
+
+gemini:
+  api:
+    key: ${GEMINI_API_KEY}
+
+slack:
+  token: ${SLACK_TOKEN}
+
+
