@@ -31,7 +31,7 @@ public class DeliveryDriverService {
         // if not exist, throw bad request exception.
 
         // if user already exists as delivery driver, throw conflict exception.
-        if(deliveryDriverRepository.findActiveById(command.driverId()).isPresent()) {
+        if(deliveryDriverRepository.findActiveByUserId(command.driverId()).isPresent()) {
             throw new ConflictException(ResponseCode.DRIVER_EXISTS);
         }
 
@@ -46,7 +46,7 @@ public class DeliveryDriverService {
      */
     @Transactional
     public void deleteDriver(UUID driverId, UUID accessId) {
-        DeliveryDriver deliveryDriver = deliveryDriverRepository.findActiveById(driverId)
+        DeliveryDriver deliveryDriver = deliveryDriverRepository.findActiveByUserId(driverId)
             .orElseThrow(() -> new NotFoundException(ResponseCode.DRIVER_NOT_FOUND));
         deliveryDriver.softDelete(accessId);
     }

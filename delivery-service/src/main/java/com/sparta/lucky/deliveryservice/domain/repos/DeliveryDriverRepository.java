@@ -6,6 +6,6 @@ import java.util.UUID;
 
 public interface DeliveryDriverRepository {
 
-    Optional<DeliveryDriver> findActiveById(UUID id);
+    Optional<DeliveryDriver> findActiveByUserId(UUID id);
     DeliveryDriver save(DeliveryDriver deliveryDriver);
 }

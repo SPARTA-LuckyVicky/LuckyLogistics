@@ -11,12 +11,12 @@ import org.springframework.stereotype.Repository;
 public interface JpaDeliveryDriverRepository
     extends JpaRepository<DeliveryDriver, UUID>, DeliveryDriverRepository {
 
-    Optional<DeliveryDriver> findByIdAndDeletedAtIsNull(UUID id);
+    Optional<DeliveryDriver> findByUserIdAndDeletedAtIsNull(UUID id);
 
 
     // override ====================================================
     @Override
-    default Optional<DeliveryDriver> findActiveById(UUID id) {
-        return findByIdAndDeletedAtIsNull(id);
+    default Optional<DeliveryDriver> findActiveByUserId(UUID id) {
+        return findByUserIdAndDeletedAtIsNull(id);
     }
 }
