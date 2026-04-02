@@ -4,20 +4,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.lucky.gateway.common.exception.AuthErrorCode;
 import com.sparta.lucky.gateway.common.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
+import java.util.Map;
 
 @Component
 @Slf4j
@@ -25,9 +26,6 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ReactiveJwtDecoder jwtDecoder;
-
-    @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
-    private String jwkSetUri;
 
     public JwtAuthenticationFilter(ReactiveJwtDecoder jwtDecoder){
         super(Config.class);
@@ -80,6 +78,31 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                 });
     }
 
+    private String extractRole(Jwt jwt) {
+        Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+        if (realmAccess != null && realmAccess.containsKey("roles")) {
+            @SuppressWarnings("unchecked")
+            List<String> roles = (List<String>) realmAccess.get("roles");
+
+            return roles.stream()
+                    .filter(r -> r.equals("MASTER")|| r.equals("HUB_MANAGER") || r.equals("DELIVERY_DRIVER") || r.equals("COMPANY_MANAGER"))
+                    .findFirst()
+                    .orElse(roles.get(0));
+        }
+
+        Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
+        if (resourceAccess != null && resourceAccess.containsKey("account")) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> account = (Map<String, Object>) resourceAccess.get("account");
+            if (account.containsKey("roles")) {
+                @SuppressWarnings("unchecked")
+                List<String> roles = (List<String>) account.get("roles");
+                if (roles != null && !roles.isEmpty()) return roles.get(0);
+            }
+        }
+
+        return "USER";
+    }
 
     @Override
     public GatewayFilter apply(Config config) {
@@ -92,28 +115,18 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
             String token = extractToken(request);
             if(token == null) return onError(exchange, AuthErrorCode.TOKEN_NOT_FOUND);
 
-            JwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
-
-            return Mono.fromCallable(() -> jwtDecoder.decode(token))
+            return jwtDecoder.decode(token)
                     .flatMap(jwt -> {
                         String userId = jwt.getSubject();
-                        String role = jwt.getClaimAsString("role");
+                        String role = extractRole(jwt);
 
-                        ServerHttpRequest modifiedRequest = request.mutate()
+                        ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
                                 .header("X-User-Id", userId)
                                 .header("X-User-Role", role)
                                 .build();
                         return chain.filter(exchange.mutate().request(modifiedRequest).build());
                     })
-                    .onErrorResume(e -> {
-                       if(e.getMessage() != null && e.getMessage().contains("Jwt expired")){
-                           return onError(exchange, AuthErrorCode.TOKEN_EXPIRED);
-                       }
-                       if(e instanceof org.springframework.security.oauth2.jwt.JwtException){
-                           return onError(exchange, AuthErrorCode.INVALID_TOKEN);
-                       }
-                       return Mono.error(e);
-                    });
+                    .onErrorResume(e -> onError(exchange, AuthErrorCode.INVALID_TOKEN));
         });
     }
 }
