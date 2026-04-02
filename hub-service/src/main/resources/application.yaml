@@ -62,3 +62,6 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+tmap:
+  api-key: ${TMAP_API_KEY}
