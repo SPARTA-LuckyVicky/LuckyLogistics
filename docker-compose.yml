@@ -172,7 +172,6 @@ services:
     environment:
       GATEWAY_NAME: ${GATEWAY_NAME}
       GATEWAY_PORT: ${GATEWAY_PORT}
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       EUREKA_SERVER: lucky-eureka
     env_file:
       - .env
