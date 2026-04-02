@@ -8,6 +8,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Getter
@@ -23,8 +25,13 @@ import lombok.NoArgsConstructor;
 public class DeliveryDriver extends BaseEntity {
 
     @Id
+    @GeneratedValue
+    @UuidGenerator
     @Column(name="id", updatable = false, nullable = false)
     private UUID id;
+
+    @Column(name="user_id", updatable = false, nullable = false)
+    private UUID userId;
 
     @Column(name="hub_id", nullable = false)
     private UUID hubId;
@@ -51,7 +58,7 @@ public class DeliveryDriver extends BaseEntity {
      */
     public static DeliveryDriver create(DeliveryDriverCreateCommand command) {
         DeliveryDriver driver = new DeliveryDriver();
-        driver.id = command.driverId();
+        driver.userId = command.driverId();
         driver.hubId = command.hubId();
         driver.type = command.type();
         driver.status = DriverStatus.IDLE;
