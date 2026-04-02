@@ -1,5 +1,6 @@
 package com.sparta.lucky.order.infrastructure.client;
 
+import com.sparta.lucky.order.infrastructure.client.dto.ApiResponse;
 import com.sparta.lucky.order.infrastructure.client.dto.ProductResponse;
 import com.sparta.lucky.order.infrastructure.client.dto.StockResponse;
 import com.sparta.lucky.order.infrastructure.client.dto.StockUpdateRequest;
@@ -15,7 +16,7 @@ import java.util.UUID;
 public interface ProductClient {
 
     @GetMapping("/internal/api/v1/products/{productId}")
-    ProductResponse getProduct(@PathVariable UUID productId);
+    ApiResponse<ProductResponse> getProduct(@PathVariable UUID productId);
 
     @PatchMapping("/internal/api/v1/products/{productId}/stock/decrease")
     StockResponse decreaseStock(@PathVariable UUID productId,

@@ -1,5 +1,7 @@
 package com.sparta.lucky.order.infrastructure.client;
 
+
+import com.sparta.lucky.order.infrastructure.client.dto.ApiResponse;
 import com.sparta.lucky.order.infrastructure.client.dto.DeliveryCreateRequest;
 import com.sparta.lucky.order.infrastructure.client.dto.DeliveryCreateResponse;
 import com.sparta.lucky.order.infrastructure.client.dto.DeliveryStatusResponse;
@@ -18,5 +20,5 @@ public interface DeliveryClient {
     DeliveryCreateResponse createDelivery(@RequestBody DeliveryCreateRequest request);
 
     @GetMapping("/internal/api/v1/deliveries/{orderId}/status")
-    DeliveryStatusResponse getDeliveryStatus(@PathVariable UUID orderId);
+    ApiResponse<DeliveryStatusResponse> getDeliveryStatus(@PathVariable UUID orderId);
 }
