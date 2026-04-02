@@ -7,7 +7,6 @@ import com.sparta.lucky.hub.common.exception.HubErrorCode;
 import com.sparta.lucky.hub.domain.HubRoute;
 import com.sparta.lucky.hub.infrastructure.HubRouteRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +14,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RouteService {
@@ -38,8 +36,6 @@ public class RouteService {
 
         // 1. 도착지 좌표 기준으로 가장 가까운 허브 탐색
         UUID destinationHubId = hubNearestFinder.findNearestHub(hubs, destinationLat, destinationLong).getId();
-
-        log.info("--> destinaton: " + destinationHubId);
 
         // 출발 허브 == 도착 허브인 경우
         if (originHubId.equals(destinationHubId)) {
