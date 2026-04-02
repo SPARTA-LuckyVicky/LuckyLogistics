@@ -113,12 +113,12 @@ public class DeliveryDriverController {
         DeliveryDriverReadPageResponse response = null;
 
         // branching by role
-        if(!role.equals(Role.MASTER)) {
+        if(role.equals(Role.MASTER)) {
             response = DeliveryDriverReadPageResponse.from(
                 deliveryDriverReadService.getDrivers(pageable)
             );
         }
-        else if (!role.equals(Role.HUB_MANAGER)) {
+        else if (role.equals(Role.HUB_MANAGER)) {
             response = DeliveryDriverReadPageResponse.from(
                   deliveryDriverReadService.getDrivers(pageable, userId)
                 );
