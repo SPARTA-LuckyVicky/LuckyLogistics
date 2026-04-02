@@ -2,6 +2,8 @@ package com.sparta.lucky.hub.application;
 
 import com.sparta.lucky.hub.application.dto.GetHubResult;
 import com.sparta.lucky.hub.application.dto.GetRouteResult;
+import com.sparta.lucky.hub.common.exception.BusinessException;
+import com.sparta.lucky.hub.common.exception.HubErrorCode;
 import com.sparta.lucky.hub.domain.HubRoute;
 import com.sparta.lucky.hub.infrastructure.HubRouteRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,13 @@ public class RouteService {
 
     @Transactional(readOnly = true)
     public GetRouteResult getRoute(UUID originHubId, BigDecimal destinationLat, BigDecimal destinationLong) {
+
+        double lat = destinationLat.doubleValue();
+        double lon = destinationLong.doubleValue();
+        if (lat < 33 || lat > 39 || lon < 124 || lon > 132) {
+            throw new BusinessException(HubErrorCode.INVALID_COORDINATE);
+        }
+
         List<GetHubResult> hubs = hubService.getHubs();
 
         // 1. 도착지 좌표 기준으로 가장 가까운 허브 탐색

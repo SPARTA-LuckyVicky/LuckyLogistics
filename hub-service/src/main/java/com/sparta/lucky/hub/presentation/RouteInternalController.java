@@ -6,8 +6,11 @@ import com.sparta.lucky.hub.presentation.dto.GetRouteResDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @Tag(name = "Route Internal", description = "허브 경로 내부 서비스 간 통신 API")
+@Validated
 @RestController
 @RequestMapping("/internal/api/v1/routes")
 @RequiredArgsConstructor
