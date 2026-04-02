@@ -51,9 +51,29 @@ public class GeminiClient {
             }
 
             List<Map> candidates = (List<Map>) response.getBody().get("candidates");
+            // null 또는 빈 배열 → safety filter 등으로 응답 차단된 경우
+            if (candidates == null || candidates.isEmpty()) {
+                log.warn("Gemini API 응답에 candidates가 없습니다. safety filter에 의해 차단되었을 수 있습니다.");
+                throw new BusinessException(NotificationErrorCode.GEMINI_API_FAILED);
+            }
+
             Map content = (Map) candidates.get(0).get("content");
+            if (content == null) {
+                log.warn("Gemini API 응답 content가 null입니다.");
+                throw new BusinessException(NotificationErrorCode.GEMINI_API_FAILED);
+            }
+
             List<Map> parts = (List<Map>) content.get("parts");
+            if (parts == null || parts.isEmpty()) {
+                log.warn("Gemini API 응답 parts가 없습니다.");
+                throw new BusinessException(NotificationErrorCode.GEMINI_API_FAILED);
+            }
+
             String result = (String) parts.get(0).get("text");
+            if (result == null || result.isBlank()) {
+                log.warn("Gemini API 응답 text가 비어있습니다.");
+                throw new BusinessException(NotificationErrorCode.GEMINI_API_FAILED);
+            }
 
             log.debug("Gemini API 응답 수신 완료");
             return result;
