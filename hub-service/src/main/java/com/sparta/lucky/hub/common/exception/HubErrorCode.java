@@ -9,7 +9,8 @@ public enum HubErrorCode implements ErrorCode {
 
     HUB_NOT_FOUND("HUB_001", "허브를 찾을 수 없습니다.", 404),
     HUB_ALREADY_DELETED("HUB_002", "이미 삭제된 허브입니다.", 400),
-    HUB_ROUTE_INVALID_VALUE("HUB_003", "distance와 duration은 음수일 수 없습니다.", 400);
+    HUB_ROUTE_INVALID_VALUE("HUB_003", "distance와 duration은 음수일 수 없습니다.", 400),
+    HUB_ROUTE_NOT_FOUND("HUB_004", "두 허브 간 경로를 찾을 수 없습니다.", 404);
 
     private final String code;
     private final String message;

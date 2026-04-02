@@ -2,44 +2,46 @@ package com.sparta.lucky.hub.application;
 
 import com.sparta.lucky.hub.application.dto.GetHubResult;
 import com.sparta.lucky.hub.application.dto.GetRouteResult;
-import com.sparta.lucky.hub.common.exception.BusinessException;
-import com.sparta.lucky.hub.common.exception.HubErrorCode;
 import com.sparta.lucky.hub.domain.HubRoute;
 import com.sparta.lucky.hub.infrastructure.HubRouteRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RouteService {
 
     private final HubService hubService;
     private final HubRouteRepository hubRouteRepository;
+    private final HubToHubPathFinder hubToHubPathFinder;
+    private final HubNearestFinder hubNearestFinder;
 
     @Transactional(readOnly = true)
     public GetRouteResult getRoute(UUID originHubId, BigDecimal destinationLat, BigDecimal destinationLong) {
-        int totalDuration = 0;
-        int totalDistance = 0;
-
-        // 1. destinationLat, destinationLong 기준으로 가장 가까운 destinationHub 찾기
         List<GetHubResult> hubs = hubService.getHubs();
-        UUID destinationHubId = findNearestHub(hubs, destinationLat, destinationLong).getId();
 
-        // 출발허브 == 도착허브인 경우
-        if (originHubId == destinationHubId) {
-            return GetRouteResult.of(originHubId, destinationHubId, totalDuration, totalDistance, List.of());
+        // 1. 도착지 좌표 기준으로 가장 가까운 허브 탐색
+        UUID destinationHubId = hubNearestFinder.findNearestHub(hubs, destinationLat, destinationLong).getId();
+
+        log.info("--> destinaton: " + destinationHubId);
+
+        // 출발 허브 == 도착 허브인 경우
+        if (originHubId.equals(destinationHubId)) {
+            return GetRouteResult.of(originHubId, destinationHubId, 0, 0, List.of(originHubId));
         }
 
-        // 2. originHub에서 destinationHub까지 경로 찾기
-        // TODO: Dijkstra 구현 예정
+        // 2. Dijkstra로 최단 경로 탐색
+        List<HubRoute> routes = hubRouteRepository.findAllByDeletedAtIsNull();
+        HubToHubPathFinder.PathResult result = hubToHubPathFinder.findShortestPath(routes, originHubId, destinationHubId);
 
-        return GetRouteResult.of(originHubId, destinationHubId, 100, 100, List.of());
+        return GetRouteResult.of(originHubId, destinationHubId, result.totalDuration(), result.totalDistance(), result.path());
     }
 
     @Transactional(readOnly = true)
@@ -50,29 +52,5 @@ public class RouteService {
     @Transactional
     public void saveHubRoute(HubRoute hubRoute) {
         hubRouteRepository.save(hubRoute);
-    }
-
-    private GetHubResult findNearestHub(List<GetHubResult> hubs, BigDecimal targetLat, BigDecimal targetLong) {
-        return hubs.stream()
-                .min(Comparator.comparingDouble(hub -> distanceTo(hub, targetLat, targetLong)))
-                .orElseThrow(() -> new BusinessException(HubErrorCode.HUB_NOT_FOUND));
-    }
-
-    private double distanceTo(GetHubResult hub, BigDecimal targetLat, BigDecimal targetLong) {
-        return haversine(
-                hub.getLatitude().doubleValue(), hub.getLongitude().doubleValue(),
-                targetLat.doubleValue(), targetLong.doubleValue()
-        );
-    }
-
-    // Haversine 공식으로 두 좌표 간 거리(km) 계산
-    private double haversine(double lat1, double lon1, double lat2, double lon2) {
-        final double R = 6371.0;
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 }
