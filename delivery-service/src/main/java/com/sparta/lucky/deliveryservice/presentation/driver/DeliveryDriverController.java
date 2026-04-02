@@ -48,6 +48,7 @@ public class DeliveryDriverController {
     ) {
         // TODO : Need to add role validation and processing method here
 
+        // TODO : Replace UUID.randomUUID() to accessId
         // Authentication logic has not yet been added, random UUID is used
         deliveryDriverService.deleteDriver(driverId, UUID.randomUUID());
 
