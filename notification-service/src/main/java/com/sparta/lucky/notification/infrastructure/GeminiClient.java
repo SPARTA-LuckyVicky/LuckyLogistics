@@ -5,6 +5,7 @@ import com.sparta.lucky.notification.common.exception.NotificationErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -25,6 +26,7 @@ public class GeminiClient {
 
     private final RestTemplate restTemplate;
 
+    @SuppressWarnings("unchecked")
     public String ask(String prompt) {
         log.debug("Gemini API 요청 시작");
 
@@ -43,14 +45,17 @@ public class GeminiClient {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
         try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                    GEMINI_URL + apiKey, request, Map.class
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    GEMINI_URL + apiKey,
+                    HttpMethod.POST,
+                    request,
+                    new ParameterizedTypeReference<>() {}
             );
             if (response.getBody() == null) {
                 throw new BusinessException(NotificationErrorCode.GEMINI_API_FAILED);
             }
 
-            List<Map> candidates = (List<Map>) response.getBody().get("candidates");
+            List<Map<String, Object>> candidates = (List<Map<String, Object>>) response.getBody().get("candidates");
             // null 또는 빈 배열 → safety filter 등으로 응답 차단된 경우
             if (candidates == null || candidates.isEmpty()) {
                 log.warn("Gemini API 응답에 candidates가 없습니다. safety filter에 의해 차단되었을 수 있습니다.");
