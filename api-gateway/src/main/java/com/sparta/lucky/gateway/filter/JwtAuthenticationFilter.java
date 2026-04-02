@@ -3,38 +3,35 @@ package com.sparta.lucky.gateway.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.lucky.gateway.common.exception.AuthErrorCode;
 import com.sparta.lucky.gateway.common.response.ApiResponse;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.security.Key;
+import java.util.List;
+import java.util.Map;
 
 @Component
 @Slf4j
 public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAuthenticationFilter.Config> {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ReactiveJwtDecoder jwtDecoder;
 
-    @Value("${jwt.secret.key}")
-    private String secretKey;
-
-    public JwtAuthenticationFilter(){
+    public JwtAuthenticationFilter(ReactiveJwtDecoder jwtDecoder){
         super(Config.class);
+        this.jwtDecoder = jwtDecoder;
     }
 
     public static class Config{
@@ -83,17 +80,31 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                 });
     }
 
-    // 토큰 검증 로직 분리, 문제 있을 경우 예외 던짐 (throws)
-    private Claims validateAndParseToken(String token) throws ExpiredJwtException, JwtException {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        Key key = Keys.hmacShaKeyFor(keyBytes);
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
+    private String extractRole(Jwt jwt) {
+        Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+        if (realmAccess != null && realmAccess.containsKey("roles")) {
+            @SuppressWarnings("unchecked")
+            List<String> roles = (List<String>) realmAccess.get("roles");
 
+            return roles.stream()
+                    .filter(r -> r.equals("MASTER")|| r.equals("HUB_MANAGER") || r.equals("DELIVERY_DRIVER") || r.equals("COMPANY_MANAGER"))
+                    .findFirst()
+                    .orElse("USER");
+        }
+
+        Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
+        if (resourceAccess != null && resourceAccess.containsKey("account")) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> account = (Map<String, Object>) resourceAccess.get("account");
+            if (account.containsKey("roles")) {
+                @SuppressWarnings("unchecked")
+                List<String> roles = (List<String>) account.get("roles");
+                if (roles != null && !roles.isEmpty()) return roles.getFirst();
+            }
+        }
+
+        return "USER";
+    }
 
     @Override
     public GatewayFilter apply(Config config) {
@@ -106,14 +117,18 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
             String token = extractToken(request);
             if(token == null) return onError(exchange, AuthErrorCode.TOKEN_NOT_FOUND);
 
-            return Mono.just(token)
-                    .map(this::validateAndParseToken) // 토큰 파싱 후 Claims 반환
-                    .flatMap(claims -> {
-                        // 하위 서비스(User, Order 등)가 유저 정보 알 수 있게 헤더 삽입
-                        // mutate() 를 사용하여 복사본 생성 후 정보 삽입
-                        ServerHttpRequest modifiedRequest = request.mutate()
-                                .header("X-User-Id", claims.getSubject()) //유저 ID (UUID 등)
-                                .header("X-User-Role",claims.get("role", String.class)) // 유저 권한
+            return jwtDecoder.decode(token)
+                    .flatMap(jwt -> {
+                        String userId = jwt.getSubject();
+                        if (userId == null || !userId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")) {
+                            log.error("Invalid User ID format: {}", userId);
+                            return onError(exchange, AuthErrorCode.INVALID_TOKEN);
+                        }
+                        String role = extractRole(jwt);
+
+                        ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
+                                .header("X-User-Id", userId)
+                                .header("X-User-Role", role)
                                 .build();
                         return chain.filter(exchange.mutate().request(modifiedRequest).build());
                     })
@@ -126,8 +141,6 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                         }
                         return Mono.error(e);
                     });
-
-
         });
     }
 }
