@@ -25,7 +25,7 @@ public class HubService {
 
     @Caching(evict = {
             @CacheEvict(cacheNames = "hub", allEntries = true),
-            @CacheEvict(cacheNames = "hubs", allEntries = true)
+            @CacheEvict(cacheNames = "hubs", key = "'all'")
     })
     @Transactional
     public CreateHubResult createHub(CreateHubCommand command) {
@@ -46,7 +46,7 @@ public class HubService {
                 .map(GetHubResult::from);
     }
 
-    @Cacheable(cacheNames = "hubs")
+    @Cacheable(cacheNames = "hubs", key = "'all'")
     @Transactional(readOnly = true)
     public List<GetHubResult> getHubs() {
         return hubRepository.findAllByDeletedAtIsNull().stream()
@@ -56,7 +56,7 @@ public class HubService {
 
     @Caching(evict = {
             @CacheEvict(cacheNames = "hub", allEntries = true),
-            @CacheEvict(cacheNames = "hubs", allEntries = true)
+            @CacheEvict(cacheNames = "hubs", key = "'all'")
     })
     @Transactional
     public GetHubResult updateHub(UpdateHubCommand command) {
@@ -67,7 +67,7 @@ public class HubService {
 
     @Caching(evict = {
             @CacheEvict(cacheNames = "hub", allEntries = true),
-            @CacheEvict(cacheNames = "hubs", allEntries = true)
+            @CacheEvict(cacheNames = "hubs", key = "'all'")
     })
     @Transactional
     public void assignManager(AssignManagerCommand command) {
@@ -77,7 +77,7 @@ public class HubService {
 
     @Caching(evict = {
             @CacheEvict(cacheNames = "hub", allEntries = true),
-            @CacheEvict(cacheNames = "hubs", allEntries = true)
+            @CacheEvict(cacheNames = "hubs", key = "'all'")
     })
     @Transactional
     public void deleteHub(UUID hubId, UUID deletedBy) {
