@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,4 +14,6 @@ public interface HubRepository extends JpaRepository<Hub, UUID> {
     Optional<Hub> findByIdAndDeletedAtIsNull(UUID id);
 
     Page<Hub> findAllByDeletedAtIsNull(Pageable pageable);
+
+    List<Hub> findAllByDeletedAtIsNull();
 }

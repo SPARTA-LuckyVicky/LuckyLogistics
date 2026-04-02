@@ -9,19 +9,17 @@ import java.util.UUID;
 @Getter
 public class GetRouteResDto {
 
-    private final UUID id;
     private final UUID originHubId;
     private final UUID destinationHubId;
-    private final Integer duration;
-    private final Integer distance;
+    private final Integer totalDuration;
+    private final Integer totalDistance;
     private final List<UUID> route;
 
     private GetRouteResDto(GetRouteResult result) {
-        this.id = result.getId();
         this.originHubId = result.getOriginHubId();
         this.destinationHubId = result.getDestinationHubId();
-        this.duration = result.getDuration();
-        this.distance = result.getDistance();
+        this.totalDuration = result.getTotalDuration();
+        this.totalDistance = result.getTotalDistance();
         this.route = result.getRoute();
     }
 

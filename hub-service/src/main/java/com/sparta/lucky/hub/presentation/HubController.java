@@ -21,7 +21,7 @@ import java.util.UUID;
 
 @Tag(name = "Hub", description = "허브 관리 API")
 @RestController
-@RequestMapping("/api/hubs")
+@RequestMapping("/api/v1/hubs")
 @RequiredArgsConstructor
 public class HubController {
 
@@ -49,7 +49,7 @@ public class HubController {
     @Operation(summary = "허브 목록 조회", description = "허브 목록을 페이지 단위로 조회합니다.")
     @GetMapping
     public ResponseEntity<ApiResponse<Page<GetHubResDto>>> getHubs(@ParameterObject @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(ApiResponse.success(hubService.getHubs(pageable).map(GetHubResDto::from)));
+        return ResponseEntity.ok(ApiResponse.success(hubService.getHubsByPage(pageable).map(GetHubResDto::from)));
     }
 
     @Operation(summary = "허브 정보 수정", description = "허브의 이름, 주소, 위경도를 수정합니다.")
@@ -62,16 +62,6 @@ public class HubController {
                 hubId, request.getName(), request.getAddress(), request.getLatitude(), request.getLongitude()
         );
         return ResponseEntity.ok(ApiResponse.success(GetHubResDto.from(hubService.updateHub(command))));
-    }
-
-    @Operation(summary = "허브 매니저 배정", description = "허브에 매니저를 배정합니다.")
-    @PatchMapping("/{hubId}/manager")
-    public ResponseEntity<ApiResponse<Void>> assignManager(
-            @Parameter(description = "허브 ID") @PathVariable UUID hubId,
-            @Valid @RequestBody PatchHubManagerReqDto request
-    ) {
-        hubService.assignManager(AssignManagerCommand.of(hubId, request.getManagerId()));
-        return ResponseEntity.ok(ApiResponse.success());
     }
 
     @Operation(summary = "허브 삭제", description = "허브를 소프트 삭제합니다.")

@@ -1,7 +1,7 @@
-package com.sparta.lucky.deliveryservice.delivery.domain;
+package com.sparta.lucky.deliveryservice.domain.delivery;
 
-import com.sparta.lucky.deliveryservice.delivery.code.DeliveryStatus;
-import com.sparta.lucky.deliveryservice.driver.domain.DeliveryDriver;
+import com.sparta.lucky.deliveryservice.domain.delivery.code.DeliveryStatus;
+import com.sparta.lucky.deliveryservice.domain.driver.DeliveryDriver;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
