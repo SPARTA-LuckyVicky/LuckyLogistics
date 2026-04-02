@@ -6,8 +6,6 @@ import com.sparta.lucky.hub.presentation.dto.GetRouteResDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -32,10 +30,9 @@ public class RouteInternalController {
     @GetMapping
     public GetRouteResDto getRoute(
             @Parameter(description = "출발 허브 ID") @RequestParam @NotNull UUID originHubId,
-            @Parameter(description = "도착 위도") @RequestParam @NotNull BigDecimal destinationLat,
-            @Parameter(description = "도착 경도") @RequestParam @NotNull BigDecimal destinationLong
+            @Parameter(description = "도착 허브 ID") @RequestParam @NotNull UUID destinationHubId
     ) {
-        GetRouteResult result = routeService.getRoute(originHubId, destinationLat, destinationLong);
+        GetRouteResult result = routeService.getRoute(originHubId, destinationHubId);
 
         return GetRouteResDto.from(result);
     }
