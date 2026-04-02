@@ -1,6 +1,8 @@
 package com.sparta.lucky.hub.domain;
 
 import com.sparta.lucky.hub.common.entity.BaseEntity;
+import com.sparta.lucky.hub.common.exception.BusinessException;
+import com.sparta.lucky.hub.common.exception.HubErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -34,6 +36,9 @@ public class HubRoute extends BaseEntity {
     private Integer distance;
 
     public void updateRouteInfo(int distance, int duration) {
+        if (distance < 0 || duration < 0) {
+            throw new BusinessException(HubErrorCode.HUB_ROUTE_INVALID_VALUE);
+        }
         this.distance = distance;
         this.duration = duration;
     }
