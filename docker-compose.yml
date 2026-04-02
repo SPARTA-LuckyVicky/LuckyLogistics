@@ -15,7 +15,7 @@ services:
     networks:
       - lucky-network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lucky}" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lucky} -d ${POSTGRES_DB}" ]
       interval: 10s
       timeout: 5s
       retries: 5
