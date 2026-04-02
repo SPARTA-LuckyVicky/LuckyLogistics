@@ -19,25 +19,25 @@ public abstract class BaseEntity {
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    protected LocalDateTime createdAt;
 
     @CreatedBy
     @Column(name = "created_by", nullable = false, updatable = false, columnDefinition = "uuid")
-    private UUID createdBy;
+    protected UUID createdBy;
 
     @LastModifiedDate
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    protected LocalDateTime updatedAt;
 
     @LastModifiedBy
     @Column(name = "updated_by", columnDefinition = "uuid")
-    private UUID updatedBy;
+    protected UUID updatedBy;
 
     @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
+    protected LocalDateTime deletedAt;
 
     @Column(name = "deleted_by", columnDefinition = "uuid")
-    private UUID deletedBy;
+    protected UUID deletedBy;
 
     // 삭제 여부 확인
     public boolean isDeleted() {
