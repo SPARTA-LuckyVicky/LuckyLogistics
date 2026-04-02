@@ -1,14 +1,17 @@
 package com.sparta.lucky.hub.application.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sparta.lucky.hub.domain.Hub;
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
-public class GetHubResult {
+public class GetHubResult implements Serializable {
 
     private final UUID id;
     private final UUID managerId;
@@ -19,18 +22,37 @@ public class GetHubResult {
     private final LocalDateTime createdAt;
     private final UUID createdBy;
 
-    private GetHubResult(Hub hub) {
-        this.id = hub.getId();
-        this.managerId = hub.getManagerId();
-        this.name = hub.getName();
-        this.address = hub.getAddress();
-        this.latitude = hub.getLatitude();
-        this.longitude = hub.getLongitude();
-        this.createdAt = hub.getCreatedAt();
-        this.createdBy = hub.getCreatedBy();
+    @JsonCreator
+    public GetHubResult(
+            @JsonProperty("id") UUID id,
+            @JsonProperty("managerId") UUID managerId,
+            @JsonProperty("name") String name,
+            @JsonProperty("address") String address,
+            @JsonProperty("latitude") BigDecimal latitude,
+            @JsonProperty("longitude") BigDecimal longitude,
+            @JsonProperty("createdAt") LocalDateTime createdAt,
+            @JsonProperty("createdBy") UUID createdBy
+    ) {
+        this.id = id;
+        this.managerId = managerId;
+        this.name = name;
+        this.address = address;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.createdAt = createdAt;
+        this.createdBy = createdBy;
     }
 
     public static GetHubResult from(Hub hub) {
-        return new GetHubResult(hub);
+        return new GetHubResult(
+                hub.getId(),
+                hub.getManagerId(),
+                hub.getName(),
+                hub.getAddress(),
+                hub.getLatitude(),
+                hub.getLongitude(),
+                hub.getCreatedAt(),
+                hub.getCreatedBy()
+        );
     }
 }

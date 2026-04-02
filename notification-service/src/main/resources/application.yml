@@ -27,6 +27,7 @@ eureka:
   client:
     service-url:
       defaultZone: http://lucky-eureka:19090/eureka
+
   instance:
     prefer-ip-address: true
 
@@ -41,3 +42,5 @@ gemini:
 
 slack:
   token: ${SLACK_TOKEN}
+
+

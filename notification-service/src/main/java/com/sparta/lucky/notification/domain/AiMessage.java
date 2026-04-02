@@ -38,7 +38,7 @@ public class AiMessage extends BaseEntity {
     private String deadlineResult;
 
     // 이 AI 결과를 기반으로 발송된 슬랙 메시지 ID
-    @Column(columnDefinition = "uuid")
+    @Column(unique = true, columnDefinition = "uuid")
     private UUID slackMessageId;
 
     public static AiMessage create(

@@ -22,8 +22,8 @@ public abstract class BaseEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @CreatedBy // 임시로 nullable = true 설정
-    @Column(name = "created_by", nullable = true, updatable = false, columnDefinition = "uuid")
+    @CreatedBy
+    @Column(name = "created_by", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID createdBy;
 
     @LastModifiedDate
