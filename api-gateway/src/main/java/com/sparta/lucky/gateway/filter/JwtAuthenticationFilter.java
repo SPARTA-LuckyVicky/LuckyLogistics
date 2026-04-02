@@ -87,7 +87,7 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
             return roles.stream()
                     .filter(r -> r.equals("MASTER")|| r.equals("HUB_MANAGER") || r.equals("DELIVERY_DRIVER") || r.equals("COMPANY_MANAGER"))
                     .findFirst()
-                    .orElse(roles.get(0));
+                    .orElse("USER");
         }
 
         Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
