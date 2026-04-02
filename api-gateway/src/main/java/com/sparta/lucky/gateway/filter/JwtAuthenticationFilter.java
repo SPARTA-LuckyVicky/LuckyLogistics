@@ -3,6 +3,7 @@ package com.sparta.lucky.gateway.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.lucky.gateway.common.exception.AuthErrorCode;
 import com.sparta.lucky.gateway.common.response.ApiResponse;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -11,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -97,7 +99,7 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
             if (account.containsKey("roles")) {
                 @SuppressWarnings("unchecked")
                 List<String> roles = (List<String>) account.get("roles");
-                if (roles != null && !roles.isEmpty()) return roles.get(0);
+                if (roles != null && !roles.isEmpty()) return roles.getFirst();
             }
         }
 
@@ -118,6 +120,10 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
             return jwtDecoder.decode(token)
                     .flatMap(jwt -> {
                         String userId = jwt.getSubject();
+                        if (userId == null || !userId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")) {
+                            log.error("Invalid User ID format: {}", userId);
+                            return onError(exchange, AuthErrorCode.INVALID_TOKEN);
+                        }
                         String role = extractRole(jwt);
 
                         ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
@@ -126,7 +132,15 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                                 .build();
                         return chain.filter(exchange.mutate().request(modifiedRequest).build());
                     })
-                    .onErrorResume(e -> onError(exchange, AuthErrorCode.INVALID_TOKEN));
+                    .onErrorResume(e -> {
+                        if (e instanceof ExpiredJwtException) {
+                            return onError(exchange, AuthErrorCode.TOKEN_EXPIRED);
+                        }
+                        if (e instanceof JwtException) {
+                            return onError(exchange, AuthErrorCode.INVALID_TOKEN);
+                        }
+                        return Mono.error(e);
+                    });
         });
     }
 }
