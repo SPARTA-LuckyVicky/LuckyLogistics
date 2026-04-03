@@ -16,6 +16,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -71,9 +72,9 @@ public class HubController {
     @DeleteMapping("/{hubId}")
     public ResponseEntity<ApiResponse<Void>> deleteHub(
             @Parameter(description = "허브 ID") @PathVariable UUID hubId,
-            @Parameter(hidden = true) @RequestHeader("X-User-Id") UUID deletedBy
+            @Parameter(hidden = true) @AuthenticationPrincipal String deletedBy
     ) {
-        hubService.deleteHub(hubId, deletedBy);
+        hubService.deleteHub(hubId, UUID.fromString(deletedBy));
         return ResponseEntity.noContent().build();
     }
 }
