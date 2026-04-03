@@ -5,6 +5,7 @@ import com.sparta.lucky.hub.common.exception.BusinessException;
 import com.sparta.lucky.hub.common.exception.HubErrorCode;
 import com.sparta.lucky.hub.domain.HubRoute;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,8 +15,9 @@ import java.util.*;
 @RequiredArgsConstructor
 public class HubPathService {
 
-    private final RouteService routeService;
+    private final HubRouteService hubRouteService;
 
+    @Cacheable(cacheNames = "path", key = "#originHubId + '-' + #destinationHubId")
     @Transactional(readOnly = true)
     public GetRouteResult getRoute(UUID originHubId, UUID destinationHubId) {
 
@@ -25,7 +27,7 @@ public class HubPathService {
         }
 
         // Dijkstra로 최단 경로 탐색 (캐시 경유)
-        List<HubRoute> routes = routeService.getHubRoutes();
+        List<HubRoute> routes = hubRouteService.getHubRoutes();
         PathResult result = findShortestPath(routes, originHubId, destinationHubId);
 
         return GetRouteResult.of(originHubId, destinationHubId, result.totalDuration(), result.totalDistance(), result.path());

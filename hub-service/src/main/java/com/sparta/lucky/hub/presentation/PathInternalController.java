@@ -18,12 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-@Tag(name = "Route Internal", description = "허브 경로 내부 서비스 간 통신 API")
+@Tag(name = "Path Internal", description = "허브 경로 내부 서비스 간 통신 API")
 @Validated
 @RestController
 @RequestMapping("/internal/api/v1/routes")
 @RequiredArgsConstructor
-public class RouteInternalController {
+public class PathInternalController {
 
     private final HubPathService hubPathService;
 

@@ -1,6 +1,6 @@
 package com.sparta.lucky.hub.presentation;
 
-import com.sparta.lucky.hub.application.RouteService;
+import com.sparta.lucky.hub.application.HubRouteService;
 import com.sparta.lucky.hub.common.response.ApiResponse;
 import com.sparta.lucky.hub.presentation.dto.PatchRouteReqDto;
 import com.sparta.lucky.hub.presentation.dto.PostRouteReqDto;
@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "Route", description = "허브 경로 관리 API")
@@ -24,7 +25,16 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RouteController {
 
-    private final RouteService routeService;
+    private final HubRouteService hubRouteService;
+
+    @Operation(summary = "허브 경로 전체 조회", description = "삭제되지 않은 모든 허브 경로를 조회합니다.")
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<RouteResDto>>> getRoutes() {
+        List<RouteResDto> response = hubRouteService.getHubRoutes().stream()
+                .map(RouteResDto::from)
+                .toList();
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 
     @Operation(summary = "허브 경로 생성", description = "두 허브 간 경로를 생성합니다. (MASTER 전용)")
     @PreAuthorize("hasRole('MASTER')")
@@ -33,7 +43,7 @@ public class RouteController {
             @Valid @RequestBody PostRouteReqDto request
     ) {
         RouteResDto response = RouteResDto.from(
-                routeService.createRoute(
+                hubRouteService.createRoute(
                         request.getOriginHubId(),
                         request.getDestinationHubId(),
                         request.getDistance(),
@@ -51,7 +61,7 @@ public class RouteController {
             @Valid @RequestBody PatchRouteReqDto request
     ) {
         RouteResDto response = RouteResDto.from(
-                routeService.updateRoute(routeId, request.getDistance(), request.getDuration())
+                hubRouteService.updateRoute(routeId, request.getDistance(), request.getDuration())
         );
         return ResponseEntity.ok(ApiResponse.success(response));
     }
@@ -63,7 +73,7 @@ public class RouteController {
             @Parameter(description = "경로 ID") @PathVariable UUID routeId,
             @Parameter(hidden = true) @AuthenticationPrincipal String deletedBy
     ) {
-        routeService.deleteRoute(routeId, UUID.fromString(deletedBy));
+        hubRouteService.deleteRoute(routeId, UUID.fromString(deletedBy));
         return ResponseEntity.noContent().build();
     }
 }
