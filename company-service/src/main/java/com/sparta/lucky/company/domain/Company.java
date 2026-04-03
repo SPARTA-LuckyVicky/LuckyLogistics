@@ -3,6 +3,8 @@ package com.sparta.lucky.company.domain;
 import com.sparta.lucky.company.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.UuidGenerator;
+
 import java.util.Objects;
 
 import java.util.UUID;
@@ -16,8 +18,9 @@ import java.util.UUID;
 public class Company extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "uuid")
+    @GeneratedValue
+    @UuidGenerator
+    @Column(updatable = false, nullable = false)
     private UUID id;
 
     @Column(name = "name", length = 100, nullable = false)
