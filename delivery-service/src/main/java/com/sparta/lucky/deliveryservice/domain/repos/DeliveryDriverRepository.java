@@ -1,6 +1,5 @@
 package com.sparta.lucky.deliveryservice.domain.repos;
 
-import aj.org.objectweb.asm.commons.Remapper;
 import com.sparta.lucky.deliveryservice.domain.driver.DeliveryDriver;
 import java.util.Optional;
 import java.util.UUID;
