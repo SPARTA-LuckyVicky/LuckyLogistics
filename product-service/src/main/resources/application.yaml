@@ -21,6 +21,14 @@ spring:
     virtual:
       enabled: true
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Docker 네트워크 내부에서 Keycloak 접근
+          issuer-uri: http://lucky-keycloak:8080/realms/lucky
+          jwk-set-uri: http://lucky-keycloak:8080/realms/lucky/protocol/openid-connect/certs
+
 eureka:
   client:
     service-url:
