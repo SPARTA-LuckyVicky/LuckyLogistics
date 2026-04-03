@@ -1,6 +1,6 @@
 package com.sparta.lucky.hub.presentation;
 
-import com.sparta.lucky.hub.application.RouteService;
+import com.sparta.lucky.hub.application.HubPathService;
 import com.sparta.lucky.hub.application.dto.GetRouteResult;
 import com.sparta.lucky.hub.common.response.ApiResponse;
 import com.sparta.lucky.hub.presentation.dto.GetRouteResDto;
@@ -25,7 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RouteInternalController {
 
-    private final RouteService routeService;
+    private final HubPathService hubPathService;
 
     @Operation(summary = "[Internal] 허브 최단 경로 조회", description = "허브 간 최단 경로를 조회합니다.")
     @GetMapping
@@ -33,7 +33,7 @@ public class RouteInternalController {
             @Parameter(description = "출발 허브 ID") @RequestParam @NotNull UUID originHubId,
             @Parameter(description = "도착 허브 ID") @RequestParam @NotNull UUID destinationHubId
     ) {
-        GetRouteResult result = routeService.getRoute(originHubId, destinationHubId);
+        GetRouteResult result = hubPathService.getRoute(originHubId, destinationHubId);
 
         return ResponseEntity.ok(ApiResponse.success(GetRouteResDto.from(result)));
     }
