@@ -1,4 +1,4 @@
-package com.sparta.lucky.deliveryservice.common.config;
+package com.sparta.lucky.deliveryservice.common.security;
 
 import com.sparta.lucky.deliveryservice.common.code.Role;
 import org.springframework.context.annotation.Bean;
