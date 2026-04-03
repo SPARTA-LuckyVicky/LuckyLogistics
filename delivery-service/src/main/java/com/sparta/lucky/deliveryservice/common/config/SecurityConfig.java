@@ -1,5 +1,6 @@
 package com.sparta.lucky.deliveryservice.common.config;
 
+import com.sparta.lucky.deliveryservice.common.code.Role;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -15,7 +16,11 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .anyRequest().authenticated()
+                .requestMatchers("api/v1/drivers/**").hasAnyRole(Role.MASTER.toString(), Role.HUB_MANAGER.toString())
+                .requestMatchers("api/v1/drivers/me").hasRole(Role.DELIVERY_DRIVER.toString())
+                // permit all while dev
+                    .anyRequest().permitAll()
+//                .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()));
         return http.build();
