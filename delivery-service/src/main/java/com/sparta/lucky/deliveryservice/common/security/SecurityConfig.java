@@ -29,9 +29,7 @@ public class SecurityConfig {
 //                .anyRequest().authenticated()
             )
             .addFilterBefore(internalAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(externalAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            // 아래는 불필요할 시 제거.
-            .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()));
+            .addFilterBefore(externalAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
