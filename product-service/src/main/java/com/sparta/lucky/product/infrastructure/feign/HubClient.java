@@ -15,7 +15,7 @@ public interface HubClient {
 
     @GetMapping("/internal/api/v1/hubs/{hubId}")
     FeignApiResponse<HubResponse> getHub(
-            @PathVariable UUID hubId,
+            @PathVariable("hubId") UUID hubId,
             @RequestHeader("X-Internal-Request") String internalRequest  // 내부 요청 식별 헤더
     );
 }

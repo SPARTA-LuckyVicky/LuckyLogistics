@@ -78,12 +78,12 @@ public class ProductInternalController {
     @DeleteMapping("/company/{companyId}")
     public ApiResponse<BulkDeleteResDto> deleteProductsByCompany(
             @PathVariable UUID companyId,
-            @Valid @RequestBody BulkDeleteByCompanyReqDto reqDto,
-            @RequestHeader("X-Internal-Request") String internalRequest
+            @RequestHeader("X-Internal-Request") String internalRequest,
+            @RequestHeader("X-User-Id") UUID deletedBy   // 감사 주체는 인증 헤더에서 추출 — 바디 위변조 방지
     ) {
         validateInternalRequest(internalRequest);
         return ApiResponse.success(
-                BulkDeleteResDto.from(productService.deleteProductsByCompany(companyId, reqDto.getDeletedBy()))
+                BulkDeleteResDto.from(productService.deleteProductsByCompany(companyId, deletedBy))
         );
     }
 }
