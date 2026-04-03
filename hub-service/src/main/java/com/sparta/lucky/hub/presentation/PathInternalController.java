@@ -21,7 +21,7 @@ import java.util.UUID;
 @Tag(name = "Path Internal", description = "허브 경로 내부 서비스 간 통신 API")
 @Validated
 @RestController
-@RequestMapping("/internal/api/v1/routes")
+@RequestMapping("/internal/api/v1/paths")
 @RequiredArgsConstructor
 public class PathInternalController {
 
