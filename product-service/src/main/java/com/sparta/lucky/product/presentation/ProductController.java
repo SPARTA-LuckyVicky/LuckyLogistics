@@ -101,6 +101,8 @@ public class ProductController {
             @RequestHeader("X-User-Role") String userRole,
             @RequestHeader(value = "X-Hub-Id", required = false) UUID hubId
     ) {
+        // HUB_MANAGER가 X-Hub-Id 없이 단건 조회하면 서비스 레이어에서 NPE 발생 가능하므로 검증
+        validateHubHeader(userRole, hubId);
         return ApiResponse.success(
                 GetProductResDto.from(productService.getProduct(productId, userRole, hubId))
         );

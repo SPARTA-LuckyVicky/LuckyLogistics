@@ -7,6 +7,7 @@ import com.sparta.lucky.product.infrastructure.feign.CompanyClient;
 import com.sparta.lucky.product.infrastructure.feign.HubClient;
 import com.sparta.lucky.product.infrastructure.feign.dto.CompanyResponse;
 import com.sparta.lucky.product.infrastructure.feign.dto.HubResponse;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -69,11 +70,11 @@ public class ProductService {
 
         // Product 저장 후 생성된 Id를 바탕으로 ProductStock 생성 및 저장
         // 같은 트랜잭션 - product 저장 실패시 함께 롤백
+        // version 초기화는 JPA @Version이 자동 처리하므로 명시적 설정 불필요
         ProductStock stock = ProductStock.builder()
                 .product(product)
                 .hubId(product.getHubId())
                 .stock(command.getStock())
-                .version(0L)
                 .build();
         productStockRepository.save(stock);
 
@@ -130,6 +131,11 @@ public class ProductService {
         // hubId 수정 차단 - MASTER만 허용
         if (!ROLE_MASTER.equals(command.getRequesterRole()) && command.getHubId() != null) {
             throw new BusinessException(ProductErrorCode.PRODUCT_ACCESS_DENIED);
+        }
+
+        // MASTER가 companyId를 변경하는 경우 — 새 업체가 실제 존재하는지 검증
+        if (command.getCompanyId() != null) {
+            validateCompany(command.getCompanyId());
         }
 
         // 변경하려는 hubId가 있을 시 내부 API로 실존 검증
@@ -233,6 +239,11 @@ public class ProductService {
     // @Version 낙관적 락 — 동시 차감 충돌 시 OptimisticLockException 발생
     @Transactional
     public StockChangeResult decreaseStock(UUID productId, Integer quantity) {
+        // 음수·0 수량 방어
+        if (quantity == null || quantity <= 0) {
+            throw new BusinessException(ProductErrorCode.INVALID_STOCK_QUANTITY);
+        }
+
         Product product = productRepository.findByIdWithStock(productId)
                 .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_NOT_FOUND));
 
@@ -252,6 +263,11 @@ public class ProductService {
     // order-service가 원래 수량을 그대로 전달 후 stock += quantity
     @Transactional
     public StockChangeResult restoreStock(UUID productId, Integer quantity) {
+        // 음수·0 수량 방어
+        if (quantity == null || quantity <= 0) {
+            throw new BusinessException(ProductErrorCode.INVALID_STOCK_QUANTITY);
+        }
+
         Product product = productRepository.findByIdWithStock(productId)
                 .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_NOT_FOUND));
 
@@ -266,7 +282,6 @@ public class ProductService {
     @Transactional
     public BulkDeleteResult deleteProductsByCompany(UUID companyId, UUID deletedBy) {
         List<Product> products = productRepository.findAllByCompanyIdWithStock(companyId);
-        LocalDateTime deletedAt = LocalDateTime.now();
 
         // 각 상품과 재고를 함께 Soft Delete — 생명주기 동일
         for (Product product : products) {
@@ -278,24 +293,53 @@ public class ProductService {
         return BulkDeleteResult.builder()
                 .companyId(companyId)
                 .deletedCount(products.size())
-                .deletedAt(deletedAt)
+                .deletedAt(LocalDateTime.now())
                 .build();
     }
 
     // 내부 API 인바운드 - 업체 존재 여부 검증 (By. company-service)
     private CompanyInfo validateCompany(UUID companyId) {
-        CompanyResponse companyResponse = companyClient.getCompany(companyId, INTERNAL_REQUEST).getData();
-        if (companyResponse == null) {
+        log.info("[Feign] company-service 업체 검증 요청 - companyId: {}", companyId);
+        try {
+            CompanyResponse companyResponse = companyClient.getCompany(companyId, INTERNAL_REQUEST).getData();
+            if (companyResponse == null) {
+                // 정상 응답이지만 data가 null인 경우 (비정상 계약)
+                log.warn("[Feign] company-service 응답 data=null - companyId: {}", companyId);
+                throw new BusinessException(ProductErrorCode.COMPANY_NOT_FOUND);
+            }
+            log.info("[Feign] company-service 업체 검증 성공 - companyId: {}, name: {}", companyId, companyResponse.getName());
+            return CompanyInfo.from(companyResponse); // Infrastructure DTO → Application 변환
+        } catch (FeignException.NotFound e) {
+            // company-service가 404 반환 — 해당 업체 없음
+            log.warn("[Feign] company-service 업체 없음 (404) - companyId: {}", companyId);
             throw new BusinessException(ProductErrorCode.COMPANY_NOT_FOUND);
+        } catch (FeignException e) {
+            // 그 외 네트워크 오류, 서비스 다운 등
+            log.error("[Feign] company-service 호출 실패 - companyId: {}, status: {}, message: {}",
+                    companyId, e.status(), e.getMessage());
+            throw e;
         }
-        return CompanyInfo.from(companyResponse); // Infrastructure DTO → Application 변환
     }
 
     // 내부 API 인바운드 - 허브 존재 여부 검증 (By. hub-service)
-    private void validateHub (UUID hubId) {
-        HubResponse hub = hubClient.getHub(hubId, INTERNAL_REQUEST).getData();
-        if (hub == null) {
+    private void validateHub(UUID hubId) {
+        log.info("[Feign] hub-service 허브 검증 요청 - hubId: {}", hubId);
+        try {
+            HubResponse hub = hubClient.getHub(hubId, INTERNAL_REQUEST).getData();
+            if (hub == null) {
+                // 정상 응답이지만 data가 null인 경우
+                log.warn("[Feign] hub-service 응답 data=null - hubId: {}", hubId);
+                throw new BusinessException(ProductErrorCode.HUB_NOT_FOUND);
+            }
+            log.info("[Feign] hub-service 허브 검증 성공 - hubId: {}, name: {}", hubId, hub.getName());
+        } catch (FeignException.NotFound e) {
+            // hub-service가 404 반환 — 해당 허브 없음
+            log.warn("[Feign] hub-service 허브 없음 (404) - hubId: {}", hubId);
             throw new BusinessException(ProductErrorCode.HUB_NOT_FOUND);
+        } catch (FeignException e) {
+            log.error("[Feign] hub-service 호출 실패 - hubId: {}, status: {}, message: {}",
+                    hubId, e.status(), e.getMessage());
+            throw e;
         }
     }
 
@@ -314,7 +358,8 @@ public class ProductService {
 
         if (ROLE_HUB_MANAGER.equals(requesterRole)) {
             // HUB_MANAGER: 담당 허브 소속 상품만 조작 가능
-            if (!requesterHubId.equals(targetHubId)) {
+            // requesterHubId null 방어
+            if (requesterHubId == null || !requesterHubId.equals(targetHubId)) {
                 throw new BusinessException(ProductErrorCode.PRODUCT_NOT_ALLOWED);
             }
             return;

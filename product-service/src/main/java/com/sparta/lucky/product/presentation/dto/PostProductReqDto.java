@@ -22,6 +22,7 @@ public class PostProductReqDto {
     private String name;
 
     @NotNull(message = "상품 단가는 필수 항목입니다.")
+    @Min(value = 0, message = "상품 단가는 0 이상이어야 합니다.")
     private Integer price;
 
     @NotNull(message = "재고는 필수 항목입니다.")

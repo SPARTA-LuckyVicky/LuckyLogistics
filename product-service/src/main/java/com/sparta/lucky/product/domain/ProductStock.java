@@ -42,7 +42,11 @@ public class ProductStock extends BaseEntity {
     private Long version;
 
     // 재고 절대값으로 수정 (외부 API용)
+    // 도메인 불변식: 재고는 반드시 0 이상
     public void updateStock(Integer newStock) {
+        if (newStock == null || newStock < 0) {
+            throw new IllegalArgumentException("재고는 0 이상이어야 합니다. 입력값: " + newStock);
+        }
         this.stock = newStock;
     }
 

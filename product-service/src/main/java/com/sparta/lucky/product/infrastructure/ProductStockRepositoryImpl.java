@@ -9,10 +9,10 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class ProductStockRepositoryImpl implements ProductStockRepository {
 
-    private final ProductStockRepository productStockRepository;
+        private final ProductStockJpaRepository productStockJpaRepository;
 
     @Override
     public ProductStock save(ProductStock stock) {
-        return productStockRepository.save(stock);
+        return productStockJpaRepository.save(stock);
     }
 }
