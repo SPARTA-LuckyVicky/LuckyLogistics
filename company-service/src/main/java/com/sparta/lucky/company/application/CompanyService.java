@@ -220,12 +220,15 @@ public class CompanyService {
                     .requireData(() -> new BusinessException(CompanyErrorCode.HUB_NOT_FOUND));
             log.info("[Feign] hub-service 허브 검증 성공 - hubId: {}", hubId);
         } catch (feign.FeignException.NotFound e) {
+            // 404 — 실제로 허브가 없는 경우
             log.warn("[Feign] hub-service 허브 없음 - hubId: {}", hubId);
             throw new BusinessException(CompanyErrorCode.HUB_NOT_FOUND);
         } catch (feign.FeignException e) {
+            // 5xx, 타임아웃 등 - "허브 없음"이 아니라 hub-service 장애
+            // 원본 예외를 그대로 재발생시켜 장애 원인이 숨겨지지 않도록 함
             log.error("[Feign] hub-service 호출 실패 - hubId: {}, status: {}, message: {}",
                     hubId, e.status(), e.getMessage());
-            throw new BusinessException(CompanyErrorCode.HUB_NOT_FOUND);
+            throw e;
         }
     }
 
