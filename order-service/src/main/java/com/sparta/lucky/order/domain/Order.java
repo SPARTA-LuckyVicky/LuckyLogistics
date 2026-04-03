@@ -1,6 +1,8 @@
 package com.sparta.lucky.order.domain;
 
 import com.sparta.lucky.order.common.entity.BaseEntity;
+import com.sparta.lucky.order.common.exception.BusinessException;
+import com.sparta.lucky.order.common.exception.OrderErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -78,10 +80,10 @@ public class Order extends BaseEntity {
     ) {
         // 생성 시점에서 수량과 가격 검증
         if (quantity == null || quantity <= 0) {
-            throw new IllegalArgumentException("수량은 1 이상이어야 합니다.");
+            throw new BusinessException(OrderErrorCode.ORDER_INVALID_QUANTITY);
         }
         if (unitPrice == null || unitPrice <= 0) {
-            throw new IllegalArgumentException("단가는 0보다 커야 합니다.");
+            throw new BusinessException(OrderErrorCode.ORDER_INVALID_PRICE);
         }
 
         Order order = new Order();
@@ -146,13 +148,13 @@ public class Order extends BaseEntity {
     // 상태 확인(CREATED) 메서드
     private void assertEditable() {
         if (this.status == OrderStatus.CANCELLED || this.status == OrderStatus.COMPLETED) {
-            throw new IllegalStateException("완료된 주문은 수정이 불가능 합니다.");
+            throw new BusinessException(OrderErrorCode.ORDER_CANNOT_BE_MODIFIED);
         }
     }
     // 삭제 가능 상태(CANCELLED/COMPLETED) 확인
     private void assertDeletable() {
         if (this.status == OrderStatus.CREATED) {
-            throw new IllegalStateException("진행 중인 주문은 삭제할 수 없습니다. 먼저 취소 해주세요.");
+            throw new BusinessException(OrderErrorCode.ORDER_CANNOT_BE_DELETED);
         }
     }
 }

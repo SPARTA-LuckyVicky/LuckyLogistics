@@ -1,6 +1,6 @@
-package com.sparta.lucky.order.presentation.dto.request;
+package com.sparta.lucky.order.presentation.dto;
 
-import com.sparta.lucky.order.application.dto.request.CreateOrderCommand;
+import com.sparta.lucky.order.application.dto.CreateOrderCommand;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

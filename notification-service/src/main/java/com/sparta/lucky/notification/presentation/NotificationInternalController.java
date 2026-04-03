@@ -16,7 +16,7 @@ public class NotificationInternalController {
 
     private final NotificationService notificationService;
 
-    @Operation(summary = "[내부] 주문 알림 발송", description = "order-service가 주문 생성 시 호출")
+    @Operation(summary = "[내부] 주문 알림 발송", description = "delivery-service가 배송 경로 생성 완료 후 호출")
     @PostMapping("/order-alert")
     public ResponseEntity<Void> sendOrderAlert(
             @RequestBody SendOrderAlertCommand request,

@@ -1,13 +1,11 @@
 package com.sparta.lucky.order.infrastructure.client;
 
+import com.sparta.lucky.order.infrastructure.client.dto.FeignApiResponse;
 import com.sparta.lucky.order.infrastructure.client.dto.ProductResponse;
 import com.sparta.lucky.order.infrastructure.client.dto.StockResponse;
 import com.sparta.lucky.order.infrastructure.client.dto.StockUpdateRequest;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -15,15 +13,19 @@ import java.util.UUID;
 public interface ProductClient {
 
     @GetMapping("/internal/api/v1/products/{productId}")
-    ProductResponse getProduct(@PathVariable UUID productId);
+    FeignApiResponse<ProductResponse> getProduct(
+                @PathVariable UUID productId,
+                @RequestHeader("X-Internal-Request") String internalRequest);
 
     @PatchMapping("/internal/api/v1/products/{productId}/stock/decrease")
-    StockResponse decreaseStock(@PathVariable UUID productId,
-                                @RequestBody StockUpdateRequest request);
+    FeignApiResponse<StockResponse> decreaseStock(@PathVariable UUID productId,
+                                @RequestBody StockUpdateRequest request,
+                                @RequestHeader("X-Internal-Request") String internalRequest);
 
     @PatchMapping("/internal/api/v1/products/{productId}/stock/restore")
-    StockResponse restoreStock(@PathVariable UUID productId,
-                               @RequestBody StockUpdateRequest request);
+    FeignApiResponse<StockResponse> restoreStock(@PathVariable UUID productId,
+                               @RequestBody StockUpdateRequest request,
+                               @RequestHeader("X-Internal-Request") String internalRequest);
 
 
 }

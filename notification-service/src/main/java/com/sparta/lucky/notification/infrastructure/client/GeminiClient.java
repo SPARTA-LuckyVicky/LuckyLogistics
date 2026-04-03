@@ -1,4 +1,4 @@
-package com.sparta.lucky.notification.infrastructure;
+package com.sparta.lucky.notification.infrastructure.client;
 
 import com.sparta.lucky.notification.common.exception.BusinessException;
 import com.sparta.lucky.notification.common.exception.NotificationErrorCode;

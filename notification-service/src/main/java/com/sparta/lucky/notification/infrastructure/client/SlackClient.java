@@ -1,4 +1,4 @@
-package com.sparta.lucky.notification.infrastructure;
+package com.sparta.lucky.notification.infrastructure.client;
 
 import com.sparta.lucky.notification.common.exception.BusinessException;
 import com.sparta.lucky.notification.common.exception.NotificationErrorCode;
@@ -40,7 +40,7 @@ public class SlackClient {
         HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
 
         try {
-            ResponseEntity<Map> response = restTemplate.exchange(
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
                     SLACK_API_URL,
                     HttpMethod.POST,
                     request,
