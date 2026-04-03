@@ -28,8 +28,7 @@ public class DeliveryDriverReadService {
      * @return {@link DeliveryDriverReadResult}
      */
     public DeliveryDriverReadResult getDriver(UUID driverId) {
-        DeliveryDriver driver = deliveryDriverRepository.findActiveByUserId(driverId)
-            .orElseThrow(() -> new NotFoundException(ResponseCode.DRIVER_NOT_FOUND));
+        DeliveryDriver driver = getActiveDriverOrThrow(driverId);
         return DeliveryDriverReadResult.from(driver);
     }
 
@@ -41,14 +40,14 @@ public class DeliveryDriverReadService {
      * @return {@link DeliveryDriverReadResult}
      */
     public DeliveryDriverReadResult getDriver(UUID driverId, UUID accessId) {
-        DeliveryDriverReadResult driver = getDriver(driverId);
+        DeliveryDriver driver = getActiveDriverOrThrow(driverId);
 
         // TODO : add logic below
         // 1. get the hubId to which the user attempting the query belongs.
         // 2-a. if driver.hubId and accessor.hubId are the same, return result
         // 2-b. else, throw forbidden exception
 
-        return driver;
+        return DeliveryDriverReadResult.from(driver);
     }
 
     /**
@@ -71,5 +70,11 @@ public class DeliveryDriverReadService {
         // 1. get the hubId to which the user attempting the query belongs.
         // 2. query the list of delivery drivers using the hubId
         return null;
+    }
+
+    // Internal Query Methods =========================================================
+    public DeliveryDriver getActiveDriverOrThrow(UUID driverId) {
+        return deliveryDriverRepository.findActiveByUserId(driverId)
+            .orElseThrow(() -> new NotFoundException(ResponseCode.DRIVER_NOT_FOUND));
     }
 }

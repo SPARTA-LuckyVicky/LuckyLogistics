@@ -6,6 +6,7 @@ import com.sparta.lucky.order.application.dto.response.OrderResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +16,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/internal/api/v1/orders")
 @RequiredArgsConstructor
-public class InternalController {
+public class OrderInternalController {
 
     private final OrderService orderService;
 
@@ -25,10 +26,13 @@ public class InternalController {
     @PatchMapping("/{id}/complete")
     public ResponseEntity<OrderResponse> completeOrder(
             @PathVariable UUID id,
-            @RequestHeader(value = "X-Internal-Request", required = false) String internalRequest
+            @RequestHeader(value = "X-Internal-Request") String internalRequest
     ) {
         // TODO: JWT 연동 후 실제 인증 추가
         // 지금은 헤더 존재 여부만 확인
+        if (!"true".equals(internalRequest)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         return ResponseEntity.ok(orderService.completeOrder(id));
     }
 }

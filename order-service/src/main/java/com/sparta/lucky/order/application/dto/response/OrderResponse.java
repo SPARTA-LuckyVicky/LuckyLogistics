@@ -5,7 +5,6 @@ import com.sparta.lucky.order.domain.OrderStatus;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -21,8 +20,8 @@ public class OrderResponse {
 
     private String productName;
     private Integer quantity;
-    private BigDecimal unitPrice;
-    private BigDecimal totalPrice;
+    private Integer unitPrice;
+    private Integer totalPrice;
 
     private UUID deliveryId;
     private String originHubName;
