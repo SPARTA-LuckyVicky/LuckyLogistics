@@ -17,6 +17,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -32,7 +34,8 @@ public class OrderController {
     @Operation(summary = "주문 생성")
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
-            @RequestBody @Valid PostOrderReqDto request
+            @RequestBody @Valid PostOrderReqDto request,
+            @AuthenticationPrincipal String userId
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(orderService.createOrder(request.toCommand())));
@@ -64,6 +67,7 @@ public class OrderController {
     }
 
     @Operation(summary = "주문 수정", description = "requestNote, requestedDeadline 수정 가능 (CREATED 상태만)")
+    @PreAuthorize("hasAnyRole('MASTER', 'HUB_MANAGER')")
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<OrderResponse>> updateOrder(
             @PathVariable UUID id,
@@ -73,6 +77,7 @@ public class OrderController {
     }
 
     @Operation(summary = "주문 취소", description = "상태를 CANCELLED로 변경 (CREATED 상태만 가능, 노출 유지)")
+    @PreAuthorize("hasAnyRole('MASTER', 'HUB_MANAGER')")
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<ApiResponse<OrderResponse>> cancelOrder(
             @PathVariable UUID id
@@ -80,13 +85,15 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.success(orderService.cancelOrder(id)));
     }
 
+
     @Operation(summary = "주문 삭제", description = "Soft delete (CANCELLED / COMPLETED 상태만 가능)")
+    @PreAuthorize("hasRole('MASTER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteOrder(
             @PathVariable UUID id,
-            @RequestHeader(value = "X-User-Id") UUID deletedBy
+            @AuthenticationPrincipal String deletedBy
     ) {
-        orderService.deleteOrder(id, deletedBy);
+        orderService.deleteOrder(id, UUID.fromString(deletedBy));
         return ResponseEntity.ok(ApiResponse.success());
     }
 }
