@@ -8,6 +8,7 @@ import com.sparta.lucky.hub.infrastructure.HubRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,10 @@ public class HubService {
 
     private final HubRepository hubRepository;
 
-    @CacheEvict(cacheNames = "hub", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "hub", allEntries = true),
+            @CacheEvict(cacheNames = "hubs", key = "'all'")
+    })
     @Transactional
     public CreateHubResult createHub(CreateHubCommand command) {
         Hub hub = Hub.create(command.getName(), command.getAddress(), command.getLatitude(), command.getLongitude());
@@ -42,7 +46,7 @@ public class HubService {
                 .map(GetHubResult::from);
     }
 
-    @Cacheable(cacheNames = "hub")
+    @Cacheable(cacheNames = "hubs", key = "'all'")
     @Transactional(readOnly = true)
     public List<GetHubResult> getHubs() {
         return hubRepository.findAllByDeletedAtIsNull().stream()
@@ -50,7 +54,10 @@ public class HubService {
                 .toList();
     }
 
-    @CacheEvict(cacheNames = "hub", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "hub", allEntries = true),
+            @CacheEvict(cacheNames = "hubs", key = "'all'")
+    })
     @Transactional
     public GetHubResult updateHub(UpdateHubCommand command) {
         Hub hub = findActiveHub(command.getHubId());
@@ -58,14 +65,20 @@ public class HubService {
         return GetHubResult.from(hub);
     }
 
-    @CacheEvict(cacheNames = "hub", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "hub", allEntries = true),
+            @CacheEvict(cacheNames = "hubs", key = "'all'")
+    })
     @Transactional
     public void assignManager(AssignManagerCommand command) {
         Hub hub = findActiveHub(command.getHubId());
         hub.assignManager(command.getManagerId());
     }
 
-    @CacheEvict(cacheNames = "hub", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "hub", allEntries = true),
+            @CacheEvict(cacheNames = "hubs", key = "'all'")
+    })
     @Transactional
     public void deleteHub(UUID hubId, UUID deletedBy) {
         Hub hub = findActiveHub(hubId);

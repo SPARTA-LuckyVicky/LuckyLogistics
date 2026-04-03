@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +18,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @Tag(name = "Route Internal", description = "허브 경로 내부 서비스 간 통신 API")
+@Validated
 @RestController
 @RequestMapping("/internal/api/v1/routes")
 @RequiredArgsConstructor
@@ -28,10 +30,9 @@ public class RouteInternalController {
     @GetMapping
     public GetRouteResDto getRoute(
             @Parameter(description = "출발 허브 ID") @RequestParam @NotNull UUID originHubId,
-            @Parameter(description = "도착 위도") @RequestParam @NotNull BigDecimal destinationLat,
-            @Parameter(description = "도착 경도") @RequestParam @NotNull BigDecimal destinationLong
+            @Parameter(description = "도착 허브 ID") @RequestParam @NotNull UUID destinationHubId
     ) {
-        GetRouteResult result = routeService.getRoute(originHubId, destinationLat, destinationLong);
+        GetRouteResult result = routeService.getRoute(originHubId, destinationHubId);
 
         return GetRouteResDto.from(result);
     }
