@@ -16,8 +16,8 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("api/v1/drivers/**").hasAnyRole(Role.MASTER.toString(), Role.HUB_MANAGER.toString())
-                .requestMatchers("api/v1/drivers/me").hasRole(Role.DELIVERY_DRIVER.toString())
+                    .requestMatchers("/api/v1/drivers/me").hasRole(Role.DELIVERY_DRIVER.toString())
+                    .requestMatchers("/api/v1/drivers/**").hasAnyRole(Role.MASTER.toString(), Role.HUB_MANAGER.toString())
                 // permit all while dev
                     .anyRequest().permitAll()
 //                .anyRequest().authenticated()
