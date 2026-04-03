@@ -1,6 +1,8 @@
 package com.sparta.lucky.hub.application;
 
 import com.sparta.lucky.hub.application.dto.GetRouteResult;
+import com.sparta.lucky.hub.common.exception.BusinessException;
+import com.sparta.lucky.hub.common.exception.HubErrorCode;
 import com.sparta.lucky.hub.domain.HubRoute;
 import com.sparta.lucky.hub.infrastructure.HubRouteRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,5 +43,31 @@ public class RouteService {
     @Transactional
     public void saveHubRoute(HubRoute hubRoute) {
         hubRouteRepository.save(hubRoute);
+    }
+
+    @Transactional
+    public HubRoute createRoute(UUID originHubId, UUID destinationHubId, int distance, int duration) {
+        hubService.getHub(originHubId);
+        hubService.getHub(destinationHubId);
+        HubRoute route = HubRoute.create(originHubId, destinationHubId, distance, duration);
+        return hubRouteRepository.save(route);
+    }
+
+    @Transactional
+    public HubRoute updateRoute(UUID routeId, int distance, int duration) {
+        HubRoute route = findActiveRoute(routeId);
+        route.updateRouteInfo(distance, duration);
+        return route;
+    }
+
+    @Transactional
+    public void deleteRoute(UUID routeId, UUID deletedBy) {
+        HubRoute route = findActiveRoute(routeId);
+        route.softDelete(deletedBy);
+    }
+
+    private HubRoute findActiveRoute(UUID routeId) {
+        return hubRouteRepository.findByIdAndDeletedAtIsNull(routeId)
+                .orElseThrow(() -> new BusinessException(HubErrorCode.HUB_ROUTE_NOT_FOUND));
     }
 }
