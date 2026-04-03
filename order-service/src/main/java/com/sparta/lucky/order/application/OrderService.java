@@ -15,7 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 @Slf4j
@@ -37,7 +36,7 @@ public class OrderService {
      *
      * */
         String productName = "더미상품";
-        BigDecimal unitPrice = BigDecimal.valueOf(1000);
+        Integer unitPrice = 1000;
 
         Order order = Order.create(
                 request.getRequesterCompanyId(),
