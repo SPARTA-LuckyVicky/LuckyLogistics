@@ -32,6 +32,7 @@ public class NotificationService {
     private final AiMessageRepository aiMessageRepository;
 
     private static final UUID SYSTEM_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+    private static final String INTERNAL_REQUEST = "true";
 
     // ===== 주문 알림 =====
 
@@ -39,7 +40,7 @@ public class NotificationService {
     public void sendOrderAlert(SendOrderAlertCommand request) {
         // 1. order-service에서 주문 정보 조회
         OrderResponse order = orderClient
-                .getOrder(request.getOrderId(), "true")
+                .getOrder(request.getOrderId(), INTERNAL_REQUEST)
                 .getData();
 
         if (order == null) {

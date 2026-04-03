@@ -21,7 +21,7 @@ import java.util.UUID;
 public class OrderInternalController {
 
     private final OrderService orderService;
-
+    private static final String INTERNAL_REQUEST = "true";
     // ===================== 내부 API (서비스 간 통신 전용) =====================
 
     @Operation(summary = "[내부] 주문 완료 처리", description = "delivery-service가 배송 완료 시 호출")
@@ -30,7 +30,7 @@ public class OrderInternalController {
             @PathVariable UUID orderId,
             @RequestHeader(value = "X-Internal-Request") String internalRequest
     ) {
-        if (!"true".equals(internalRequest)) {
+        if (!INTERNAL_REQUEST.equals(internalRequest)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok(ApiResponse.success(orderService.completeOrder(orderId)));
@@ -42,7 +42,7 @@ public class OrderInternalController {
             @PathVariable UUID orderId,
             @RequestHeader(value = "X-Internal-Request") String internalRequest
     ) {
-        if (!"true".equals(internalRequest)) {
+        if (!INTERNAL_REQUEST.equals(internalRequest)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok(ApiResponse.success(orderService.getOrderInternal(orderId)));
