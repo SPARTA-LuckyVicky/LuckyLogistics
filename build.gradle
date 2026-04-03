@@ -46,6 +46,8 @@ subprojects {
 // 2. 일반 서비스용
 configure(subprojects.findAll { it.name.endsWith("-service") }) {
     dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter-security'
+        implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
         implementation 'org.springframework.boot:spring-boot-starter-web'
         implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
         runtimeOnly 'org.postgresql:postgresql'

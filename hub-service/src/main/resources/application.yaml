@@ -38,6 +38,13 @@ spring:
     virtual:
       enabled: true
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9090/realms/lucky
+          jwk-set-uri: http://lucky-keycloak:8080/realms/lucky/protocol/openid-connect/certs
+
 eureka:
   client:
     service-url:
