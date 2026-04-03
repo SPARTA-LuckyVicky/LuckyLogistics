@@ -1,6 +1,8 @@
 package com.sparta.lucky.hub.domain;
 
 import com.sparta.lucky.hub.common.entity.BaseEntity;
+import com.sparta.lucky.hub.common.exception.BusinessException;
+import com.sparta.lucky.hub.common.exception.HubErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -32,4 +34,22 @@ public class HubRoute extends BaseEntity {
 
     @Column(name = "distance", nullable = false)
     private Integer distance;
+
+    /** 그래프 탐색 전용 역방향 인스턴스 생성 (DB 저장 X) */
+    public HubRoute reverse() {
+        HubRoute reversed = new HubRoute();
+        reversed.originHubId = this.destinationHubId;
+        reversed.destinationHubId = this.originHubId;
+        reversed.distance = this.distance;
+        reversed.duration = this.duration;
+        return reversed;
+    }
+
+    public void updateRouteInfo(int distance, int duration) {
+        if (distance < 0 || duration < 0) {
+            throw new BusinessException(HubErrorCode.HUB_ROUTE_INVALID_VALUE);
+        }
+        this.distance = distance;
+        this.duration = duration;
+    }
 }

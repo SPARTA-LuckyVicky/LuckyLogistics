@@ -15,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -27,8 +29,8 @@ public class HubController {
 
     private final HubService hubService;
 
-    // Todo: 권한 설정
-    @Operation(summary = "허브 생성", description = "새로운 허브를 생성합니다.")
+    @Operation(summary = "허브 생성", description = "새로운 허브를 생성합니다. (MASTER 전용)")
+    @PreAuthorize("hasRole('MASTER')")
     @PostMapping
     public ResponseEntity<ApiResponse<PostHubResDto>> createHub(@Valid @RequestBody PostHubReqDto request) {
         CreateHubCommand command = CreateHubCommand.of(
@@ -52,7 +54,8 @@ public class HubController {
         return ResponseEntity.ok(ApiResponse.success(hubService.getHubsByPage(pageable).map(GetHubResDto::from)));
     }
 
-    @Operation(summary = "허브 정보 수정", description = "허브의 이름, 주소, 위경도를 수정합니다.")
+    @Operation(summary = "허브 정보 수정", description = "허브의 이름, 주소, 위경도를 수정합니다. (MASTER 전용)")
+    @PreAuthorize("hasRole('MASTER')")
     @PatchMapping("/{hubId}")
     public ResponseEntity<ApiResponse<GetHubResDto>> updateHub(
             @Parameter(description = "허브 ID") @PathVariable UUID hubId,
@@ -64,13 +67,14 @@ public class HubController {
         return ResponseEntity.ok(ApiResponse.success(GetHubResDto.from(hubService.updateHub(command))));
     }
 
-    @Operation(summary = "허브 삭제", description = "허브를 소프트 삭제합니다.")
+    @Operation(summary = "허브 삭제", description = "허브를 소프트 삭제합니다. (MASTER 전용)")
+    @PreAuthorize("hasRole('MASTER')")
     @DeleteMapping("/{hubId}")
     public ResponseEntity<ApiResponse<Void>> deleteHub(
             @Parameter(description = "허브 ID") @PathVariable UUID hubId,
-            @Parameter(description = "요청자 ID", hidden = true) @RequestHeader("X-User-Id") UUID deletedBy // Todo: 추후 수정
+            @Parameter(hidden = true) @AuthenticationPrincipal String deletedBy
     ) {
-        hubService.deleteHub(hubId, deletedBy);
+        hubService.deleteHub(hubId, UUID.fromString(deletedBy));
         return ResponseEntity.noContent().build();
     }
 }

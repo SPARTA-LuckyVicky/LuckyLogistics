@@ -1,14 +1,15 @@
 package com.sparta.lucky.order.domain;
 
 import com.sparta.lucky.order.common.entity.BaseEntity;
-import com.sparta.lucky.order.domain.OrderStatus;
-
+import com.sparta.lucky.order.common.exception.BusinessException;
+import com.sparta.lucky.order.common.exception.OrderErrorCode;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -42,10 +43,10 @@ public class Order extends BaseEntity {
     private Integer quantity;
 
     @Column(nullable = false)
-    private BigDecimal unitPrice;
+    private Integer unitPrice;
 
     @Column(nullable = false)
-    private BigDecimal totalPrice;
+    private Integer totalPrice;
 
     private UUID deliveryId;
 
@@ -73,16 +74,16 @@ public class Order extends BaseEntity {
             UUID productId,
             String productName,
             Integer quantity,
-            BigDecimal unitPrice,
+            Integer unitPrice,
             String requestNote,
             LocalDateTime requestedDeadline
     ) {
         // 생성 시점에서 수량과 가격 검증
         if (quantity == null || quantity <= 0) {
-            throw new IllegalArgumentException("수량은 1 이상이어야 합니다.");
+            throw new BusinessException(OrderErrorCode.ORDER_INVALID_QUANTITY);
         }
-        if (unitPrice == null || unitPrice.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("단가는 0보다 커야 합니다.");
+        if (unitPrice == null || unitPrice <= 0) {
+            throw new BusinessException(OrderErrorCode.ORDER_INVALID_PRICE);
         }
 
         Order order = new Order();
@@ -92,7 +93,7 @@ public class Order extends BaseEntity {
         order.productName = productName;
         order.quantity = quantity;
         order.unitPrice = unitPrice;
-        order.totalPrice = unitPrice.multiply(BigDecimal.valueOf(quantity));
+        order.totalPrice = unitPrice * quantity;
         order.requestNote = requestNote;
         order.requestedDeadline = requestedDeadline;
         order.status = OrderStatus.CREATED;
@@ -147,13 +148,13 @@ public class Order extends BaseEntity {
     // 상태 확인(CREATED) 메서드
     private void assertEditable() {
         if (this.status == OrderStatus.CANCELLED || this.status == OrderStatus.COMPLETED) {
-            throw new IllegalStateException("완료된 주문은 수정이 불가능 합니다.");
+            throw new BusinessException(OrderErrorCode.ORDER_CANNOT_BE_MODIFIED);
         }
     }
     // 삭제 가능 상태(CANCELLED/COMPLETED) 확인
     private void assertDeletable() {
         if (this.status == OrderStatus.CREATED) {
-            throw new IllegalStateException("진행 중인 주문은 삭제할 수 없습니다. 먼저 취소 해주세요.");
+            throw new BusinessException(OrderErrorCode.ORDER_CANNOT_BE_DELETED);
         }
     }
 }
