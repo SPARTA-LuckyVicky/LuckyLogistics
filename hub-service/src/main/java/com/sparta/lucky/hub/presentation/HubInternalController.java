@@ -35,6 +35,14 @@ public class HubInternalController {
         return ResponseEntity.ok(ApiResponse.success(GetHubResDto.from(hubService.getHub(hubId))));
     }
 
+    @Operation(summary = "[Internal] 매니저 ID로 허브 조회", description = "서비스 내부에서 허브 매니저 ID로 담당 허브 정보를 조회합니다.")
+    @GetMapping("/manager/{managerId}")
+    public ResponseEntity<ApiResponse<GetHubResDto>> getHubByManagerId(
+            @Parameter(description = "매니저 ID") @PathVariable UUID managerId
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(GetHubResDto.from(hubService.getHubByManagerId(managerId))));
+    }
+
     @Operation(summary = "[Internal] 허브 목록 조회", description = "서비스 내부에서 허브 목록을 페이지 단위로 조회합니다.")
     @GetMapping
     public ResponseEntity<ApiResponse<Page<GetHubResDto>>> getHubs(@ParameterObject @PageableDefault(size = 10) Pageable pageable) {
