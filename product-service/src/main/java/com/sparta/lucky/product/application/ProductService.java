@@ -88,6 +88,10 @@ public class ProductService {
             Pageable pageable) {
 
         // HUB_MANAGER는 담당 허브 소속 상품만 조회 가능 — 자동으로 hubId 필터 적용
+        // requesterHubId null 방어 — null이면 hubFilter=null이 되어 전체 조회로 열리는 버그 방지
+        if (ROLE_HUB_MANAGER.equals(requesterRole) && requesterHubId == null) {
+            throw new BusinessException(ProductErrorCode.PRODUCT_NOT_ALLOWED);
+        }
         UUID hubFilter = ROLE_HUB_MANAGER.equals(requesterRole) ? requesterHubId : null;
 
         return productRepository
