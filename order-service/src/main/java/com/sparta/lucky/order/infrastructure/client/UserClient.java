@@ -1,6 +1,6 @@
 package com.sparta.lucky.order.infrastructure.client;
 
-import com.sparta.lucky.order.infrastructure.client.dto.ApiResponse;
+import com.sparta.lucky.order.infrastructure.client.dto.FeignApiResponse;
 import com.sparta.lucky.order.infrastructure.client.dto.UserResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,5 +12,5 @@ import java.util.UUID;
 public interface UserClient {
 
     @GetMapping("/internal/api/v1/users/{userId}")
-    ApiResponse<UserResponse> getUser(@PathVariable UUID userId);
+    FeignApiResponse<UserResponse> getUser(@PathVariable UUID userId);
 }

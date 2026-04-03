@@ -1,6 +1,6 @@
 package com.sparta.lucky.order.infrastructure.client;
 
-import com.sparta.lucky.order.infrastructure.client.dto.ApiResponse;
+import com.sparta.lucky.order.infrastructure.client.dto.FeignApiResponse;
 import com.sparta.lucky.order.infrastructure.client.dto.CompanyResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +13,6 @@ import java.util.UUID;
 public interface CompanyClient {
 
     @GetMapping("/internal/api/v1/companies/{companyId}")
-    ApiResponse<CompanyResponse> getCompany(@PathVariable UUID companyId,
-                                            @RequestHeader("X-Internal-Request") String internalRequest);
+    FeignApiResponse<CompanyResponse> getCompany(@PathVariable UUID companyId,
+                                                 @RequestHeader("X-Internal-Request") String internalRequest);
 }
