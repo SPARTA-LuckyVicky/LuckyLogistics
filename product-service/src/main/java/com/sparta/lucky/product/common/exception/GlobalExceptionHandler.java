@@ -64,6 +64,15 @@ public class GlobalExceptionHandler {
                         ProductErrorCode.STOCK_CONFLICT.getMessage()));
     }
 
+    // 도메인 불변식 위반 (예: ProductStock.updateStock에 음수 입력) — 400
+    // 서비스 레이어에서 사전 검증하므로 실제 발생 가능성은 낮지만 API 계약 일관성을 위해 처리
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException e) {
+        log.warn("[IllegalArgument] {}", e.getMessage());
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.error("VALIDATION_004", e.getMessage()));
+    }
+
     // 그 외 예상치 못한 서버 에러
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {

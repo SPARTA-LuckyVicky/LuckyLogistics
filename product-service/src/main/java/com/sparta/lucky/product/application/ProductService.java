@@ -313,12 +313,9 @@ public class ProductService {
     private CompanyInfo validateCompany(UUID companyId) {
         log.info("[Feign] company-service 업체 검증 요청 - companyId: {}", companyId);
         try {
-            CompanyResponse companyResponse = companyClient.getCompany(companyId, INTERNAL_REQUEST).getData();
-            if (companyResponse == null) {
-                // 정상 응답이지만 data가 null인 경우 (비정상 계약)
-                log.warn("[Feign] company-service 응답 data=null - companyId: {}", companyId);
-                throw new BusinessException(ProductErrorCode.COMPANY_NOT_FOUND);
-            }
+            // requireData: success=false 또는 data=null이면 COMPANY_NOT_FOUND 예외 즉시 발생
+            CompanyResponse companyResponse = companyClient.getCompany(companyId, INTERNAL_REQUEST)
+                    .requireData(() -> new BusinessException(ProductErrorCode.COMPANY_NOT_FOUND));
             log.info("[Feign] company-service 업체 검증 성공 - companyId: {}, name: {}", companyId, companyResponse.getName());
             return CompanyInfo.from(companyResponse); // Infrastructure DTO → Application 변환
         } catch (FeignException.NotFound e) {
@@ -337,12 +334,9 @@ public class ProductService {
     private void validateHub(UUID hubId) {
         log.info("[Feign] hub-service 허브 검증 요청 - hubId: {}", hubId);
         try {
-            HubResponse hub = hubClient.getHub(hubId, INTERNAL_REQUEST).getData();
-            if (hub == null) {
-                // 정상 응답이지만 data가 null인 경우
-                log.warn("[Feign] hub-service 응답 data=null - hubId: {}", hubId);
-                throw new BusinessException(ProductErrorCode.HUB_NOT_FOUND);
-            }
+            // requireData: success=false 또는 data=null이면 HUB_NOT_FOUND 예외 즉시 발생
+            HubResponse hub = hubClient.getHub(hubId, INTERNAL_REQUEST)
+                    .requireData(() -> new BusinessException(ProductErrorCode.HUB_NOT_FOUND));
             log.info("[Feign] hub-service 허브 검증 성공 - hubId: {}, name: {}", hubId, hub.getName());
         } catch (FeignException.NotFound e) {
             // hub-service가 404 반환 — 해당 허브 없음
@@ -379,7 +373,8 @@ public class ProductService {
 
         if (ROLE_COMPANY_MANAGER.equals(requesterRole)) {
             // COMPANY_MANAGER: 본인 업체 상품만 조작 가능
-            if (!requesterId.equals(company.manager())) {
+            // company null 방어 — updateStock/deleteProduct 등에서 null 전달 시 NPE 방지
+            if (company == null || !requesterId.equals(company.manager())) {
                 throw new BusinessException(ProductErrorCode.PRODUCT_ACCESS_DENIED);
             }
             return;

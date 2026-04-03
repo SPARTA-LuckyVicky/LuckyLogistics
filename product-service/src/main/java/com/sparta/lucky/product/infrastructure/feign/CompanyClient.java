@@ -14,7 +14,7 @@ public interface CompanyClient {
 
     @GetMapping("/internal/api/v1/companies/{companyId}")
     FeignApiResponse<CompanyResponse> getCompany(
-            @PathVariable UUID companyId,
+            @PathVariable("companyId") UUID companyId,
             @RequestHeader("X-Internal-Request") String internalRequest
     );
 }
