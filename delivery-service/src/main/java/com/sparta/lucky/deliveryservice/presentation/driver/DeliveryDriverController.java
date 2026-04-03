@@ -5,6 +5,7 @@ import com.sparta.lucky.deliveryservice.application.DeliveryDriverService;
 import com.sparta.lucky.deliveryservice.common.code.Role;
 import com.sparta.lucky.deliveryservice.common.response.CommonApiResponse;
 import com.sparta.lucky.deliveryservice.common.response.ResponseCode;
+import com.sparta.lucky.deliveryservice.common.security.auth.ExternalUserPrincipal;
 import com.sparta.lucky.deliveryservice.presentation.driver.payload.DeliveryDriverCreateRequest;
 import com.sparta.lucky.deliveryservice.presentation.driver.payload.DeliveryDriverReadPageResponse;
 import com.sparta.lucky.deliveryservice.presentation.driver.payload.DeliveryDriverReadResponse;
@@ -18,13 +19,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,13 +42,12 @@ public class DeliveryDriverController {
     @PostMapping
     public ResponseEntity<CommonApiResponse<Void>> createDriver(
         @RequestBody @Valid final DeliveryDriverCreateRequest request,
-        @RequestHeader("X-User-Id") UUID userId,
-        @RequestHeader("X-User-Role") Role role
+        @AuthenticationPrincipal ExternalUserPrincipal user
     ) {
-        if(role.equals(Role.MASTER)) {
+        if(user.getRole().equals(Role.MASTER)) {
             deliveryDriverService.createDriver(request.toCommand());
-        } else if (role.equals(Role.HUB_MANAGER)) {
-            deliveryDriverService.createDriver(request.toCommand(), userId);
+        } else if (user.getRole().equals(Role.HUB_MANAGER)) {
+            deliveryDriverService.createDriver(request.toCommand(), user.getUserId());
         }
 
         return ResponseEntity.ok(CommonApiResponse.success(ResponseCode.DRIVER_CREATED));
@@ -57,10 +57,9 @@ public class DeliveryDriverController {
     @DeleteMapping("/{driverId}")
     public ResponseEntity<CommonApiResponse<LocalDateTime>> deleteDriver(
         @PathVariable UUID driverId,
-        @RequestHeader("X-User-Id") UUID userId,
-        @RequestHeader("X-User-Role") Role role
+        @AuthenticationPrincipal ExternalUserPrincipal user
     ) {
-        deliveryDriverService.deleteDriver(driverId, userId, role);
+        deliveryDriverService.deleteDriver(driverId, user.getUserId(), user.getRole());
 
         return ResponseEntity.ok(CommonApiResponse.success(ResponseCode.OK, LocalDateTime.now()));
     }
@@ -69,19 +68,18 @@ public class DeliveryDriverController {
     @GetMapping("/{driverId}")
     public ResponseEntity<CommonApiResponse<DeliveryDriverReadResponse>> getDriver(
         @PathVariable UUID driverId,
-        @RequestHeader("X-User-Id") UUID userId,
-        @RequestHeader("X-User-Role") Role role
+        @AuthenticationPrincipal ExternalUserPrincipal user
     ) {
         DeliveryDriverReadResponse response = null;
 
         // Branching by Role
-        if(role.equals(Role.MASTER)) {
+        if(user.getRole().equals(Role.MASTER)) {
             response = DeliveryDriverReadResponse.fromResult(
                 deliveryDriverReadService.getDriver(driverId)
             );
-        } else if (role.equals(Role.HUB_MANAGER)) {
+        } else if (user.getRole().equals(Role.HUB_MANAGER)) {
             response = DeliveryDriverReadResponse.fromResult(
-                deliveryDriverReadService.getDriver(driverId, userId)
+                deliveryDriverReadService.getDriver(driverId, user.getUserId())
             );
         }
 
@@ -91,16 +89,15 @@ public class DeliveryDriverController {
     @Operation(summary = "배송 담당자 본인 조회", description = "배송 담당자 본인을 조회합니다.")
     @GetMapping("/me")
     public ResponseEntity<CommonApiResponse<DeliveryDriverReadResponse>> getMe(
-        @RequestHeader("X-User-Id") UUID userId,
-        @RequestHeader("X-User-Role") Role role
+        @AuthenticationPrincipal ExternalUserPrincipal user
     ) {
-        if(!role.equals(Role.DELIVERY_DRIVER)) {
+        if(!user.getRole().equals(Role.DELIVERY_DRIVER)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(CommonApiResponse.error(ResponseCode.FORBIDDEN));
         }
 
         return ResponseEntity.ok(CommonApiResponse.success(ResponseCode.OK, DeliveryDriverReadResponse.fromResult(
-            deliveryDriverReadService.getDriver(userId)
+            deliveryDriverReadService.getDriver(user.getUserId())
         )));
     }
 
@@ -108,20 +105,19 @@ public class DeliveryDriverController {
     @GetMapping
     public ResponseEntity<CommonApiResponse<DeliveryDriverReadPageResponse>> getDrivers(
         @PageableDefault(page = 0, size = 10) Pageable pageable,
-        @RequestHeader("X-User-Id")  UUID userId,
-        @RequestHeader("X-User-Role") Role role
+        @AuthenticationPrincipal ExternalUserPrincipal user
     ) {
         DeliveryDriverReadPageResponse response = null;
 
         // branching by role
-        if(role.equals(Role.MASTER)) {
+        if(user.getRole().equals(Role.MASTER)) {
             response = DeliveryDriverReadPageResponse.from(
                 deliveryDriverReadService.getDrivers(pageable)
             );
         }
-        else if (role.equals(Role.HUB_MANAGER)) {
+        else if (user.getRole().equals(Role.HUB_MANAGER)) {
             response = DeliveryDriverReadPageResponse.from(
-                  deliveryDriverReadService.getDrivers(pageable, userId)
+                  deliveryDriverReadService.getDrivers(pageable, user.getUserId())
                 );
         }
 
@@ -133,15 +129,14 @@ public class DeliveryDriverController {
     public ResponseEntity<CommonApiResponse<?>> updateDriver(
         @PathVariable UUID driverId,
         @RequestBody final DeliveryDriverUpdateRequest request,
-        @RequestHeader("X-User-Id") UUID userId,
-        @RequestHeader("X-User-Role") Role role
+        @AuthenticationPrincipal ExternalUserPrincipal user
     ) {
 
         // Branching by Role
-        if(role.equals(Role.MASTER)) {
+        if(user.getRole().equals(Role.MASTER)) {
             deliveryDriverService.updateDriver(driverId, request.toCommand());
-        } else if(role.equals(Role.HUB_MANAGER)) {
-            deliveryDriverService.updateDriver(driverId, userId, request.toCommand());
+        } else if(user.getRole().equals(Role.HUB_MANAGER)) {
+            deliveryDriverService.updateDriver(driverId, user.getUserId(), request.toCommand());
         }
 
 
