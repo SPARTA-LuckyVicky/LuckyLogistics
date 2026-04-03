@@ -1,14 +1,17 @@
 package com.sparta.lucky.hub.common.config;
 
+import com.sparta.lucky.hub.common.filter.HeaderAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
@@ -25,8 +28,8 @@ public class SecurityConfig {
 //                        .anyRequest().authenticated()
                         // 현재는 모든 요청 permitAll
                         .anyRequest().permitAll()
-                )
-                .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()));
+                );
+//                .addFilterBefore(new HeaderAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
