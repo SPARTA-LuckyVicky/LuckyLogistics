@@ -16,7 +16,9 @@ public enum ProductErrorCode implements ErrorCode {
     STOCK_NOT_ENOUGH("PRODUCT_006", "재고가 부족합니다.", 409),
     STOCK_CONFLICT("PRODUCT_007", "재고 동시 수정 충돌 발생. 다시 시도해주세요.", 409),
     // 차감/복원 요청 수량이 0 이하인 경우 — 음수 수량으로 인한 재고 증가·감소 버그 방지
-    INVALID_STOCK_QUANTITY("PRODUCT_008", "수량은 1 이상이어야 합니다.", 400);
+    INVALID_STOCK_QUANTITY("PRODUCT_008", "수량은 1 이상이어야 합니다.", 400),
+    // 재고 복원 시 int 최대값 초과 방지 - currentStock + quantity > Integer.MAX_VALUE
+    STOCK_OVERFLOW("PRODUCT_009", "재고가 최대값을 초과합니다.", 400);
 
     private final String code;
     private final String message;

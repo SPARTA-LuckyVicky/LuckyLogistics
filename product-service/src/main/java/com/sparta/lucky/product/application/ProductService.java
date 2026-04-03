@@ -271,7 +271,15 @@ public class ProductService {
         Product product = productRepository.findByIdWithStock(productId)
                 .orElseThrow(() -> new BusinessException(ProductErrorCode.PRODUCT_NOT_FOUND));
 
-        int newStock = product.getStock().getStock() + quantity;
+        int currentStock = product.getStock().getStock();
+
+        // int 오버플로우 방지 - currentStock + quantity가 Integer.MAX_VALUE 초과 시 음수로 wrap-around
+        if (currentStock > Integer.MAX_VALUE - quantity) {
+            log.warn("재고 오버플로우 감지 - productId: {}, currentStock: {}, quantity: {}", productId, currentStock, quantity);
+            throw new BusinessException(ProductErrorCode.STOCK_OVERFLOW);
+        }
+
+        int newStock = currentStock + quantity;
         product.getStock().updateStock(newStock);
         log.info("재고 복원 완료 - productId: {}, 복원: {}, 잔여: {}", productId, quantity, newStock);
         return StockChangeResult.from(product);
