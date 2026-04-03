@@ -1,6 +1,7 @@
 package com.sparta.lucky.hub.common.config;
 
 import com.sparta.lucky.hub.common.filter.HeaderAuthenticationFilter;
+import com.sparta.lucky.hub.common.filter.InternalRequestFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -29,6 +30,7 @@ public class SecurityConfig {
                         // 현재는 모든 요청 permitAll
                         .anyRequest().permitAll()
                 );
+//                .addFilterBefore(new InternalRequestFilter(), UsernamePasswordAuthenticationFilter.class)
 //                .addFilterBefore(new HeaderAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
