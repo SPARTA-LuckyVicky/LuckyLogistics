@@ -3,7 +3,6 @@ package com.sparta.lucky.order.domain;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,9 +22,10 @@ public interface OrderRepository {
             UUID originHubId, UUID destinationHubId,
             OrderStatus status, Pageable pageable);
 
-    // 배송 담당자용
-    Page<Order> findByDeliveryIdIn(List<UUID> deliveryIds, Pageable pageable);
-    Page<Order> findByDeliveryIdInAndStatus(List<UUID> deliveryIds, OrderStatus status, Pageable pageable);
+    Page<Order> findByHubAndCompany(UUID hubId,
+                                    UUID companyId,
+                                    OrderStatus status,
+                                    Pageable pageable);
 
 
 }

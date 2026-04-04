@@ -47,6 +47,8 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<ApiResponse<Page<OrderResponse>>> getOrders(
             @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) UUID hubId,
+            @RequestParam(required = false) UUID companyId,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable,
             @AuthenticationPrincipal String userId,
@@ -58,7 +60,7 @@ public class OrderController {
         }
         UUID userUUID = userId != null ? UUID.fromString(userId) : null;
         return ResponseEntity.ok(ApiResponse.success(
-                orderService.getOrders(status, role, userUUID, pageable)));
+                orderService.getOrders(status, role, hubId, companyId, userUUID, pageable)));
     }
 
     @Operation(summary = "주문 단건 조회")

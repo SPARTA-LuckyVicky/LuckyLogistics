@@ -63,13 +63,13 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public Page<Order> findByDeliveryIdIn(List<UUID> deliveryIds, Pageable pageable) {
-        return jpaRepository.findByDeliveryIdIn(deliveryIds, pageable);
+    public Page<Order> findByHubAndCompany(UUID hubId, UUID companyId, OrderStatus status, Pageable pageable) {
+        if (status != null) {
+            return jpaRepository.findByHubAndCompanyAndStatus(hubId, companyId, status, pageable);
+        }
+        return jpaRepository.findByHubAndCompany(hubId, companyId, pageable);
     }
 
-    @Override
-    public Page<Order> findByDeliveryIdInAndStatus(List<UUID> deliveryIds, OrderStatus status, Pageable pageable) {
-        return jpaRepository.findByDeliveryIdInAndStatus(deliveryIds, status, pageable);
-    }
+
 
 }

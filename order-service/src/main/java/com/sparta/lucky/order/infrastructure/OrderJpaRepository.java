@@ -47,17 +47,27 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
             UUID originHubId, UUID destinationHubId,
             Pageable pageable);
 
-    // 배송 담당자용
-    Page<Order> findByDeliveryIdIn(List<UUID> deliveryIds, Pageable pageable);
+    @Query("""
+    SELECT o FROM Order o
+    WHERE (o.originHubId = :hubId OR o.destinationHubId = :hubId)
+    AND (o.requesterCompanyId = :companyId OR o.receiverCompanyId = :companyId)
+    """)
+    Page<Order> findByHubAndCompany(
+            @Param("hubId") UUID hubId,
+            @Param("companyId") UUID companyId,
+            Pageable pageable);
 
     @Query("""
-        SELECT o FROM Order o
-        WHERE o.deliveryId IN :deliveryIds
-        AND o.status = :status
-        """)
-    Page<Order> findByDeliveryIdInAndStatus(
-            @Param("deliveryIds") List<UUID> deliveryIds,
+    SELECT o FROM Order o
+    WHERE (o.originHubId = :hubId OR o.destinationHubId = :hubId)
+    AND (o.requesterCompanyId = :companyId OR o.receiverCompanyId = :companyId)
+    AND o.status = :status
+    """)
+    Page<Order> findByHubAndCompanyAndStatus(
+            @Param("hubId") UUID hubId,
+            @Param("companyId") UUID companyId,
             @Param("status") OrderStatus status,
             Pageable pageable);
+
 
 }
