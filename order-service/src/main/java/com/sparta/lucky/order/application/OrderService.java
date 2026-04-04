@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -45,18 +46,45 @@ public class OrderService {
         if (product == null) {
             throw new BusinessException(OrderErrorCode.PRODUCT_NOT_FOUND);
         }
+        // 재고 차감 후 순위로 미룸
 
-        // 2. 재고 차감 (실패 시 주문 롤백)
-        StockResponse stock = productClient
-                .decreaseStock(request.getProductId(),
-                        new StockUpdateRequest(request.getQuantity()),
-                        INTERNAL_REQUEST)
+        // 2. 업체 조회 :
+
+        // 3-1. 허브 조회 : 수령 업체 조회 → 도착 허브(destinationHubName), 도착 업체 주소(deliveryAddress) 확보
+        CompanyResponse receiverCompany = companyClient
+                .getCompany(request.getReceiverCompanyId(), INTERNAL_REQUEST)
                 .getData();
-        if (stock == null) {
-            throw new BusinessException(OrderErrorCode.OUT_OF_STOCK);
+        if (receiverCompany == null) {
+            throw new BusinessException(OrderErrorCode.COMPANY_NOT_FOUND);
         }
 
-        // 3. 주문 생성
+        // 3-2. 허브 조회 : 출발 허브 조회 → originHubName 확보
+        HubResponse originHub = hubClient
+                .getHub(product.getHubId(), INTERNAL_REQUEST)
+                .getData();
+        if (originHub == null) {
+            throw new BusinessException(OrderErrorCode.HUB_NOT_FOUND);
+        }
+
+        // 3-3. 허브 조회 : 도착 허브 조회 → destHubName, hubManagerId 확보
+        HubResponse destHub = hubClient
+                .getHub(receiverCompany.getHubId(),INTERNAL_REQUEST)
+                .getData();
+        if (destHub == null) {
+            throw new BusinessException(OrderErrorCode.HUB_NOT_FOUND);
+        }
+
+        // 4. 유저 조회 : 수령자 조회 → recipientName, recipientSlackId 확보
+        UserResponse recipient = userClient
+                .getUser(receiverCompany.getManager(), INTERNAL_REQUEST)
+                .getData();
+
+        // 4-1. 유저 조회 : 출발 허브 매니저 슬랙ID 조회
+        UserResponse hubManager = userClient
+                .getUser(originHub.getManagerId(), INTERNAL_REQUEST)
+                .getData();
+
+        // 5. 주문 생성
         Order order = Order.create(
                 request.getRequesterCompanyId(),
                 request.getReceiverCompanyId(),
@@ -68,41 +96,17 @@ public class OrderService {
                 request.getRequestedDeadline()
         );
 
-        // 4. 수령 업체 조회 → 도착 허브(destinationHubName), 도착 업체 주소(deliveryAddress) 확보
-        CompanyResponse receiverCompany = companyClient
-                .getCompany(request.getReceiverCompanyId(), INTERNAL_REQUEST)
+        // 6. 재고 차감 (실패 시 주문 롤백) <- 이동
+        StockResponse stock = productClient
+                .decreaseStock(request.getProductId(),
+                        new StockUpdateRequest(request.getQuantity()),
+                        INTERNAL_REQUEST)
                 .getData();
-        if (receiverCompany == null) {
-            throw new BusinessException(OrderErrorCode.COMPANY_NOT_FOUND);
+        if (stock == null) {
+            throw new BusinessException(OrderErrorCode.OUT_OF_STOCK);
         }
 
-        // 5. 출발 허브 조회 → originHubName 확보
-        HubResponse originHub = hubClient
-                .getHub(product.getHubId(), INTERNAL_REQUEST)
-                .getData();
-        if (originHub == null) {
-            throw new BusinessException(OrderErrorCode.HUB_NOT_FOUND);
-        }
-
-        // 6. 도착 허브 조회 → destHubName, hubManagerId 확보
-        HubResponse destHub = hubClient
-                .getHub(receiverCompany.getHubId(),INTERNAL_REQUEST)
-                .getData();
-        if (destHub == null) {
-            throw new BusinessException(OrderErrorCode.HUB_NOT_FOUND);
-        }
-
-        // 7. 수령자 조회 → recipientName, recipientSlackId 확보
-        UserResponse recipient = userClient
-                .getUser(receiverCompany.getManager(), INTERNAL_REQUEST)
-                .getData();
-
-        // 8. 출발 허브 매니저 슬랙ID 조회
-        UserResponse hubManager = userClient
-                .getUser(originHub.getManagerId(), INTERNAL_REQUEST)
-                .getData();
-
-        // 9. 배송 생성 → deliveryId 확보
+        // 7. 배송 생성 → deliveryId 확보
         DeliveryCreateResponse delivery = deliveryClient
                 .createDelivery(new DeliveryCreateRequest(
                         order.getId(),
@@ -113,13 +117,22 @@ public class OrderService {
                         request.getRequestedDeadline()
                 ), INTERNAL_REQUEST)
                 .getData();
+        if (delivery == null || delivery.getDeliveryId() == null) {
+            // 보상 트랜잭션: 재고 복원
+            productClient.restoreStock(
+                    request.getProductId(),
+                    new StockUpdateRequest(request.getQuantity()),
+                    INTERNAL_REQUEST
+            );
+            throw new BusinessException(OrderErrorCode.DELIVERY_CREATE_FAILED);
+        }
 
-        // 10. 주문에 배송 정보 업데이트
+        // 8. 주문에 배송 정보 업데이트
         order.updateDeliveryInfo(
                 //  -> 랜덤값
-                delivery != null ? delivery.getDeliveryId() : UUID.randomUUID(),
-                originHub.getHubId(),    // 추가
-                destHub.getHubId(),      // 추가
+                delivery.getDeliveryId(),
+                originHub.getHubId(),
+                destHub.getHubId(),
                 originHub.getName(),
                 destHub.getName(),
                 receiverCompany.getAddress(),
@@ -165,15 +178,26 @@ public class OrderService {
             return orderRepository.findByRequesterCompanyIdOrReceiverCompanyId(
                             user.getCompanyId(), user.getCompanyId(), status, pageable)
                     .map(OrderResponse::from);
+        } //else if ("DELIVERY_DRIVER".equals(role)) {
+            // TODO: 본인 배송 주문만 (delivery-service 구현 후) 주석 제외
+            // delivery-service에서 본인 담당 deliveryId 목록 조회
+//            List<UUID> deliveryIds = deliveryClient
+//                    .getDeliveryIdsByDriver(userId, INTERNAL_REQUEST)
+//                    .getData();
+//            if (deliveryIds == null || deliveryIds.isEmpty()) {
+//                return Page.empty(pageable);
+//            }
+//            if (status != null) {
+//                return orderRepository.findByDeliveryIdInAndStatus(deliveryIds, status, pageable)
+//                        .map(OrderResponse::from);
+//            }
+//            return orderRepository.findByDeliveryIdIn(deliveryIds, pageable)
+//                    .map(OrderResponse::from);
 
-        } else {
-            // DELIVERY_DRIVER 등
-            if (status != null) {
-                return orderRepository.findByStatus(status, pageable)
-                        .map(OrderResponse::from);
-            }
-            return orderRepository.findAll(pageable)
-                    .map(OrderResponse::from);
+        //}
+        else {
+            // 미허용 역할 → 접근 거부
+            throw new BusinessException(OrderErrorCode.ORDER_ACCESS_DENIED);
         }
     }
 
@@ -194,22 +218,28 @@ public class OrderService {
     @Transactional
     public OrderResponse cancelOrder(UUID id) {
         Order order = findOrderById(id);
-        // 1. 배송 상태 확인: deliveryClient.getDeliveryStatus(id)
-        //    → WAITING 아니면 에러
+
+        // 1. 먼저 주문 상태 검증 (이미 취소/완료된 주문이면 외부 호출 전에 차단)
+        if (order.getStatus() != OrderStatus.CREATED) {
+            throw new BusinessException(OrderErrorCode.INVALID_ORDER_STATUS);
+        }
+
+        // 2. 배송 상태 확인
         DeliveryStatusResponse status = deliveryClient
                 .getDeliveryStatus(id, INTERNAL_REQUEST)
                 .getData();
         if (status != null && !"WAITING".equals(status.getDeliveryStatus())) {
             throw new BusinessException(OrderErrorCode.INVALID_ORDER_STATUS);
         }
-        // 2. 재고 복원: productClient.restoreStock(productId, quantity)
+
+        // 3. 재고 복원
         productClient.restoreStock(
                 order.getProductId(),
                 new StockUpdateRequest(order.getQuantity()),
                 INTERNAL_REQUEST
         );
 
-        // TODO: 3. 배송 취소 API (delivery-service 구현 후 추가)
+        // TODO: 4. 배송 취소 API
         order.cancel();
         return OrderResponse.from(order);
     }
