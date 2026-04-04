@@ -160,7 +160,6 @@ public class OrderService {
 
         // 8. 주문에 배송 정보 업데이트
         order.updateDeliveryInfo(
-                //  -> 랜덤값
                 delivery.getDeliveryId(),
                 originHub.getHubId(),
                 destHub.getHubId(),
@@ -178,25 +177,38 @@ public class OrderService {
     }
 
     // 주문 목록 조회 (페이징 + status 필터 + 역할별 조회 결과 다르게)
+    // 목록을 조회 하는건 마스터, 허브 매니저, 업체 매니저 만 가능
     public Page<OrderResponse> getOrders(OrderStatus status,
                                          String role,
+                                         UUID hubId,
+                                         UUID companyId,
                                          UUID userId,
                                          Pageable pageable) {
-
         if ("MASTER".equals(role)) {
-            if (status != null) {
-                return orderRepository.findByStatus(status, pageable)
-                        .map(OrderResponse::from);
+            if (hubId != null) {
+                return orderRepository.findByOriginHubIdOrDestinationHubId(
+                        hubId, hubId, status, pageable).map(OrderResponse::from);
             }
-            return orderRepository.findAll(pageable)
-                    .map(OrderResponse::from);
+            if (companyId != null) {
+                return orderRepository.findByRequesterCompanyIdOrReceiverCompanyId(
+                        companyId, companyId, status, pageable).map(OrderResponse::from);
+            }
+            // hubId, companyId 없으면 status만 or 전체
+            if (status != null) {
+                return orderRepository.findByStatus(status, pageable).map(OrderResponse::from);
+            }
+            return orderRepository.findAll(pageable).map(OrderResponse::from);
 
         } else if ("HUB_MANAGER".equals(role)) {
             UserResponse user = userClient.getUser(userId, INTERNAL_REQUEST).getData();
             if (user == null || user.getHubId() == null) {
                 throw new BusinessException(OrderErrorCode.HUB_NOT_FOUND);
             }
-            // hub-service 호출 없이 hubId로 바로 필터링!
+            // 업체별 필터
+            if (companyId != null) {
+                return orderRepository.findByHubAndCompany(
+                        user.getHubId(), companyId, status, pageable).map(OrderResponse::from);
+            }
             return orderRepository.findByOriginHubIdOrDestinationHubId(
                             user.getHubId(), user.getHubId(), status, pageable)
                     .map(OrderResponse::from);
@@ -209,24 +221,7 @@ public class OrderService {
             return orderRepository.findByRequesterCompanyIdOrReceiverCompanyId(
                             user.getCompanyId(), user.getCompanyId(), status, pageable)
                     .map(OrderResponse::from);
-        } //else if ("DELIVERY_DRIVER".equals(role)) {
-            // TODO: 본인 배송 주문만 (delivery-service 구현 후) 주석 제외
-            // 연관 ; JPARepository, Controller
-            // delivery-service에서 본인 담당 deliveryId 목록 조회
-//            List<UUID> deliveryIds = deliveryClient
-//                    .getDeliveryIdsByDriver(userId, INTERNAL_REQUEST)
-//                    .getData();
-//            if (deliveryIds == null || deliveryIds.isEmpty()) {
-//                return Page.empty(pageable);
-//            }
-//            if (status != null) {
-//                return orderRepository.findByDeliveryIdInAndStatus(deliveryIds, status, pageable)
-//                        .map(OrderResponse::from);
-//            }
-//            return orderRepository.findByDeliveryIdIn(deliveryIds, pageable)
-//                    .map(OrderResponse::from);
-
-        //}
+        }
         else {
             // 미허용 역할 → 접근 거부
             throw new BusinessException(OrderErrorCode.ORDER_ACCESS_DENIED);
@@ -234,6 +229,7 @@ public class OrderService {
     }
 
     // 주문 단건 조회
+    // 모든 역할 가능
     public OrderResponse getOrder(UUID id) {
         return OrderResponse.from(findOrderById(id));
     }
@@ -271,7 +267,8 @@ public class OrderService {
                 INTERNAL_REQUEST
         );
 
-        // TODO: 4. 배송 취소 API
+        // TODO: 4. 배송 취소 API 구현되면 추가
+        // // deliveryClient.cancelDelivery(order.getDeliveryId(), INTERNAL_REQUEST);
         order.cancel();
         return OrderResponse.from(order);
     }
