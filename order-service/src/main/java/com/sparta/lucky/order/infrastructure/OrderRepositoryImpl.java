@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -59,6 +60,16 @@ public class OrderRepositoryImpl implements OrderRepository {
         }
         return jpaRepository.findByOriginHubIdOrDestinationHubId(
                 originHubId, destinationHubId, pageable);
+    }
+
+    @Override
+    public Page<Order> findByDeliveryIdIn(List<UUID> deliveryIds, Pageable pageable) {
+        return jpaRepository.findByDeliveryIdIn(deliveryIds, pageable);
+    }
+
+    @Override
+    public Page<Order> findByDeliveryIdInAndStatus(List<UUID> deliveryIds, OrderStatus status, Pageable pageable) {
+        return jpaRepository.findByDeliveryIdInAndStatus(deliveryIds, status, pageable);
     }
 
 }

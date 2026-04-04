@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
@@ -45,4 +46,18 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
     Page<Order> findByOriginHubIdOrDestinationHubId(
             UUID originHubId, UUID destinationHubId,
             Pageable pageable);
+
+    // 배송 담당자용
+    Page<Order> findByDeliveryIdIn(List<UUID> deliveryIds, Pageable pageable);
+
+    @Query("""
+        SELECT o FROM Order o
+        WHERE o.deliveryId IN :deliveryIds
+        AND o.status = :status
+        """)
+    Page<Order> findByDeliveryIdInAndStatus(
+            @Param("deliveryIds") List<UUID> deliveryIds,
+            @Param("status") OrderStatus status,
+            Pageable pageable);
+
 }
