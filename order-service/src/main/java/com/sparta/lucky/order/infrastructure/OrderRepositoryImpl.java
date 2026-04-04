@@ -50,15 +50,15 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public Page<Order> findByOriginHubNameOrDestinationHubName(
-            String originHubName, String destinationHubName,
+    public Page<Order> findByOriginHubIdOrDestinationHubId(
+            UUID originHubId, UUID destinationHubId,
             OrderStatus status, Pageable pageable) {
         if (status != null) {
-            return jpaRepository.findByOriginHubNameOrDestinationHubNameAndStatus(
-                    originHubName, destinationHubName, status, pageable);
+            return jpaRepository.findByOriginHubIdOrDestinationHubIdAndStatus(
+                    originHubId, destinationHubId, status, pageable);
         }
-        return jpaRepository.findByOriginHubNameOrDestinationHubName(
-                originHubName, destinationHubName, pageable);
+        return jpaRepository.findByOriginHubIdOrDestinationHubId(
+                originHubId, destinationHubId, pageable);
     }
 
 }

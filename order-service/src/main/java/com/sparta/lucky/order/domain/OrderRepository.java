@@ -17,9 +17,10 @@ public interface OrderRepository {
             UUID requesterCompanyId, UUID receiverCompanyId,
             OrderStatus status, Pageable pageable);
 
-    // 허브 매니저용
-    Page<Order> findByOriginHubNameOrDestinationHubName(
-            String originHubName, String destinationHubName,
+    // 허브 매니저용 - 기존 허브명 조회 제거하고 hubId 조회로 교체
+    Page<Order> findByOriginHubIdOrDestinationHubId(
+            UUID originHubId, UUID destinationHubId,
             OrderStatus status, Pageable pageable);
+
 
 }

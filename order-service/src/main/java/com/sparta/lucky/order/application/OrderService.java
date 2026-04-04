@@ -118,6 +118,8 @@ public class OrderService {
         order.updateDeliveryInfo(
                 //  -> 랜덤값
                 delivery != null ? delivery.getDeliveryId() : UUID.randomUUID(),
+                originHub.getHubId(),    // 추가
+                destHub.getHubId(),      // 추가
                 originHub.getName(),
                 destHub.getName(),
                 receiverCompany.getAddress(),
@@ -146,19 +148,14 @@ public class OrderService {
                     .map(OrderResponse::from);
 
         } else if ("HUB_MANAGER".equals(role)) {
-            // userId로 user-service 조회 → hubId 확보 → hub-service 조회 → 허브명 확보
             UserResponse user = userClient.getUser(userId, INTERNAL_REQUEST).getData();
             if (user == null || user.getHubId() == null) {
                 throw new BusinessException(OrderErrorCode.HUB_NOT_FOUND);
             }
-            HubResponse hub = hubClient.getHub(user.getHubId(), INTERNAL_REQUEST).getData();
-            if (hub == null) {
-                throw new BusinessException(OrderErrorCode.HUB_NOT_FOUND);
-            }
-            return orderRepository.findByOriginHubNameOrDestinationHubName(
-                            hub.getName(), hub.getName(), status, pageable)
+            // hub-service 호출 없이 hubId로 바로 필터링!
+            return orderRepository.findByOriginHubIdOrDestinationHubId(
+                            user.getHubId(), user.getHubId(), status, pageable)
                     .map(OrderResponse::from);
-
         } else if ("COMPANY_MANAGER".equals(role)) {
             // userId로 user-service 조회 → companyId 확보
             UserResponse user = userClient.getUser(userId, INTERNAL_REQUEST).getData();

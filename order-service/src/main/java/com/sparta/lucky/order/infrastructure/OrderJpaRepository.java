@@ -20,12 +20,12 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
             Pageable pageable);
 
     // 허브 매니저용
-    Page<Order> findByOriginHubNameOrDestinationHubNameAndStatus(
-            String originHubName, String destinationHubName,
+    Page<Order> findByOriginHubIdOrDestinationHubIdAndStatus(
+            UUID originHubId, UUID destinationHubId,
             OrderStatus status, Pageable pageable);
 
-    Page<Order> findByOriginHubNameOrDestinationHubName(
-            String originHubName, String destinationHubName,
+    Page<Order> findByOriginHubIdOrDestinationHubId(
+            UUID originHubId, UUID destinationHubId,
             Pageable pageable);
 
 
