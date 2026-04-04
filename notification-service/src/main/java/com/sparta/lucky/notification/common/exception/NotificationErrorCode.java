@@ -14,7 +14,7 @@ public enum NotificationErrorCode implements ErrorCode {
     SLACK_ID_INVALID("NTF_005", "슬랙 ID가 유효하지 않습니다.", 400),
     ORDER_NOT_FOUND("NTF_006", "주문 정보를 찾을 수 없습니다.", 404),
     ORDER_SERVICE_FAILED("NTF_007", "주문 서비스 조회에 실패했습니다.", 500),
-
+    ACCESS_DENIED("NTF_008", "접근 권한이 없습니다.", 403),
     ;
 
     private final String code;
