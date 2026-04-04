@@ -3,6 +3,7 @@ package com.sparta.lucky.order.common.config;
 import com.sparta.lucky.order.common.filter.HeaderAuthenticationFilter;
 import com.sparta.lucky.order.common.filter.InternalRequestFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -36,5 +37,31 @@ public class SecurityConfig {
                         HeaderAuthenticationFilter.class)
                 .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()));
         return http.build();
+    }
+
+    @Bean
+    public HeaderAuthenticationFilter headerAuthenticationFilter() {
+        return new HeaderAuthenticationFilter();
+    }
+
+    @Bean
+    public InternalRequestFilter internalRequestFilter() {
+        return new InternalRequestFilter();
+    }
+
+    @Bean
+    public FilterRegistrationBean<HeaderAuthenticationFilter> headerFilterRegistration(
+            HeaderAuthenticationFilter filter) {
+        FilterRegistrationBean<HeaderAuthenticationFilter> bean = new FilterRegistrationBean<>(filter);
+        bean.setEnabled(false); // 서블릿 자동 등록 비활성화
+        return bean;
+    }
+
+    @Bean
+    public FilterRegistrationBean<InternalRequestFilter> internalFilterRegistration(
+            InternalRequestFilter filter) {
+        FilterRegistrationBean<InternalRequestFilter> bean = new FilterRegistrationBean<>(filter);
+        bean.setEnabled(false);
+        return bean;
     }
 }
