@@ -40,27 +40,17 @@ public class SecurityConfig {
     }
 
     @Bean
-    public HeaderAuthenticationFilter headerAuthenticationFilter() {
-        return new HeaderAuthenticationFilter();
-    }
-
-    @Bean
-    public InternalRequestFilter internalRequestFilter() {
-        return new InternalRequestFilter();
-    }
-
-    @Bean
-    public FilterRegistrationBean<HeaderAuthenticationFilter> headerFilterRegistration(
-            HeaderAuthenticationFilter filter) {
-        FilterRegistrationBean<HeaderAuthenticationFilter> bean = new FilterRegistrationBean<>(filter);
+    public FilterRegistrationBean<HeaderAuthenticationFilter> headerFilterRegistration() {
+        FilterRegistrationBean<HeaderAuthenticationFilter> bean =
+                new FilterRegistrationBean<>(headerAuthenticationFilter);
         bean.setEnabled(false); // 서블릿 자동 등록 비활성화
         return bean;
     }
 
     @Bean
-    public FilterRegistrationBean<InternalRequestFilter> internalFilterRegistration(
-            InternalRequestFilter filter) {
-        FilterRegistrationBean<InternalRequestFilter> bean = new FilterRegistrationBean<>(filter);
+    public FilterRegistrationBean<InternalRequestFilter> internalFilterRegistration() {
+        FilterRegistrationBean<InternalRequestFilter> bean =
+                new FilterRegistrationBean<>(internalRequestFilter);
         bean.setEnabled(false);
         return bean;
     }
