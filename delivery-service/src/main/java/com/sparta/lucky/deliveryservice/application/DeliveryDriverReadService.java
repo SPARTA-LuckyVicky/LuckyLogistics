@@ -1,11 +1,12 @@
 package com.sparta.lucky.deliveryservice.application;
 
 import com.sparta.lucky.deliveryservice.application.dto.DeliveryDriverReadResult;
+import com.sparta.lucky.deliveryservice.common.error.exceptions.ForbiddenException;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.NotFoundException;
 import com.sparta.lucky.deliveryservice.common.response.ResponseCode;
 import com.sparta.lucky.deliveryservice.domain.driver.DeliveryDriver;
 import com.sparta.lucky.deliveryservice.domain.repos.DeliveryDriverRepository;
-import com.sparta.lucky.deliveryservice.presentation.driver.payload.DeliveryDriverReadResponse;
+import com.sparta.lucky.deliveryservice.infrastructure.client.UserClient;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeliveryDriverReadService {
 
     private final DeliveryDriverRepository deliveryDriverRepository;
+    private final UserClient userClient;
 
     /**
      * 배송 담당자를 조회합니다.
@@ -42,10 +44,7 @@ public class DeliveryDriverReadService {
     public DeliveryDriverReadResult getDriver(UUID driverId, UUID accessId) {
         DeliveryDriver driver = getActiveDriverOrThrow(driverId);
 
-        // TODO : add logic below
-        // 1. get the hubId to which the user attempting the query belongs.
-        // 2-a. if driver.hubId and accessor.hubId are the same, return result
-        // 2-b. else, throw forbidden exception
+        validateSameHubOrThrow(accessId, driver.getHubId());
 
         return DeliveryDriverReadResult.from(driver);
     }
@@ -66,15 +65,21 @@ public class DeliveryDriverReadService {
      * @return
      */
     public Page<DeliveryDriverReadResult> getDrivers(Pageable pageable, UUID accessId) {
-        // TODO : add logic below
-        // 1. get the hubId to which the user attempting the query belongs.
-        // 2. query the list of delivery drivers using the hubId
-        return null;
+        UUID hubId = userClient.getUserHubId(accessId).hubId();
+        return deliveryDriverRepository.findAllActiveByHubId(hubId, pageable).map(DeliveryDriverReadResult::from);
     }
 
     // Internal Query Methods =========================================================
     public DeliveryDriver getActiveDriverOrThrow(UUID driverId) {
         return deliveryDriverRepository.findActiveByUserId(driverId)
             .orElseThrow(() -> new NotFoundException(ResponseCode.DRIVER_NOT_FOUND));
+    }
+
+    // Validator =======================================================================
+    private void validateSameHubOrThrow(UUID accessId, UUID hubId) {
+        UUID userHubId = userClient.getUserHubId(accessId).hubId();
+        if (!hubId.equals(userHubId)) {
+            throw new ForbiddenException(ResponseCode.FORBIDDEN);
+        }
     }
 }

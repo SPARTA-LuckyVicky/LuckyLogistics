@@ -11,4 +11,5 @@ public interface DeliveryDriverRepository {
     Optional<DeliveryDriver> findActiveByUserId(UUID id);
     DeliveryDriver save(DeliveryDriver deliveryDriver);
     Page<DeliveryDriver> findAllActive(Pageable pageable);
+    Page<DeliveryDriver> findAllActiveByHubId(UUID hubId, Pageable pageable);
 }

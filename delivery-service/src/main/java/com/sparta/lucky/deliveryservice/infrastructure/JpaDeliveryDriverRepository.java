@@ -15,6 +15,7 @@ public interface JpaDeliveryDriverRepository
 
     Optional<DeliveryDriver> findByUserIdAndDeletedAtIsNull(UUID id);
     Page<DeliveryDriver> findAllByDeletedAtIsNull(Pageable pageable);
+    Page<DeliveryDriver> findAllByHubIdAndDeletedAtIsNull(UUID hubId, Pageable pageable);
 
 
     // override ====================================================
@@ -27,4 +28,9 @@ public interface JpaDeliveryDriverRepository
     default Page<DeliveryDriver> findAllActive(Pageable pageable) {
         return findAllByDeletedAtIsNull(pageable);
     }
+
+    @Override
+    default Page<DeliveryDriver> findAllActiveByHubId(UUID hubId, Pageable pageable) {
+        return findAllByHubIdAndDeletedAtIsNull(hubId, pageable);
+    };
 }
