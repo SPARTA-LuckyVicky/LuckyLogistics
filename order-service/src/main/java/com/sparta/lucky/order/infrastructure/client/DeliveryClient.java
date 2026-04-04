@@ -1,14 +1,13 @@
 package com.sparta.lucky.order.infrastructure.client;
 
 
-import com.sparta.lucky.order.infrastructure.client.dto.FeignApiResponse;
 import com.sparta.lucky.order.infrastructure.client.dto.DeliveryCreateRequest;
 import com.sparta.lucky.order.infrastructure.client.dto.DeliveryCreateResponse;
 import com.sparta.lucky.order.infrastructure.client.dto.DeliveryStatusResponse;
+import com.sparta.lucky.order.infrastructure.client.dto.FeignApiResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @FeignClient(name = "delivery-service")

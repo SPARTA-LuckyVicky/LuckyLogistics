@@ -2,8 +2,8 @@ package com.sparta.lucky.order.application;
 
 import com.sparta.lucky.order.application.dto.CreateOrderCommand;
 import com.sparta.lucky.order.application.dto.OrderInternalResponse;
-import com.sparta.lucky.order.application.dto.UpdateOrderCommand;
 import com.sparta.lucky.order.application.dto.OrderResponse;
+import com.sparta.lucky.order.application.dto.UpdateOrderCommand;
 import com.sparta.lucky.order.common.exception.BusinessException;
 import com.sparta.lucky.order.common.exception.OrderErrorCode;
 import com.sparta.lucky.order.domain.Order;
@@ -18,7 +18,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
