@@ -184,6 +184,10 @@ public class OrderService {
                                          UUID userId,
                                          Pageable pageable) {
         if ("MASTER".equals(role)) {
+            if (hubId != null && companyId != null) {
+                return orderRepository.findByHubAndCompany(
+                        hubId, companyId, status, pageable).map(OrderResponse::from);
+            }
             if (hubId != null) {
                 return orderRepository.findByOriginHubIdOrDestinationHubId(
                         hubId, hubId, status, pageable).map(OrderResponse::from);
