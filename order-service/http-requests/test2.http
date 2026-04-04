@@ -1,0 +1,52 @@
+### 1. 주문 목록 조회 (MASTER - 전체)
+GET http://localhost:19500/api/v1/orders
+X-User-Id: 00000000-0000-0000-0000-000000000001
+X-User-Role: MASTER
+
+### 2. 주문 목록 조회 (MASTER - status 필터)
+GET http://localhost:19500/api/v1/orders?status=CREATED
+X-User-Id: 00000000-0000-0000-0000-000000000001
+X-User-Role: MASTER
+
+### 3. 주문 단건 조회
+GET http://localhost:19500/api/v1/orders/11111111-1111-1111-1111-111111111111
+X-User-Id: 00000000-0000-0000-0000-000000000001
+X-User-Role: MASTER
+
+### 4. 주문 수정
+PATCH http://localhost:19500/api/v1/orders/11111111-1111-1111-1111-111111111111
+Content-Type: application/json
+X-User-Id: 00000000-0000-0000-0000-000000000001
+X-User-Role: MASTER
+
+{
+  "requestNote": "수정된 요청사항입니다",
+  "requestedDeadline": "2026-04-20T15:00:00"
+}
+
+### 5. 주문 취소 (delivery 서비스 없어서 에러날 수 있음->에러남)
+PATCH http://localhost:19500/api/v1/orders/11111111-1111-1111-1111-111111111111/cancel
+X-User-Id: 00000000-0000-0000-0000-000000000001
+X-User-Role: MASTER
+
+### 6. 주문 삭제 (취소 후에 해야 함 - CANCELLED 상태만 가능->기존에 만들어두었던 취소데이터사용해서 확인 완료)
+DELETE http://localhost:19500/api/v1/orders/3e9b901c-236f-4f87-b0a5-ce87dc1d077e
+X-User-Id: 00000000-0000-0000-0000-000000000001
+X-User-Role: MASTER
+
+### 7. 내부 API - 주문 조회 (헤더 있음 - 200 떠야 함)
+GET http://localhost:19500/internal/api/v1/orders/11111111-1111-1111-1111-111111111111
+X-Internal-Request: true
+
+### 8. 내부 API - 헤더 없음 (403 떠야 함)
+GET http://localhost:19500/internal/api/v1/orders/11111111-1111-1111-1111-111111111111
+
+### 9. 없는 주문 조회 (404 떠야 함)
+GET http://localhost:19500/api/v1/orders/99999999-9999-9999-9999-999999999999
+X-User-Id: 00000000-0000-0000-0000-000000000001
+X-User-Role: MASTER
+
+### 10. 권한 없는 역할 목록 조회 (403 떠야 함)
+GET http://localhost:19500/api/v1/orders
+X-User-Id: 00000000-0000-0000-0000-000000000001
+X-User-Role: DELIVERY_DRIVER
