@@ -37,7 +37,7 @@ public class OrderService {
     private static final String INTERNAL_REQUEST = "true";
     // 주문 생성
     @Transactional
-    public OrderResponse createOrder(CreateOrderCommand request) {
+    public OrderResponse createOrder(CreateOrderCommand request,String userId,String role) {
 
         // 1. 상품 조회 → productName, unitPrice, originHubId 확보
         ProductResponse product = productClient
@@ -48,7 +48,26 @@ public class OrderService {
         }
         // 재고 차감 후 순위로 미룸
 
-        // 2. 업체 조회 :
+        // 2. 업체가 요청한 주문일 때 → 인증 사용자와 대조
+        CompanyResponse requesterCompany = companyClient
+                .getCompany(request.getRequesterCompanyId(), INTERNAL_REQUEST)
+                .getData();
+        if (requesterCompany == null) {
+            throw new BusinessException(OrderErrorCode.COMPANY_NOT_FOUND);
+        }
+        // 업체에서 요청한 주문일 때는 해당 검증 확인
+        if ("COMPANY_MANAGER".equals(role)) {
+            UserResponse user = userClient
+                    .getUser(UUID.fromString(userId), INTERNAL_REQUEST)
+                    .getData();
+            if (user == null || user.getCompanyId() == null) {
+                throw new BusinessException(OrderErrorCode.COMPANY_NOT_FOUND);
+            }
+            // 본인 업체가 수령업체인지 확인
+            if (!user.getCompanyId().equals(request.getReceiverCompanyId())) {
+                throw new BusinessException(OrderErrorCode.ORDER_ACCESS_DENIED);
+            }
+        }
 
         // 3-1. 허브 조회 : 수령 업체 조회 → 도착 허브(destinationHubName), 도착 업체 주소(deliveryAddress) 확보
         CompanyResponse receiverCompany = companyClient

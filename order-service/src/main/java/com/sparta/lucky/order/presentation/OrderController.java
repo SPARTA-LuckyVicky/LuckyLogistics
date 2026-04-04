@@ -35,10 +35,12 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
             @RequestBody @Valid PostOrderReqDto request,
-            @AuthenticationPrincipal String userId
+            @AuthenticationPrincipal String userId,
+            @RequestHeader(value = "X-User-Role", required = false) String role
+
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(orderService.createOrder(request.toCommand())));
+                .body(ApiResponse.success(orderService.createOrder(request.toCommand(),userId,role)));
     }
 
     @Operation(summary = "주문 목록 조회", description = "status 필터 가능. 페이지 사이즈: 10 / 30 / 50 (그 외는 10으로 고정)")

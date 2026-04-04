@@ -29,6 +29,8 @@ spring:
         jwt:
           issuer-uri: http://lucky-keycloak:8080/realms/lucky
           jwk-set-uri: http://lucky-keycloak:8080/realms/lucky/protocol/openid-connect/certs
+#    internal-request:
+#      secret: ${INTERNAL_REQUEST_SECRET:lucky-internal-secret}
 
 eureka:
   client:
