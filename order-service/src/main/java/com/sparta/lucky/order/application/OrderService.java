@@ -126,16 +126,28 @@ public class OrderService {
         }
 
         // 7. 배송 생성 → deliveryId 확보
-        DeliveryCreateResponse delivery = deliveryClient
-                .createDelivery(new DeliveryCreateRequest(
-                        order.getId(),
-                        request.getReceiverCompanyId(),
-                        product.getHubId(),
-                        recipient != null ? recipient.getName() : "미확인",
-                        recipient != null ? recipient.getReceiverSlackId() : "",
-                        request.getRequestedDeadline()
-                ), INTERNAL_REQUEST)
-                .getData();
+        DeliveryCreateResponse delivery;
+        try {
+            delivery = deliveryClient
+                    .createDelivery(new DeliveryCreateRequest(
+                            order.getId(),
+                            request.getReceiverCompanyId(),
+                            product.getHubId(),
+                            recipient != null ? recipient.getName() : "미확인",
+                            recipient != null ? recipient.getReceiverSlackId() : "",
+                            request.getRequestedDeadline()
+                    ), INTERNAL_REQUEST)
+                    .getData();
+        } catch (RuntimeException ex) {
+            // 보상 트랜잭션: 배송 생성 실패 시 재고 복원
+            log.error("배송 생성 실패 - 재고 복원 시작", ex);
+            productClient.restoreStock(
+                    request.getProductId(),
+                    new StockUpdateRequest(request.getQuantity()),
+                    INTERNAL_REQUEST
+            );
+            throw new BusinessException(OrderErrorCode.DELIVERY_CREATE_FAILED);
+        }
         if (delivery == null || delivery.getDeliveryId() == null) {
             // 보상 트랜잭션: 재고 복원
             productClient.restoreStock(
@@ -199,6 +211,7 @@ public class OrderService {
                     .map(OrderResponse::from);
         } //else if ("DELIVERY_DRIVER".equals(role)) {
             // TODO: 본인 배송 주문만 (delivery-service 구현 후) 주석 제외
+            // 연관 ; JPARepository, Controller
             // delivery-service에서 본인 담당 deliveryId 목록 조회
 //            List<UUID> deliveryIds = deliveryClient
 //                    .getDeliveryIdsByDriver(userId, INTERNAL_REQUEST)
