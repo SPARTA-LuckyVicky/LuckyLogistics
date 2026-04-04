@@ -131,14 +131,53 @@ public class OrderService {
 
     }
 
-    // 주문 목록 조회 (페이징 + status 필터)
-    public Page<OrderResponse> getOrders(OrderStatus status, Pageable pageable) {
-        if (status != null) {
-            return orderRepository.findByStatus(status, pageable)
+    // 주문 목록 조회 (페이징 + status 필터 + 역할별 조회 결과 다르게)
+    public Page<OrderResponse> getOrders(OrderStatus status,
+                                         String role,
+                                         UUID userId,
+                                         Pageable pageable) {
+
+        if ("MASTER".equals(role)) {
+            if (status != null) {
+                return orderRepository.findByStatus(status, pageable)
+                        .map(OrderResponse::from);
+            }
+            return orderRepository.findAll(pageable)
+                    .map(OrderResponse::from);
+
+        } else if ("HUB_MANAGER".equals(role)) {
+            // userId로 user-service 조회 → hubId 확보 → hub-service 조회 → 허브명 확보
+            UserResponse user = userClient.getUser(userId, INTERNAL_REQUEST).getData();
+            if (user == null || user.getHubId() == null) {
+                throw new BusinessException(OrderErrorCode.HUB_NOT_FOUND);
+            }
+            HubResponse hub = hubClient.getHub(user.getHubId(), INTERNAL_REQUEST).getData();
+            if (hub == null) {
+                throw new BusinessException(OrderErrorCode.HUB_NOT_FOUND);
+            }
+            return orderRepository.findByOriginHubNameOrDestinationHubName(
+                            hub.getName(), hub.getName(), status, pageable)
+                    .map(OrderResponse::from);
+
+        } else if ("COMPANY_MANAGER".equals(role)) {
+            // userId로 user-service 조회 → companyId 확보
+            UserResponse user = userClient.getUser(userId, INTERNAL_REQUEST).getData();
+            if (user == null || user.getCompanyId() == null) {
+                throw new BusinessException(OrderErrorCode.COMPANY_NOT_FOUND);
+            }
+            return orderRepository.findByRequesterCompanyIdOrReceiverCompanyId(
+                            user.getCompanyId(), user.getCompanyId(), status, pageable)
+                    .map(OrderResponse::from);
+
+        } else {
+            // DELIVERY_DRIVER 등
+            if (status != null) {
+                return orderRepository.findByStatus(status, pageable)
+                        .map(OrderResponse::from);
+            }
+            return orderRepository.findAll(pageable)
                     .map(OrderResponse::from);
         }
-        return orderRepository.findAll(pageable)
-                .map(OrderResponse::from);
     }
 
     // 주문 단건 조회

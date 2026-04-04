@@ -46,16 +46,17 @@ public class OrderController {
     public ResponseEntity<ApiResponse<Page<OrderResponse>>> getOrders(
             @RequestParam(required = false) OrderStatus status,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
-            Pageable pageable
+            Pageable pageable,
+            @AuthenticationPrincipal String userId,
+            @RequestHeader(value = "X-User-Role", required = false) String role
     ) {
-        // 허용 페이지 사이즈: 10, 30, 50 — 그 외는 10으로 고정
         int pageSize = pageable.getPageSize();
         if (pageSize != 10 && pageSize != 30 && pageSize != 50) {
-            pageable = PageRequest.of(
-                    pageable.getPageNumber(), 10, pageable.getSort()
-            );
+            pageable = PageRequest.of(pageable.getPageNumber(), 10, pageable.getSort());
         }
-        return ResponseEntity.ok(ApiResponse.success(orderService.getOrders(status, pageable)));
+        UUID userUUID = userId != null ? UUID.fromString(userId) : null;
+        return ResponseEntity.ok(ApiResponse.success(
+                orderService.getOrders(status, role, userUUID, pageable)));
     }
 
     @Operation(summary = "주문 단건 조회")
