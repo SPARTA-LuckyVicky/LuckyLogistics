@@ -1,0 +1,62 @@
+### ================================================================
+### Product Service - 내부 API 테스트 (order-service / company-service 호출 시뮬레이션)
+### ================================================================
+
+### [1] 상품 단건 조회 (내부)
+GET {{baseUrl}}/internal/api/v1/products/{{productId}}
+X-Internal-Request: true
+
+### ================================================================
+
+### [2] 재고 차감 (order-service 주문 생성 시뮬레이션)
+PATCH {{baseUrl}}/internal/api/v1/products/{{productId}}/stock/decrease
+Content-Type: application/json
+X-Internal-Request: true
+
+{
+  "quantity": 10
+}
+
+### [3] 재고 복원 (order-service 주문 취소 시뮬레이션)
+PATCH {{baseUrl}}/internal/api/v1/products/{{productId}}/stock/restore
+Content-Type: application/json
+X-Internal-Request: true
+
+{
+  "quantity": 10
+}
+
+### ================================================================
+
+### [4] 재고 차감 실패 - 재고 초과
+PATCH {{baseUrl}}/internal/api/v1/products/{{productId}}/stock/decrease
+Content-Type: application/json
+X-Internal-Request: true
+
+{
+  "quantity": 99999
+}
+
+### [5] 재고 차감 실패 - 음수 수량 (INVALID_STOCK_QUANTITY)
+PATCH {{baseUrl}}/internal/api/v1/products/{{productId}}/stock/decrease
+Content-Type: application/json
+X-Internal-Request: true
+
+{
+  "quantity": -1
+}
+
+### [6] 내부 API 헤더 누락 (PRODUCT_003 접근 거부)
+PATCH {{baseUrl}}/internal/api/v1/products/{{productId}}/stock/decrease
+Content-Type: application/json
+
+{
+  "quantity": 5
+}
+
+### ================================================================
+
+### [7] 업체 소속 상품 일괄 삭제 (company-service 업체 삭제 시뮬레이션)
+DELETE {{baseUrl}}/internal/api/v1/products/company/{{companyId}}
+X-Internal-Request: true
+X-User-Id: {{masterId}}
