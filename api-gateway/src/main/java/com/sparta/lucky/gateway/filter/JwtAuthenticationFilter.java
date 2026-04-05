@@ -90,19 +90,31 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
 
             return jwtDecoder.decode(token)
                     .flatMap(jwt -> {
+
+                        //userId 추출 및 검증
                         String userId = jwt.getSubject();
                         if (userId == null || !userId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")) {
                             log.error("Invalid User ID format: {}", userId);
                             return onError(exchange, AuthErrorCode.INVALID_TOKEN);
                         }
+
+                        //role 추출
                         String role = jwt.getClaimAsString("authorities");
                         if (!StringUtils.hasText(role)) role = "USER";
 
-                        ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
+                        // hubId와 companyId 추출
+                        String hubId = jwt.getClaimAsString("hub_id");
+                        String companyId = jwt.getClaimAsString("company_id");
+
+                        ServerHttpRequest.Builder builder = exchange.getRequest().mutate()
                                 .header("X-User-Id", userId)
-                                .header("X-User-Role", role)
-                                .build();
-                        return chain.filter(exchange.mutate().request(modifiedRequest).build());
+                                .header("X-User-Role", role);
+
+                        // hubId와 companyId 조건부 헤더 주입
+                        if(StringUtils.hasText(hubId)) builder.header("X-Hub-Id", hubId);
+                        if(StringUtils.hasText(companyId)) builder.header("X-Company-Id", companyId);
+
+                        return chain.filter(exchange.mutate().request(builder.build()).build());
                     })
                     .onErrorResume(e -> {
                         if (e instanceof ExpiredJwtException) {
