@@ -29,6 +29,7 @@ replay_pid*
 # 예외! example은 올려야 함
 
 application-local.yml
+application-local.yaml
 application-secret.yml
 
 # IntelliJ
@@ -45,3 +46,7 @@ build/
 
 # 테스트 설정
 **/src/test/resources/application.properties
+
+# IntelliJ HTTP Client 환경변수 (로컬 전용)
+http-client.env.json
+http-client.private.env.json
