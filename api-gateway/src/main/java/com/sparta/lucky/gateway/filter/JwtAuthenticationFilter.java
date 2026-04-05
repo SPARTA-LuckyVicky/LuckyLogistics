@@ -11,16 +11,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
-import java.util.Map;
 
 @Component
 @Slf4j
@@ -80,31 +76,6 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                 });
     }
 
-    private String extractRole(Jwt jwt) {
-        Map<String, Object> realmAccess = jwt.getClaim("realm_access");
-        if (realmAccess != null && realmAccess.containsKey("roles")) {
-            @SuppressWarnings("unchecked")
-            List<String> roles = (List<String>) realmAccess.get("roles");
-
-            return roles.stream()
-                    .filter(r -> r.equals("MASTER")|| r.equals("HUB_MANAGER") || r.equals("DELIVERY_DRIVER") || r.equals("COMPANY_MANAGER"))
-                    .findFirst()
-                    .orElse("USER");
-        }
-
-        Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
-        if (resourceAccess != null && resourceAccess.containsKey("account")) {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> account = (Map<String, Object>) resourceAccess.get("account");
-            if (account.containsKey("roles")) {
-                @SuppressWarnings("unchecked")
-                List<String> roles = (List<String>) account.get("roles");
-                if (roles != null && !roles.isEmpty()) return roles.getFirst();
-            }
-        }
-
-        return "USER";
-    }
 
     @Override
     public GatewayFilter apply(Config config) {
@@ -124,7 +95,8 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                             log.error("Invalid User ID format: {}", userId);
                             return onError(exchange, AuthErrorCode.INVALID_TOKEN);
                         }
-                        String role = extractRole(jwt);
+                        String role = jwt.getClaimAsString("authorities");
+                        if (!StringUtils.hasText(role)) role = "USER";
 
                         ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
                                 .header("X-User-Id", userId)
