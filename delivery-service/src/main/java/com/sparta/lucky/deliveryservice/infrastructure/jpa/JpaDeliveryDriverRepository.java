@@ -4,11 +4,13 @@ import com.sparta.lucky.deliveryservice.domain.driver.DeliveryDriver;
 import com.sparta.lucky.deliveryservice.domain.driver.code.DriverStatus;
 import com.sparta.lucky.deliveryservice.domain.driver.code.DriverType;
 import com.sparta.lucky.deliveryservice.domain.repos.DeliveryDriverRepository;
+import jakarta.persistence.LockModeType;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -19,11 +21,16 @@ public interface JpaDeliveryDriverRepository
     Optional<DeliveryDriver> findByUserIdAndDeletedAtIsNull(UUID id);
     Page<DeliveryDriver> findAllByDeletedAtIsNull(Pageable pageable);
     Page<DeliveryDriver> findAllByHubIdAndDeletedAtIsNull(UUID hubId, Pageable pageable);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<DeliveryDriver> findFirstByHubIdAndStatusAndTypeAndDeletedAtIsNullOrderByAssignmentOrderAscIdAsc(
         UUID hubId, DriverStatus status, DriverType type);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<DeliveryDriver> findFirstByStatusAndTypeAndDeletedAtIsNullOrderByAssignmentOrderAscIdAsc(
         DriverStatus status, DriverType type
     );
+
     Optional<DeliveryDriver> findTopByHubIdAndTypeAndDeletedAtIsNullOrderByAssignmentOrderDesc(UUID hubId, DriverType type);
     Optional<DeliveryDriver> findTopByTypeAndDeletedAtIsNullOrderByAssignmentOrderDesc(DriverType type);
 

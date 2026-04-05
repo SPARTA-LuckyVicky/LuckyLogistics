@@ -89,4 +89,12 @@ public class DeliveryDriver extends BaseEntity {
     public void updateStatus(DriverStatus driverStatus) {
         this.status = driverStatus;
     }
+
+    /**
+     * 배송 기사의 배정 순서를 변경합니다.(큐 방식의 round robin 알고리즘 활용)
+     * @param assignmentOrder 변경될 배정 순서
+     */
+    public void updateOrder(Integer assignmentOrder) {
+        this.assignmentOrder = assignmentOrder;
+    }
 }

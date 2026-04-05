@@ -7,6 +7,8 @@ import com.sparta.lucky.deliveryservice.common.response.ResponseCode;
 import com.sparta.lucky.deliveryservice.domain.delivery.Delivery;
 import com.sparta.lucky.deliveryservice.domain.delivery.code.DeliveryStatus;
 import com.sparta.lucky.deliveryservice.domain.driver.DeliveryDriver;
+import com.sparta.lucky.deliveryservice.domain.driver.code.DriverType;
+import com.sparta.lucky.deliveryservice.domain.repos.DeliveryDriverRepository;
 import com.sparta.lucky.deliveryservice.domain.repos.DeliveryRepository;
 import com.sparta.lucky.deliveryservice.infrastructure.client.HubRouteClient;
 import com.sparta.lucky.deliveryservice.infrastructure.client.dto.HubRouteResponse;
@@ -21,8 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class DeliveryProcessingService {
 
-    // Todo: driver 순차 배정 방법 고민하기(0->1->2->0)
     private final DeliveryRepository deliveryRepository;
+    private final DeliveryDriverRepository deliveryDriverRepository;
     private final DeliveryDriverReadService deliveryDriverReadService;
     private final HubRouteClient  hubRouteClient;
     private final DeliveryRouteService  deliveryRouteService;
@@ -43,9 +45,12 @@ public class DeliveryProcessingService {
 
         try {
             // Note: Would it be better to implement a company driver to be assigned when the delivery arrives at the destination hub?
-            // 1. assign company delivery driver to delivery
+            // 1-a. assign company delivery driver to delivery
             DeliveryDriver companyDriver = deliveryDriverReadService.getOneCompanyDriver(delivery.getDestinationHub());
             delivery.updateDriver(companyDriver);
+            // 1-b. get max sequence value and update assigned company driver's sequence value
+            int companyMaxOrder = deliveryDriverRepository.findMaxAssignmentOrder(delivery.getDestinationHub(), DriverType.COMPANY);
+            companyDriver.updateOrder(companyMaxOrder+1);
 
             // 2. If origin hub and destination hub are different, create delivery route
             if(!delivery.getOriginHub().equals(delivery.getDestinationHub())) {
@@ -57,9 +62,13 @@ public class DeliveryProcessingService {
                     throw new CommonException(ResponseCode.ROUTE_RESPONSE_NULL);
                 }
 
-                // 2-b. get id of available delivery driver and save deliveryRoute
+                // 2-c. get id of available delivery driver and save deliveryRoute
                 DeliveryDriver hubDriver = deliveryDriverReadService.getOneHubDriver();
                 deliveryRouteService.createDeliveryRoute(routeResponse, delivery, hubDriver);
+
+                // 2-d. get max sequence value and update assigned hub driver's sequence value
+                int hubMaxOrder = deliveryDriverRepository.findMaxAssignmentOrder(DriverType.HUB);
+                hubDriver.updateOrder(hubMaxOrder+1);
             }
 
             // 3. change status of delivery to WAITING
