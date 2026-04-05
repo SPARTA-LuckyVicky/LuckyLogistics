@@ -42,7 +42,10 @@ services:
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-    command: start-dev
+      KEYCLOAK_SECRET_KEY: ${KEYCLOAK_SECRET_KEY}
+    volumes:
+      - ./realm-export.json:/opt/keycloak/data/import/realm.json:ro
+    command: start-dev --import-realm
     ports:
       - "9090:8080" #(접속할 때 http://localhost:9090 사용)
     networks:
@@ -205,6 +208,30 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ============ user-service ==============
+  user-service:
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    container_name: lucky-user
+    ports:
+      - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"
+    environment:
+      USER_SERVICE_PORT: ${USER_SERVICE_PORT}
+      USER_SERVICE_NAME: ${USER_SERVICE_NAME}
+      USER_SERVICE_SCHEMA: ${USER_SERVICE_SCHEMA}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    env_file:
+      - .env
+    networks:
+      - lucky-network
+    depends_on:
       eureka-server:
         condition: service_healthy
     restart: unless-stopped
