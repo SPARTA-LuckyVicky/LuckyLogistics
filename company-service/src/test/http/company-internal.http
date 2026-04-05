@@ -25,7 +25,7 @@ X-Internal-Request: true
 ### 오류 케이스
 ### ================================================================
 
-### [3] 내부 API 헤더 누락 → 403 expected (X-Internal-Request 없음)
+### [3] 내부 API 헤더 누락 → 400 (X-Internal-Request 없음)
 GET {{baseUrl}}/internal/api/v1/companies/{{companyId}}
 
 ### [4] 존재하지 않는 업체 조회 → 404 expected

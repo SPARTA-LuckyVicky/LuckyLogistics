@@ -183,7 +183,7 @@ public class CompanyController {
      * @param hubId
      * @return 삭제 결과
      */
-    @Operation(summary = "업체 삭제", description = "업체를 sofe delete 처리합니다. (MASTER, HUB_MANAGER)")
+    @Operation(summary = "업체 삭제", description = "업체를 soft delete 처리합니다. (MASTER, HUB_MANAGER)")
     @DeleteMapping("/{companyId}")
     public ApiResponse<DeleteCompanyResDto> deleteCompany(
             @PathVariable UUID companyId,
