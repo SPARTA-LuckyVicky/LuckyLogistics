@@ -8,8 +8,7 @@ public record DeliveryCreateCommand (
     UUID companyId,
     UUID originHubId,
     String recipientName,
-    String recipientSlackId,
-    LocalDateTime delivery_due_date
+    String recipientSlackId
 ) {
 
 }

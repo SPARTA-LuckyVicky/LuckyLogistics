@@ -21,19 +21,11 @@ public record DeliveryCreateRequest (
     String recipientName,
 
     @NotBlank
-    String recipientSlackId,
-
-    /* Note: Would it be better to use OffsetDateTime? LocalDateTime means local time of the server.
-    *   Also, deliveryDueDate is not required field for creating delivery data.
-    *   I think it would be better to inform notification-service that delivery has been created.
-    *   And then, let notification-service send request to order-service for info like due-date.
-    * */
-    @NotNull
-    LocalDateTime deliveryDueDate
+    String recipientSlackId
 ) {
     public DeliveryCreateCommand toCommand() {
         return new DeliveryCreateCommand(
-            orderId, companyId, originHubId, recipientName, recipientSlackId, deliveryDueDate
+            orderId, companyId, originHubId, recipientName, recipientSlackId
         );
     }
 }
