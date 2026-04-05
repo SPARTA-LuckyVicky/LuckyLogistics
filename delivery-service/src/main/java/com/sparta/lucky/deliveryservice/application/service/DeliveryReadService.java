@@ -1,9 +1,11 @@
 package com.sparta.lucky.deliveryservice.application.service;
 
+import brave.Response;
 import com.sparta.lucky.deliveryservice.application.dto.DeliveryReadResult;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.ForbiddenException;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.NotFoundException;
 import com.sparta.lucky.deliveryservice.common.response.ResponseCode;
+import com.sparta.lucky.deliveryservice.domain.delivery.code.DeliveryStatus;
 import com.sparta.lucky.deliveryservice.domain.driver.DeliveryDriver;
 import com.sparta.lucky.deliveryservice.domain.driver.code.DriverType;
 import com.sparta.lucky.deliveryservice.domain.repos.DeliveryRepository;
@@ -106,5 +108,12 @@ public class DeliveryReadService {
         if(driver.getType().equals(DriverType.HUB)) throw new ForbiddenException(ResponseCode.DELIVERY_READ_NOT_ALLOWED);
 
         return deliveryRepository.findAllActiveByDriver(driver, pageable).map(DeliveryReadResult::from);
+    }
+
+    // internal
+    public DeliveryStatus getStatusByOrderId(UUID orderId) {
+        return deliveryRepository.findActiveByOrderId(orderId)
+            .orElseThrow(() -> new NotFoundException(ResponseCode.DELIVERY_NOT_FOUND))
+            .getStatus();
     }
 }
