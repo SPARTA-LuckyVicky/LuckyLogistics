@@ -1,4 +1,4 @@
-package com.sparta.lucky.deliveryservice.application;
+package com.sparta.lucky.deliveryservice.application.service;
 
 import com.sparta.lucky.deliveryservice.application.dto.DeliveryRouteCreateDto;
 import com.sparta.lucky.deliveryservice.domain.delivery.Delivery;

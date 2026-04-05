@@ -1,4 +1,4 @@
-package com.sparta.lucky.deliveryservice.application;
+package com.sparta.lucky.deliveryservice.application.service;
 
 import com.sparta.lucky.deliveryservice.application.dto.DeliveryRouteReadResult;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.NotFoundException;

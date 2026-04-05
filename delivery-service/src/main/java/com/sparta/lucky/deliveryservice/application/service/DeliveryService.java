@@ -1,4 +1,4 @@
-package com.sparta.lucky.deliveryservice.application;
+package com.sparta.lucky.deliveryservice.application.service;
 
 import com.sparta.lucky.deliveryservice.application.dto.DeliveryCreateCommand;
 import com.sparta.lucky.deliveryservice.application.dto.DeliveryCreateEventDto;
@@ -6,7 +6,6 @@ import com.sparta.lucky.deliveryservice.application.event.DeliveryCreateEvent;
 import com.sparta.lucky.deliveryservice.application.policy.HubAccessValidator;
 import com.sparta.lucky.deliveryservice.common.code.Role;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.BusinessException;
-import com.sparta.lucky.deliveryservice.common.error.exceptions.CommonException;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.ConflictException;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.NotFoundException;
 import com.sparta.lucky.deliveryservice.common.response.ResponseCode;

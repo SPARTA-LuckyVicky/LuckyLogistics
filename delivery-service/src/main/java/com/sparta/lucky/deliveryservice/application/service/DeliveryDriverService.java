@@ -1,10 +1,9 @@
-package com.sparta.lucky.deliveryservice.application;
+package com.sparta.lucky.deliveryservice.application.service;
 
 import com.sparta.lucky.deliveryservice.application.dto.DeliveryDriverCreateCommand;
 import com.sparta.lucky.deliveryservice.application.dto.DeliveryDriverUpdateCommand;
 import com.sparta.lucky.deliveryservice.application.policy.HubAccessValidator;
 import com.sparta.lucky.deliveryservice.common.code.Role;
-import com.sparta.lucky.deliveryservice.common.error.exceptions.CommonException;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.ConflictException;
 import com.sparta.lucky.deliveryservice.common.response.ResponseCode;
 import com.sparta.lucky.deliveryservice.domain.driver.DeliveryDriver;
