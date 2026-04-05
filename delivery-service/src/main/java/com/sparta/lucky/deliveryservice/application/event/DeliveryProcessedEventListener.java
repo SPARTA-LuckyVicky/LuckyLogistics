@@ -3,7 +3,7 @@ package com.sparta.lucky.deliveryservice.application.event;
 import com.sparta.lucky.deliveryservice.application.service.DeliveryRouteReadService;
 import com.sparta.lucky.deliveryservice.application.dto.DeliveryReadResult;
 import com.sparta.lucky.deliveryservice.application.dto.DeliveryRouteReadResult;
-import com.sparta.lucky.deliveryservice.application.policy.DeliveryReadService;
+import com.sparta.lucky.deliveryservice.application.service.DeliveryReadService;
 import com.sparta.lucky.deliveryservice.infrastructure.client.NotificationClient;
 import com.sparta.lucky.deliveryservice.infrastructure.client.dto.NotificationRequest;
 import java.util.List;

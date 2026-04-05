@@ -25,6 +25,7 @@ public enum ResponseCode {
     // DELIVERY ROUTE (2)
     ROUTE_NOT_FOUND("DELIVERY_203", HttpStatus.NOT_FOUND, "Delivery route Not Found"),
     ROUTE_RESPONSE_NULL("DELIVERY_204", HttpStatus.INTERNAL_SERVER_ERROR, "Route Response is Null"),
+    ROUTE_READ_NOT_ALLOWED("DELIVERY_205", HttpStatus.FORBIDDEN, "Route Read Access Denied"),
 
     // DRIVER(3),
     DRIVER_CREATED("DELIVERY_300", HttpStatus.CREATED, "Driver Created"),

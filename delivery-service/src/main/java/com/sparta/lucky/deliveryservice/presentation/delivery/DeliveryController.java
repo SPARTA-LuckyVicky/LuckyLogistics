@@ -1,6 +1,6 @@
 package com.sparta.lucky.deliveryservice.presentation.delivery;
 
-import com.sparta.lucky.deliveryservice.application.policy.DeliveryReadService;
+import com.sparta.lucky.deliveryservice.application.service.DeliveryReadService;
 import com.sparta.lucky.deliveryservice.application.service.DeliveryService;
 import com.sparta.lucky.deliveryservice.common.code.Role;
 import com.sparta.lucky.deliveryservice.common.response.CommonApiResponse;
