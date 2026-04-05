@@ -1,19 +1,43 @@
 package com.sparta.lucky.hub.application;
 
+import com.sparta.lucky.hub.application.dto.GetRouteResult;
 import com.sparta.lucky.hub.common.exception.BusinessException;
 import com.sparta.lucky.hub.common.exception.HubErrorCode;
 import com.sparta.lucky.hub.domain.HubRoute;
-import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
-@Component
-public class HubToHubPathFinder {
+@Service
+@RequiredArgsConstructor
+public class HubPathService {
 
-    public record PathResult(List<UUID> path, int totalDistance, int totalDuration) {}
+    private final HubRouteService hubRouteService;
+
+    @Cacheable(cacheNames = "path", key = "#originHubId + '-' + #destinationHubId")
+    @Transactional(readOnly = true)
+    public GetRouteResult getRoute(UUID originHubId, UUID destinationHubId) {
+
+        // 출발 허브 == 도착 허브인 경우
+        if (originHubId.equals(destinationHubId)) {
+            return GetRouteResult.of(originHubId, destinationHubId, 0, 0, List.of(originHubId));
+        }
+
+        // Dijkstra로 최단 경로 탐색 (캐시 경유)
+        List<HubRoute> routes = hubRouteService.getHubRoutes();
+        PathResult result = findShortestPath(routes, originHubId, destinationHubId);
+
+        return GetRouteResult.of(originHubId, destinationHubId, result.totalDuration(), result.totalDistance(), result.path());
+    }
+
+
+    private record PathResult(List<UUID> path, int totalDistance, int totalDuration) {}
 
     // 시작 Hub에서 도착 Hub 최단거리 찾기
-    public PathResult findShortestPath(List<HubRoute> routes, UUID originId, UUID destinationId) {
+    private PathResult findShortestPath(List<HubRoute> routes, UUID originId, UUID destinationId) {
         // 양방향 그래프 구성: 두 허브 간 연결은 양방향으로 취급
         Map<UUID, List<HubRoute>> graph = new HashMap<>();
         for (HubRoute route : routes) {

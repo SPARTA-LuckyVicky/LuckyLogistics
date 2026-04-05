@@ -1,5 +1,7 @@
 package com.sparta.lucky.hub.application.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
 import java.util.List;
@@ -14,7 +16,14 @@ public class GetRouteResult {
     private final Integer totalDistance;
     private final List<UUID> route;
 
-    private GetRouteResult(UUID originHubId, UUID destinationHubId, Integer totalDuration, Integer totalDistance, List<UUID> route) {
+    @JsonCreator
+    private GetRouteResult(
+            @JsonProperty("originHubId") UUID originHubId,
+            @JsonProperty("destinationHubId") UUID destinationHubId,
+            @JsonProperty("totalDuration") Integer totalDuration,
+            @JsonProperty("totalDistance") Integer totalDistance,
+            @JsonProperty("route") List<UUID> route
+    ) {
         this.originHubId = originHubId;
         this.destinationHubId = destinationHubId;
         this.totalDuration = totalDuration;
