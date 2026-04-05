@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -23,6 +24,8 @@ public interface JpaDeliveryDriverRepository
     Optional<DeliveryDriver> findFirstByStatusAndTypeAndDeletedAtIsNullOrderByAssignmentOrderAscIdAsc(
         DriverStatus status, DriverType type
     );
+    Optional<DeliveryDriver> findTopByHubIdAndTypeAndDeletedAtIsNullOrderByAssignmentOrderDesc(UUID hubId, DriverType type);
+    Optional<DeliveryDriver> findTopByTypeAndDeletedAtIsNullOrderByAssignmentOrderDesc(DriverType type);
 
 
     // override ====================================================
@@ -49,5 +52,19 @@ public interface JpaDeliveryDriverRepository
     @Override
     default Optional<DeliveryDriver> findFirstActiveByStatusAndType(DriverStatus status, DriverType type) {
         return findFirstByStatusAndTypeAndDeletedAtIsNullOrderByAssignmentOrderAscIdAsc(status, type);
+    }
+
+    @Override
+    default Integer findMaxAssignmentOrder(DriverType type) {
+        return findTopByTypeAndDeletedAtIsNullOrderByAssignmentOrderDesc(type)
+            .map(DeliveryDriver::getAssignmentOrder)
+            .orElse(0);
+    }
+
+    @Override
+    default Integer findMaxAssignmentOrder(UUID hubId, DriverType type) {
+        return findTopByHubIdAndTypeAndDeletedAtIsNullOrderByAssignmentOrderDesc(hubId, type)
+            .map(DeliveryDriver::getAssignmentOrder)
+            .orElse(0);
     }
 }

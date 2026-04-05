@@ -57,11 +57,12 @@ public class DeliveryDriver extends BaseEntity {
      * @param command 생성할 배송 담당자의 정보를 담은 dto
      * @return {@link DeliveryDriver}
      */
-    public static DeliveryDriver create(DeliveryDriverCreateCommand command) {
+    public static DeliveryDriver create(DeliveryDriverCreateCommand command, Integer assignmentOrder) {
         DeliveryDriver driver = new DeliveryDriver();
         driver.userId = command.driverId();
         driver.hubId = command.hubId();
         driver.type = command.type();
+        driver.assignmentOrder = assignmentOrder;
         driver.status = DriverStatus.IDLE;
         return driver;
     }

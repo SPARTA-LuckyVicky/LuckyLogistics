@@ -16,4 +16,6 @@ public interface DeliveryDriverRepository {
     Page<DeliveryDriver> findAllActiveByHubId(UUID hubId, Pageable pageable);
     Optional<DeliveryDriver> findFirstActiveByHubId(UUID hubId,  DriverStatus status, DriverType type);
     Optional<DeliveryDriver> findFirstActiveByStatusAndType(DriverStatus status, DriverType type);
+    Integer findMaxAssignmentOrder(DriverType type);
+    Integer findMaxAssignmentOrder(UUID hubId, DriverType type);
 }
