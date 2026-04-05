@@ -10,6 +10,8 @@ import com.sparta.lucky.product.common.response.ApiResponse;
 import com.sparta.lucky.product.domain.ProductErrorCode;
 import com.sparta.lucky.product.domain.ProductStatus;
 import com.sparta.lucky.product.presentation.dto.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "Product", description = "상품 관리 API")
 @RestController
 @RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
@@ -37,6 +40,7 @@ public class ProductController {
      * - HUB_MANAGER : 담당 허브 소속 상품만 가능
      * - COMPANY_MANAGER : 본인 업체 상품만 가능
      */
+    @Operation(summary = "상품 생성", description = "새로운 상품을 생성합니다. (MASTER, HUB_MANAGER, COMPANY_MANAGER)")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<PostProductResDto> createProduct(
@@ -68,6 +72,8 @@ public class ProductController {
      * - 전체 로그인 사용자 가능
      * - HUB_MANAGER: 담당 허브 소속 상품만 조회
      */
+    @Operation(summary = "상품 목록 조회", description = "name(부분 검색), status, companyId 필터 가능." +
+            "페이지 사이즈: 10 / 30 / 50 (그 외는 10으로 고정). HUB_MANAGER는 담당 허브 상품만 조회됩니다.")
     @GetMapping
     public ApiResponse<Page<GetProductResDto>> getProducts(
             @RequestParam(required = false) String name,
@@ -95,6 +101,7 @@ public class ProductController {
      * - 전체 로그인 사용자 가능
      * - HUB_MANAGER: 담당 허브 소속 상품만 조회
      */
+    @Operation(summary = "상품 단건 조회", description = "HUB_MANAGER는 담당 허브 소속 상품만 조회 가능합니다.")
     @GetMapping("/{productId}")
     public ApiResponse<GetProductResDto> getProduct(
             @PathVariable UUID productId,
@@ -115,6 +122,8 @@ public class ProductController {
      * - HUB_MANAGER : 담당 허브 소속 상품만 가능
      * - COMPANY_MANAGER : 본인 업체 상품만 가능
      */
+    @Operation(summary = "상품 수정", description = "재고를 제외한 상품 기본 정보를 수정합니다. companyId / hubId 변경은 MASTER만 가능." +
+            "(MASTER, HUB_MANAGER, COMPANY_MANAGER)")
     @PatchMapping("/{productId}")
     public ApiResponse<GetProductResDto> updateProductWithoutStock(
             @PathVariable UUID productId,
@@ -150,6 +159,7 @@ public class ProductController {
      * - MASTER : 모두 가능
      * - HUB_MANAGER : 담당 허브 소속 상품만 가능
      */
+    @Operation(summary = "재고 수정", description = "상품 재고를 절대값으로 수정합니다. (MASTER, HUB_MANAGER)")
     @PatchMapping("/{productId}/stock")
     public ApiResponse<GetProductResDto> updateStock(
             @PathVariable UUID productId,
@@ -178,6 +188,7 @@ public class ProductController {
      * - MASTER : 모두 가능
      * - HUB_MANAGER : 담당 허브 소속 상품만 가능
      */
+    @Operation(summary = "상품 삭제", description = "상품과 재고를 소프트 삭제합니다. (MASTER, HUB_MANAGER)")
     @DeleteMapping("/{productId}")
     public ApiResponse<DeleteProductResDto> deleteProduct(
             @PathVariable UUID productId,
