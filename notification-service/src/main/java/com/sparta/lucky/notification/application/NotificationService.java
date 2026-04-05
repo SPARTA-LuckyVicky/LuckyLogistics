@@ -8,8 +8,10 @@ import com.sparta.lucky.notification.common.exception.BusinessException;
 import com.sparta.lucky.notification.common.exception.NotificationErrorCode;
 import com.sparta.lucky.notification.domain.*;
 import com.sparta.lucky.notification.infrastructure.client.GeminiClient;
+import com.sparta.lucky.notification.infrastructure.client.HubClient;
 import com.sparta.lucky.notification.infrastructure.client.OrderClient;
 import com.sparta.lucky.notification.infrastructure.client.SlackClient;
+import com.sparta.lucky.notification.infrastructure.client.dto.HubResponse;
 import com.sparta.lucky.notification.infrastructure.client.dto.OrderResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,8 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -28,6 +32,7 @@ public class NotificationService {
     private final SlackClient slackClient;
     private final GeminiClient geminiClient;
     private final OrderClient orderClient;
+    private final HubClient hubClient;
     private final SlackMessageRepository slackMessageRepository;
     private final AiMessageRepository aiMessageRepository;
 
@@ -51,10 +56,23 @@ public class NotificationService {
             log.warn("hubManagerSlackId가 없어 알림 발송을 건너뜁니다. orderId: {}", request.getOrderId());
             return;
         }
+        // routes UUID → 허브 이름 목록으로 변환
+        List<String> waypointNames = new ArrayList<>();
+        if (request.getRoutes() != null) {
+            for (UUID hubId : request.getRoutes()) {
+                try {
+                    HubResponse hub = hubClient.getHub(hubId, INTERNAL_REQUEST).getData();
+                    waypointNames.add(hub != null ? hub.getName() : hubId.toString());
+                } catch (Exception e) {
+                    log.warn("허브 이름 조회 실패 - hubId: {}", hubId);
+                    waypointNames.add(hubId.toString()); // 실패 시 UUID 그대로
+                }
+            }
+        }
 
         log.debug("주문 알림 처리 시작 - orderId: {}", request.getOrderId());
         // 2. Gemini 프롬프트 생성
-        String prompt = buildOrderAlertPrompt(request, order);
+        String prompt = buildOrderAlertPrompt(request, order, waypointNames);
 
         // 3. Gemini API 호출
         String aiResponse = geminiClient.ask(prompt);
@@ -63,7 +81,7 @@ public class NotificationService {
         String deadlineResult = parseDeadline(aiResponse);
 
         // 5. 슬랙 메시지 생성
-        String slackMessage = buildSlackMessage(request, order, deadlineResult);
+        String slackMessage = buildSlackMessage(request, order, deadlineResult, waypointNames);
 
         // 6. 슬랙 발송
         slackClient.sendMessage(order.getHubManagerSlackId(), slackMessage);
@@ -154,13 +172,16 @@ public class NotificationService {
 
     // ===== 내부 메서드 =====
 
-    private String buildOrderAlertPrompt(SendOrderAlertCommand req, OrderResponse order) {
-        int waypointCount = (req.getWaypointNames() == null) ? 0 : req.getWaypointNames().size();
-        String waypoints = (req.getWaypointNames() == null || req.getWaypointNames().isEmpty())
-                ? "없음" : String.join(" → ", req.getWaypointNames());
+    private String buildOrderAlertPrompt(SendOrderAlertCommand req, OrderResponse order, List<String> waypointNames){
+        int waypointCount = waypointNames.size();
+        String waypoints = waypointNames.isEmpty() ? "없음" : String.join(" → ", waypointNames);
 
-        long totalMinutes = req.getTotalDurationMinutes() != null ? req.getTotalDurationMinutes() : 0L;
-        long totalDistance = req.getTotalDistanceKm() != null ? req.getTotalDistanceKm() : 0L;
+        // 단위 변환: 초 → 분, 미터 → km
+        long totalMinutes = req.getExpectedTotalDurationSeconds() != null
+                ? req.getExpectedTotalDurationSeconds() / 60 : 0L;
+        long totalDistance = req.getExpectedTotalDistanceMeter() != null
+                ? req.getExpectedTotalDistanceMeter() / 1000 : 0L;
+
         int segments = waypointCount + 1;
         long segmentMinutes = segments > 0 ? totalMinutes / segments : totalMinutes;
 
@@ -226,10 +247,8 @@ public class NotificationService {
         return "발송 시한 계산 불가";
     }
 
-    private String buildSlackMessage(SendOrderAlertCommand req, OrderResponse order, String deadlineResult) {
-        String waypoints = req.getWaypointNames() == null || req.getWaypointNames().isEmpty()
-                ? "없음" : String.join(", ", req.getWaypointNames());
-
+    private String buildSlackMessage(SendOrderAlertCommand req, OrderResponse order, String deadlineResult, List<String> waypointNames){
+        String waypoints = waypointNames.isEmpty() ? "없음" : String.join(", ", waypointNames);
         return """
             📦 신규 주문 알림
             

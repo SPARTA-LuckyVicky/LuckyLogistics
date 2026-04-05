@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Internal", description = "내부 서비스 전용 API")
 @RestController
-@RequestMapping("/internal/api/v1/notifications")
+@RequestMapping("/internal/v1/notifications")
 @RequiredArgsConstructor
 public class NotificationInternalController {
 
