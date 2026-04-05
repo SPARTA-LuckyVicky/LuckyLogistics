@@ -76,15 +76,6 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                 });
     }
 
-    private String extractRole(ServerHttpRequest request) {
-        String bearerToken = request.getHeaders().getFirst("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer")) {
-            return bearerToken.substring(7);
-        }
-        return null;
-    }
-
-
 
     @Override
     public GatewayFilter apply(Config config) {
