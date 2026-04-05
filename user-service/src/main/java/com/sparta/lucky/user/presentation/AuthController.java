@@ -1,4 +1,4 @@
-package com.sparta.lucky.user.presentation.dto;
+package com.sparta.lucky.user.presentation;
 
 import com.sparta.lucky.user.application.AuthService;
 import com.sparta.lucky.user.application.dto.response.SignupResult;
