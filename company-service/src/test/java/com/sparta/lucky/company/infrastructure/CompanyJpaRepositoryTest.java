@@ -1,6 +1,5 @@
 package com.sparta.lucky.company.infrastructure;
 
-import com.sparta.lucky.company.common.config.AuditConfig;
 import com.sparta.lucky.company.domain.Company;
 import com.sparta.lucky.company.domain.CompanyType;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,7 +10,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.domain.Page;
@@ -26,7 +24,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import(AuditConfig.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 실제 DB 사용
 class CompanyJpaRepositoryTest {
 
@@ -112,5 +109,34 @@ class CompanyJpaRepositoryTest {
 
         // then: 4개 중 1개 삭제 → 3개만 조회
         assertThat(result.getTotalElements()).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("name + hubId 복합 조건 검색")
+    void findAll_byNameAndHubId() {
+        Page<Company> result = companyJpaRepository.findAllByConditions("서울", null, HUB_A, PAGE);
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent())
+                .allMatch(c -> c.getName().contains("서울") && c.getHubId().equals(HUB_A));
+    }
+
+    @Test
+    @DisplayName("type + hubId 복합 조건 검색")
+    void findAll_byTypeAndHubId() {
+        Page<Company> result = companyJpaRepository.findAllByConditions(null, CompanyType.RECEIVER, HUB_B, PAGE);
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent())
+                .allMatch(c -> c.getCompanyType() == CompanyType.RECEIVER && c.getHubId().equals(HUB_B));
+    }
+
+    @Test
+    @DisplayName("name + type + hubId 전체 조건 검색")
+    void findAll_allConditions() {
+        Page<Company> result = companyJpaRepository.findAllByConditions("서울", CompanyType.SUPPLIER, HUB_B, PAGE);
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent())
+                .allMatch(c -> c.getName().contains("서울")
+                        && c.getCompanyType() == CompanyType.SUPPLIER
+                        && c.getHubId().equals(HUB_B));
     }
 }
