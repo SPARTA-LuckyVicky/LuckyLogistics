@@ -19,7 +19,6 @@ import java.util.UUID;
 public class User extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID userId;
 
     @Column(nullable = false, unique = true)
@@ -27,6 +26,9 @@ public class User extends BaseEntity {
 
     @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
+    private String name;
 
     @Column(nullable = false)
     private String receiverSlackId;
@@ -39,10 +41,10 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private UserRole role;
 
-    private UUID hubId;
-    private UUID companyId;
+    private String hubId;
+    private String companyId;
 
-    private void validateRole(UserRole role, UUID hubId, UUID companyId){
+    private void validateRole(UserRole role, String hubId, String companyId){
         if(role == UserRole.HUB_MANAGER && hubId == null){
             throw new BusinessException(UserErrorCode.INVALID_HUB_ID);
         }
@@ -52,12 +54,13 @@ public class User extends BaseEntity {
     }
 
     @Builder
-    public User(String username, String password, String name, String receiverSlackId,
-                UserRole role, UUID hubId, UUID companyId){
+    public User(UUID userId, String username, String password, String name, String receiverSlackId,
+                UserRole role, String hubId, String companyId){
         validateRole(role, hubId, companyId);
+        this.userId = userId;
         this.username = username;
         this.password = password;
-        this.username = name;
+        this.name = name;
         this.receiverSlackId = receiverSlackId;
         this.role = role;
         this.hubId = hubId;
