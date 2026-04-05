@@ -159,41 +159,55 @@ public class NotificationService {
         String waypoints = (req.getWaypointNames() == null || req.getWaypointNames().isEmpty())
                 ? "없음" : String.join(" → ", req.getWaypointNames());
 
+        long totalMinutes = req.getTotalDurationMinutes() != null ? req.getTotalDurationMinutes() : 0L;
+        long totalDistance = req.getTotalDistanceKm() != null ? req.getTotalDistanceKm() : 0L;
+        int segments = waypointCount + 1;
+        long segmentMinutes = segments > 0 ? totalMinutes / segments : totalMinutes;
+
         return """
-                당신은 1분 단위까지 정확하게 계산하는 **물류 전문 배차 알고리즘**입니다.
-                아래 규칙에 따라 '최종 발송 시한(출발 시각)'을 **역산(Backwards Calculation)** 하세요.
+                당신은 물류 배차 알고리즘입니다. 아래 규칙과 예시를 보고 '최종 발송 시한'을 계산하세요.
+                [규칙]
+                1. 근무시간: 09:00 ~ 18:00만 이동/작업 가능
+                2. 역산 중 09:00 이전이 되면 → 전날 18:00으로 이동 후 나머지 시간 계속 빼기
+                3. 역산 시작점: 납기일 전날 18:00
+                4. 구간당 주행시간 = 총 주행시간 ÷ (경유지 수 + 1) = %9$d ÷ %11$d = %12$d분
+                5. 경유지마다 상하차 120분 소요 (최종 도착지는 상하차 없음)
+                6. 역산 순서: [마지막 구간 주행] → [경유지 상하차 + 구간 주행] 반복 → [첫 구간 주행]
+              
+               [계산 예시 - 납기일 4월 15일, 경유지 A/B/C 3곳, 구간당 97분인 경우]
+                시작: 4월 14일 18:00
+                → 마지막 구간 97분: 4월 14일 16:23
+                → C 상하차 120분: 4월 14일 14:23
+                → C→B 구간 97분: 4월 14일 12:46
+                → B 상하차 120분: 4월 14일 10:46
+                → B→A 구간 97분: 4월 14일 09:09
+                → A 상하차 120분: 4월 14일 07:09 → 09:00 이전! → 4월 13일 18:00으로 이동 → 남은 111분 빼기 → 4월 13일 16:09
+                → 첫 구간 97분: 4월 13일 14:32
+                결과: 최종 발송 시한: 04월 13일 오후 02시 32분
             
-                [핵심 계산 규칙]
-                1. **근무 시간**: 모든 이동과 상하차는 오직 09:00 ~ 18:00 사이에만 가능합니다.
-                2. **밤샘 금지**: 역산 중 시각이 09:00 이전으로 내려가면, 전날 18:00로 이동하여 남은 시간을 뺍니다. (예: 09:00에서 1시간을 더 빼야 한다면 -> 전날 17:00가 됨)
-                3. **도착 마진**: 최종 목적지 허브에는 납기일 **전날 18:00까지** 도착 완료해야 합니다.
-                (납기 당일 09:00부터 업체 배송기사가 허브에서 픽업하여 수령업체로 배송합니다.)
-                4. **허브 정체**: 각 허브(경유지)에 도착할 때마다 상하차 및 검수에 **120분(2시간)**이 소요됩니다.
-                5. 총 주행 시간과 거리, 경유지, 경유지 개수가 제공되므로 경유지 개수에따른 상하차 시간, 주행거리, 담당자의 근무시간을반영하여 계산해주세요.
-            
-                
-                [주문 및 경로 정보]
-                - 상품: %1$s %2$d개
-                - 요청사항: %3$s
-                - 납기일시: %4$s
-                - 발송지: %5$s
-                - 경유지: %6$s (총 %7$d곳)
-                - 도착지: %8$s
-                - 총 주행 시간: %9$d분 / 총 거리: %10$dkm
-   
-                [미션]
-                납기일시부터 거꾸로 계산하여, 위 모든 제약을 만족하는 '최종 출발 시각'을 산출하세요.
+               [주문 정보]
+               - 상품: %1$s %2$d개
+               - 요청사항: %3$s
+               - 납기일시: %4$s
+               - 발송지: %5$s
+               - 경유지: %6$s (총 %7$d곳)
+               - 도착지: %8$s
+               - 총 주행시간: %9$d분 / 총 거리: %10$dkm
+               - 구간 수: %11$d / 구간당 주행시간: %12$d분
+               
+                위 계산 예시와 동일한 방식으로 역산하세요.
                 결과는 반드시 '최종 발송 시한: MM월 DD일 오전/오후 HH시 mm분' 형식으로만 한 줄로 출력하세요.
-                """.formatted(
-                    order.getProductName(), order.getQuantity(),
-                    order.getRequestNote(),
-                    order.getRequestedDeadline(),
-                    order.getOriginHubName(),
-                    waypoints, waypointCount,
-                    order.getDestinationHubName(),
-                    req.getTotalDurationMinutes() != null ? req.getTotalDurationMinutes() : 0L,
-                    req.getTotalDistanceKm() != null ? req.getTotalDistanceKm() : 0L
-                );
+                ⚠️ 결과가 09:00 이전이거나 18:00 이후라면 계산이 잘못된 것입니다. 다시 계산하세요.
+               """.formatted(
+                order.getProductName(), order.getQuantity(),
+                order.getRequestNote(),
+                order.getRequestedDeadline(),
+                order.getOriginHubName(),
+                waypoints, waypointCount,
+                order.getDestinationHubName(),
+                totalMinutes, totalDistance,
+                segments, segmentMinutes
+        );
     }
 
     private String parseDeadline(String aiResponse) {
@@ -204,10 +218,12 @@ public class NotificationService {
         String marker = "최종 발송 시한:";
         int idx = aiResponse.indexOf(marker);
         if (idx >= 0) {
-            return aiResponse.substring(idx).split("\n")[0].trim();
+            return aiResponse.substring(idx).split("\n")[0]
+                    .replaceAll("\\*+", "")  // ** 제거
+                    .trim();
         }
         // 파싱 실패 시 응답 전체 반환 (첫 200자)
-        return aiResponse.length() > 200 ? aiResponse.substring(0, 200) : aiResponse;
+        return "발송 시한 계산 불가";
     }
 
     private String buildSlackMessage(SendOrderAlertCommand req, OrderResponse order, String deadlineResult) {
@@ -222,7 +238,9 @@ public class NotificationService {
             > 주문 시간: %s
             > 상품 정보: %s %d개
             > 요청 사항: %s
+            > 납기 일시: %s
             
+            🚛 배송 정보
             > 발송지: %s
             > 경유지: %s
             > 도착지: %s
@@ -234,6 +252,7 @@ public class NotificationService {
                 order.getCreatedAt(),
                 order.getProductName(), order.getQuantity(),
                 order.getRequestNote(),
+                order.getRequestedDeadline(),
                 order.getOriginHubName(),
                 waypoints,
                 order.getDeliveryAddress(),
