@@ -133,8 +133,7 @@ public class OrderService {
                             request.getReceiverCompanyId(),
                             product.getHubId(),
                             recipient != null ? recipient.getName() : "미확인",
-                            recipient != null ? recipient.getReceiverSlackId() : "",
-                            request.getRequestedDeadline()
+                            recipient != null ? recipient.getReceiverSlackId() : ""
                     ), INTERNAL_REQUEST)
                     .getData();
         } catch (RuntimeException ex) {
@@ -259,7 +258,7 @@ public class OrderService {
         DeliveryStatusResponse status = deliveryClient
                 .getDeliveryStatus(id, INTERNAL_REQUEST)
                 .getData();
-        if (status != null && !"WAITING".equals(status.getDeliveryStatus())) {
+        if (status == null || !"WAITING".equals(status.getDeliveryStatus())) {
             throw new BusinessException(OrderErrorCode.INVALID_ORDER_STATUS);
         }
 
@@ -270,8 +269,8 @@ public class OrderService {
                 INTERNAL_REQUEST
         );
 
-        // TODO: 4. 배송 취소 API 구현되면 추가
-        // // deliveryClient.cancelDelivery(order.getDeliveryId(), INTERNAL_REQUEST);
+        // 4. 배송 취소
+        deliveryClient.cancelDelivery(order.getDeliveryId(), INTERNAL_REQUEST);
         order.cancel();
         return OrderResponse.from(order);
     }

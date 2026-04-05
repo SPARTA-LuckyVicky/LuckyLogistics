@@ -11,8 +11,7 @@ import java.util.UUID;
 public class DeliveryCreateRequest {
     private UUID orderId;
     private UUID companyId;
-    private UUID originHubId;  // from_hub_id → origin_hub_id로 변경
+    private UUID originHubId;
     private String recipientName;
     private String recipientSlackId;
-    private LocalDateTime deliveryDueDate;
 }

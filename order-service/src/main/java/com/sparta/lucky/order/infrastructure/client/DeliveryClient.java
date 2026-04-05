@@ -21,10 +21,10 @@ public interface DeliveryClient {
     FeignApiResponse<DeliveryStatusResponse> getDeliveryStatus(@PathVariable UUID orderId,
 
                                                                @RequestHeader("X-Internal-Request") String internalRequest);
-    // TODO: delivery-service 배송 취소 API 아직은 미구현 상태 -> 구현될시 주석해제
-    // @DeleteMapping("/internal/api/v1/deliveries/{deliveryId}")
-    // FeignApiResponse<Void> cancelDelivery(
-    //         @PathVariable UUID deliveryId,
-    //         @RequestHeader("X-Internal-Request") String internalRequest
-    // );
+
+    @DeleteMapping("/internal/api/v1/deliveries/{deliveryId}")
+    FeignApiResponse<Void> cancelDelivery(
+            @PathVariable UUID deliveryId,
+            @RequestHeader("X-Internal-Request") String internalRequest
+    );
 }
