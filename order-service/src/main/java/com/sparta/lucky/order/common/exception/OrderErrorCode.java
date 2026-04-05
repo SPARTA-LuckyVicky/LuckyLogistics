@@ -20,6 +20,9 @@ public enum OrderErrorCode implements ErrorCode {
 
     OUT_OF_STOCK ("ORD_008", "재고가 부족하여 주문할 수 없습니다.", 409),
     PRODUCT_NOT_FOUND ("ORD_009", "존재하지 않는 상품입니다.", 404),
+    COMPANY_NOT_FOUND ("ORD_010","존재하지 않는 업체입니다.",404),
+    HUB_NOT_FOUND("ORD_011","존재하지 않는 허브입니다.",404),
+    DELIVERY_CREATE_FAILED("ORD_012", "배송 생성에 실패했습니다.", 500),
 
     ;
 
