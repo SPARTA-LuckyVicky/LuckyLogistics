@@ -7,11 +7,12 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
@@ -32,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * - 페이지네이션 size 정규화 : 허용값(10/30/50) 외 요청 시 10으로 고정
  */
 @WebMvcTest(CompanyController.class)
+@AutoConfigureMockMvc(addFilters = false)  // Security 필터 비활성화 - 실제 인증은 Gateway 처리
 class CompanyControllerTest {
 
     @Autowired
@@ -42,6 +44,10 @@ class CompanyControllerTest {
 
     private static final UUID USER_ID = UUID.randomUUID();
     private static final UUID HUB_ID = UUID.randomUUID();
+
+    // 프로젝트 실제 흐름 : Gateway가 JWT 검증 -> 헤더 주입
+    // 각 서비스의 자체 JWT 검증은 방어코드임
+    // Controller의 관심사는 헤더 기반 비즈니스 로직
 
     @Nested
     @DisplayName("HUB_MANAGER X-Hub-Id 헤더 검증")

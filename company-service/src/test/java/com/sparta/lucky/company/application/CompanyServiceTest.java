@@ -9,6 +9,9 @@ import com.sparta.lucky.company.domain.Company;
 import com.sparta.lucky.company.domain.CompanyErrorCode;
 import com.sparta.lucky.company.domain.CompanyRepository;
 import com.sparta.lucky.company.domain.CompanyType;
+import com.sparta.lucky.company.infrastructure.feign.HubClient;
+import com.sparta.lucky.company.infrastructure.feign.ProductInternalClient;
+import com.sparta.lucky.company.infrastructure.feign.dto.FeignApiResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -26,6 +29,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 
 /**
  * 최종수정 : 2026-04-05 박동진
@@ -44,6 +49,12 @@ class CompanyServiceTest {
 
     @Mock
     private CompanyRepository companyRepository;
+
+    @Mock
+    private HubClient hubClient;
+
+    @Mock
+    private ProductInternalClient productInternalClient;
 
     // 테스트용 고정 UUID
     private static final UUID COMPANY_ID = UUID.randomUUID();
@@ -69,6 +80,14 @@ class CompanyServiceTest {
     @Nested
     @DisplayName("업체 생성")
     class CreateCompany {
+
+        @BeforeEach
+        void stubHub() {
+            // 예외 분기 테스트는 validateHub 도달 전 예외 던지므로 해당 스텁 사용하지 않음
+            // FeignApiRepsopnse mock은 requireData() 호출 시 기본값 null 반환 -> 예외 없이 통과
+            lenient().when(hubClient.getHub(any(), any()))
+                    .thenReturn(mock(FeignApiResponse.class));
+        }
 
         @Test
         @DisplayName("MASTER는 어떤 허브에도 업체 생성 가능")
@@ -268,6 +287,12 @@ class CompanyServiceTest {
     @Nested
     @DisplayName("업체 삭제")
     class DeleteCompany {
+
+        @BeforeEach
+        void stubProductClient() {
+            lenient().when(productInternalClient.deleteProductsByCompany(any(), any(), any()))
+                    .thenReturn(mock(FeignApiResponse.class));
+        }
 
         @Test
         @DisplayName("MASTER는 모든 업체 삭제 가능")
