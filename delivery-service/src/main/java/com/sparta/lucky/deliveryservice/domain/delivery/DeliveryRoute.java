@@ -1,5 +1,6 @@
 package com.sparta.lucky.deliveryservice.domain.delivery;
 
+import com.sparta.lucky.deliveryservice.application.dto.DeliveryRouteCreateDto;
 import com.sparta.lucky.deliveryservice.domain.delivery.code.DeliveryRouteStatus;
 import com.sparta.lucky.deliveryservice.domain.driver.DeliveryDriver;
 import jakarta.persistence.Column;
@@ -69,4 +70,20 @@ public class DeliveryRoute {
 
     @Column(name="arrived_at")
     private LocalDateTime arrivedAt;
+
+
+
+    // Factory methods ================================================================
+    public static DeliveryRoute create(DeliveryRouteCreateDto dto) {
+        DeliveryRoute deliveryRoute = new DeliveryRoute();
+        deliveryRoute.delivery = dto.delivery();
+        deliveryRoute.deliveryDriver = dto.driver();
+        deliveryRoute.sequence = dto.sequence();
+        deliveryRoute.fromHubId = dto.fromHubId();
+        deliveryRoute.toHubId = dto.toHubId();
+        deliveryRoute.status = DeliveryRouteStatus.WAITING;
+        deliveryRoute.expectedDistance = dto.expectedDistance();
+        deliveryRoute.expectedDurationSeconds = dto.expectedDurationSeconds();
+        return deliveryRoute;
+    }
 }

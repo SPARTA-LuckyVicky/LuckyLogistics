@@ -80,4 +80,12 @@ public class DeliveryDriver extends BaseEntity {
         this.type = command.type() != null ? command.type() : this.type;
         this.status = command.status() != null ? command.status() : this.status;
     }
+
+    /**
+     * 배송 기사의 상태를 업데이트 합니다.
+     * @param driverStatus 변경할 상태값
+     */
+    public void updateStatus(DriverStatus driverStatus) {
+        this.status = driverStatus;
+    }
 }

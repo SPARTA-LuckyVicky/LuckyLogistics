@@ -1,6 +1,8 @@
-package com.sparta.lucky.deliveryservice.infrastructure;
+package com.sparta.lucky.deliveryservice.infrastructure.jpa;
 
 import com.sparta.lucky.deliveryservice.domain.driver.DeliveryDriver;
+import com.sparta.lucky.deliveryservice.domain.driver.code.DriverStatus;
+import com.sparta.lucky.deliveryservice.domain.driver.code.DriverType;
 import com.sparta.lucky.deliveryservice.domain.repos.DeliveryDriverRepository;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,6 +18,11 @@ public interface JpaDeliveryDriverRepository
     Optional<DeliveryDriver> findByUserIdAndDeletedAtIsNull(UUID id);
     Page<DeliveryDriver> findAllByDeletedAtIsNull(Pageable pageable);
     Page<DeliveryDriver> findAllByHubIdAndDeletedAtIsNull(UUID hubId, Pageable pageable);
+    Optional<DeliveryDriver> findFirstByHubIdAndStatusAndTypeAndDeletedAtIsNullOrderByAssignmentOrderAscIdAsc(
+        UUID hubId, DriverStatus status, DriverType type);
+    Optional<DeliveryDriver> findFirstByStatusAndTypeAndDeletedAtIsNullOrderByAssignmentOrderAscIdAsc(
+        DriverStatus status, DriverType type
+    );
 
 
     // override ====================================================
@@ -33,4 +40,14 @@ public interface JpaDeliveryDriverRepository
     default Page<DeliveryDriver> findAllActiveByHubId(UUID hubId, Pageable pageable) {
         return findAllByHubIdAndDeletedAtIsNull(hubId, pageable);
     };
+
+    @Override
+    default Optional<DeliveryDriver> findFirstActiveByHubId(UUID hubId, DriverStatus status, DriverType type) {
+        return findFirstByHubIdAndStatusAndTypeAndDeletedAtIsNullOrderByAssignmentOrderAscIdAsc(hubId, status, type);
+    };
+
+    @Override
+    default Optional<DeliveryDriver> findFirstActiveByStatusAndType(DriverStatus status, DriverType type) {
+        return findFirstByStatusAndTypeAndDeletedAtIsNullOrderByAssignmentOrderAscIdAsc(status, type);
+    }
 }

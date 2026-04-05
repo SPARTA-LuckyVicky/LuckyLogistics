@@ -14,11 +14,20 @@ public enum ResponseCode {
     METHOD_NOT_ALLOWED("DELIVERY_007", HttpStatus.METHOD_NOT_ALLOWED, "Method Not Allowed"),
     INTERNAL_ERROR("DELIVERY_008", HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"),
 
-    // DRIVER(3)
+    // DELIVERY(1)
+    DELIVERY_CREATED("DELIVERY_100", HttpStatus.CREATED, "Delivery Created"),
+    DELIVERY_EXISTS("DELIVERY_101", HttpStatus.CONFLICT, "Delivery already exists"),
+    DELIVERY_NOT_FOUND("DELIVERY_102", HttpStatus.NOT_FOUND, "Delivery Not Found"),
+    DELIVERY_ALREADY_PROCESSED("DELIVERY_103", HttpStatus.CONFLICT, "Delivery Already Processed"),
+
+    // DELIVERY ROUTE (2)
+    ROUTE_RESPONSE_NULL("DELIVERY_203", HttpStatus.INTERNAL_SERVER_ERROR, "Route Response is Null"),
+
+    // DRIVER(3),
     DRIVER_CREATED("DELIVERY_300", HttpStatus.CREATED, "Driver Created"),
     DRIVER_EXISTS("DELIVERY_301", HttpStatus.CONFLICT, "Driver already exists"),
     DRIVER_NOT_FOUND("DELIVERY_302", HttpStatus.NOT_FOUND, "Driver not found"),
-    ;
+    NO_DRIVER_AVAILABLE("DELIVERY_303", HttpStatus.NOT_FOUND, "No Drivers Available");
 
     private final String code;
     private final HttpStatus status;
