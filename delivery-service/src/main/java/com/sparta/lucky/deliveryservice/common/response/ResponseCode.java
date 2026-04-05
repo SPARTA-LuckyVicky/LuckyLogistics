@@ -20,6 +20,7 @@ public enum ResponseCode {
     DELIVERY_NOT_FOUND("DELIVERY_102", HttpStatus.NOT_FOUND, "Delivery Not Found"),
     DELIVERY_ALREADY_PROCESSED("DELIVERY_103", HttpStatus.CONFLICT, "Delivery Already Processed"),
     DELIVERY_DELETE_NOT_ALLOWED("DELIVERY_104", HttpStatus.CONFLICT, "Delivery Already in transit"),
+    DELIVERY_READ_NOT_ALLOWED("DELIVERY_105", HttpStatus.FORBIDDEN, "Delivery read access Denied"),
 
     // DELIVERY ROUTE (2)
     ROUTE_NOT_FOUND("DELIVERY_203", HttpStatus.NOT_FOUND, "Delivery route Not Found"),

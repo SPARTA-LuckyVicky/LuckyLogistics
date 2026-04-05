@@ -1,6 +1,6 @@
 package com.sparta.lucky.deliveryservice.application.event;
 
-import com.sparta.lucky.deliveryservice.application.DeliveryRouteReadService;
+import com.sparta.lucky.deliveryservice.application.service.DeliveryRouteReadService;
 import com.sparta.lucky.deliveryservice.application.dto.DeliveryReadResult;
 import com.sparta.lucky.deliveryservice.application.dto.DeliveryRouteReadResult;
 import com.sparta.lucky.deliveryservice.application.policy.DeliveryReadService;

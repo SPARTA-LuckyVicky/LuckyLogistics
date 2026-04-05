@@ -1,6 +1,6 @@
 package com.sparta.lucky.deliveryservice.application.event;
 
-import com.sparta.lucky.deliveryservice.application.DeliveryProcessingService;
+import com.sparta.lucky.deliveryservice.application.service.DeliveryProcessingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;

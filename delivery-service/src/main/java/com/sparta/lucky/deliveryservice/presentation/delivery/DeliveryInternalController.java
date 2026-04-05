@@ -1,6 +1,6 @@
 package com.sparta.lucky.deliveryservice.presentation.delivery;
 
-import com.sparta.lucky.deliveryservice.application.DeliveryService;
+import com.sparta.lucky.deliveryservice.application.service.DeliveryService;
 import com.sparta.lucky.deliveryservice.common.response.CommonApiResponse;
 import com.sparta.lucky.deliveryservice.common.response.ResponseCode;
 import com.sparta.lucky.deliveryservice.presentation.delivery.payload.DeliveryCreateRequest;
