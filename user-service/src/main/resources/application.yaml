@@ -12,6 +12,15 @@ spring:
           issuer-uri: http://localhost:9090/realms/lucky
           jwk-set-uri: http://lucky-keycloak:8080/realms/lucky/protocol/openid-connect/certs
 
+keycloak:
+  server-url: ${KEYCLOAK_SERVER_URL}
+  realm: ${KEYCLOAK_REALM}
+  # 회원가입용 (관리자 권한)
+  admin-client-id: admin-cli
+  admin-client-secret: ${KEYCLOAK_ADMIN_SECRET}
+  # 로그인용 (일반 클라이언트 권한)
+  user-client-id: lucky-client
+  user-client-secret: ${KEYCLOAK_USER_SECRET}
 
   datasource:
     url: jdbc:postgresql://lucky-postgres:5432/${POSTGRES_DB}?currentSchema=${USER_SERVICE_SCHEMA}
