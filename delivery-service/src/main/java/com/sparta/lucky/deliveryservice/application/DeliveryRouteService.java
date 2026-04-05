@@ -8,6 +8,7 @@ import com.sparta.lucky.deliveryservice.domain.repos.DeliveryRouteRepository;
 import com.sparta.lucky.deliveryservice.infrastructure.client.dto.HubRouteResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,5 +32,11 @@ public class DeliveryRouteService {
             routeList.add(route);
         }
         deliveryRouteRepository.saveAll(routeList);
+    }
+
+    @Transactional
+    public void deleteDeliveryRoutes(UUID deliveryId, UUID accessId) {
+        deliveryRouteRepository.findActiveAllByDeliveryId(deliveryId)
+            .forEach(route -> route.softDelete(accessId));
     }
 }

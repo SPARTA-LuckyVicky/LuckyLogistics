@@ -106,4 +106,9 @@ public class Delivery extends BaseEntity {
     public void updateStatus(DeliveryStatus status) {
         this.status = status;
     }
+
+    public void softDelete(UUID accessId) {
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = accessId;
+    }
 }

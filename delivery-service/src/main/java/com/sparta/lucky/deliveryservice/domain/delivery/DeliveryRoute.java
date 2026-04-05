@@ -87,4 +87,9 @@ public class DeliveryRoute extends BaseEntity {
         deliveryRoute.expectedDurationSeconds = dto.expectedDurationSeconds();
         return deliveryRoute;
     }
+
+    public void softDelete(UUID accessId) {
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = accessId;
+    }
 }
