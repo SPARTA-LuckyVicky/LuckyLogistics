@@ -8,6 +8,8 @@ import com.sparta.lucky.company.common.response.ApiResponse;
 import com.sparta.lucky.company.domain.CompanyErrorCode;
 import com.sparta.lucky.company.domain.CompanyType;
 import com.sparta.lucky.company.presentation.dto.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,6 +31,7 @@ import java.util.UUID;
  * @RequestHeader("X-Company-Id") UUID companyId : JWT 파싱 요청자 companyId
  */
 
+@Tag(name = "Company", description = "업체 관리 API")
 @RestController
 @RequestMapping("/api/v1/companies")
 @RequiredArgsConstructor
@@ -48,6 +51,7 @@ public class CompanyController {
      * @param hubId HUB_MANAGER의 담당 허브 UUID (MASTER는 null)
      * @return 생성된 업체 데이터
      */
+    @Operation(summary = "업체 생성", description = "새로운 업체를 생성합니다. (MASTER, HUB_MANAGER)")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<PostCompanyResDto> createCompany(
@@ -87,6 +91,8 @@ public class CompanyController {
      * @param pageable 페이지네이션 (기본값 size = 10, createdAt DESC)
      * @return 업체 목록 페이지
      */
+    @Operation(summary = "업체 목록 조회", description = "name(부분 검색), type, hubId 필터 가능." +
+            " 페이지 사이즈: 10 / 30 / 50 (그 외는 10으로 고정)")
     @GetMapping
     public ApiResponse<Page<GetCompanyResDto>> getCompanies(
             @RequestParam(required = false) String name,
@@ -114,6 +120,7 @@ public class CompanyController {
      * @param companyId
      * @return
      */
+    @Operation(summary = "업체 단건 조회")
     @GetMapping("/{companyId}")
     public ApiResponse<GetCompanyResDto> getCompany(@PathVariable UUID companyId) {
         return ApiResponse.success(
@@ -136,6 +143,8 @@ public class CompanyController {
      * @param companyIdHeader
      * @return 수정된 업체 결과
      */
+    @Operation(summary = "업체 수정", description = "업체 정보를 수정합니다. hubId 변경은 MASTER만 가능." +
+            "(MASTER, HUB_MANAGER, COMPANY_MANAGER)")
     @PatchMapping("/{companyId}")
     public ApiResponse<GetCompanyResDto> updateCompany(
             @PathVariable UUID companyId,
@@ -174,6 +183,7 @@ public class CompanyController {
      * @param hubId
      * @return 삭제 결과
      */
+    @Operation(summary = "업체 삭제", description = "업체를 sofe delete 처리합니다. (MASTER, HUB_MANAGER)")
     @DeleteMapping("/{companyId}")
     public ApiResponse<DeleteCompanyResDto> deleteCompany(
             @PathVariable UUID companyId,
