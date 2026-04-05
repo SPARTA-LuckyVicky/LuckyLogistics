@@ -67,7 +67,7 @@ public class DeliveryDriverReadService {
      * @return
      */
     public Page<DeliveryDriverReadResult> getDrivers(Pageable pageable, UUID accessId) {
-        UUID hubId = userClient.getUserHubId(accessId).hubId();
+        UUID hubId = userClient.getUser(accessId).hubId();
         return deliveryDriverRepository.findAllActiveByHubId(hubId, pageable).map(DeliveryDriverReadResult::from);
     }
 
@@ -98,7 +98,7 @@ public class DeliveryDriverReadService {
 
     // Validator =======================================================================
     private void validateSameHubOrThrow(UUID accessId, UUID hubId) {
-        UUID userHubId = userClient.getUserHubId(accessId).hubId();
+        UUID userHubId = userClient.getUser(accessId).hubId();
         if (!hubId.equals(userHubId)) {
             throw new ForbiddenException(ResponseCode.FORBIDDEN);
         }

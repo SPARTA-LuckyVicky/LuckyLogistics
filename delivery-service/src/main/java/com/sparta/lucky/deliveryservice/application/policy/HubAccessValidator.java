@@ -20,7 +20,7 @@ public class HubAccessValidator {
      * @param hubId 목표 hub ID
      */
     public void validateSameHubOrThrow(UUID accessId, UUID hubId) {
-        UUID userHubId = userClient.getUserHubId(accessId).hubId();
+        UUID userHubId = userClient.getUser(accessId).hubId();
         if (!hubId.equals(userHubId)) {
             throw new ForbiddenException(ResponseCode.FORBIDDEN);
         }

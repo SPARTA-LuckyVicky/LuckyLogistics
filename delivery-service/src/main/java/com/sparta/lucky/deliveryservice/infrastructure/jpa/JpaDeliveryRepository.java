@@ -17,6 +17,8 @@ public interface JpaDeliveryRepository extends JpaRepository<Delivery, UUID>, De
 
     Optional<Delivery> findByOrderIdAndDeletedAtIsNull(UUID orderId);
     Optional<Delivery> findByIdAndDeletedAtIsNull(UUID id);
+    Optional<Delivery> findByIdAndDeliveryDriverAndDeletedAtIsNull(UUID id, DeliveryDriver driver);
+    Optional<Delivery> findByIdAndRecipientSlackIdAndDeletedAtIsNull(UUID id, String slackId);
 
     Page<Delivery> findAllByDeletedAtIsNull(Pageable pageable);
     Page<Delivery> findAllByDeliveryDriverAndDeletedAtIsNull(DeliveryDriver driver, Pageable pageable);
@@ -44,12 +46,32 @@ public interface JpaDeliveryRepository extends JpaRepository<Delivery, UUID>, De
         select d
         from Delivery d
         where d.deletedAt is null
-            and d.originHub = :hubId or d.destinationHub = :hubId
+            and (d.originHub = :hubId or d.destinationHub = :hubId)
         """)
     Page<Delivery> findAllActiveByHub(@Param("hubId") UUID hubId, Pageable pageable);
 
     @Override
     default Page<Delivery> findAllActiveByDriver(DeliveryDriver driver, Pageable pageable) {
         return findAllByDeliveryDriverAndDeletedAtIsNull(driver, pageable);
+    }
+
+    @Override
+    @Query("""
+      select d
+      from Delivery d
+      where d.deletedAt is null
+          and d.id = :deliveryId
+          and (d.originHub = :hubId or d.destinationHub = :hubId)
+    """)
+    Optional<Delivery> findActiveByIdAndHubId(UUID deliveryId, UUID hubId);
+
+    @Override
+    default Optional<Delivery> findActiveByIdAndDriver(UUID deliveryId, DeliveryDriver deliveryDriver) {
+        return findByIdAndDeliveryDriverAndDeletedAtIsNull(deliveryId, deliveryDriver);
+    }
+
+    @Override
+    default Optional<Delivery> findActiveByIdAndSlackId(UUID deliveryId, String slackId) {
+        return findByIdAndRecipientSlackIdAndDeletedAtIsNull(deliveryId, slackId);
     }
 }

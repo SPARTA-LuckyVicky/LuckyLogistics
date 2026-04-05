@@ -11,9 +11,13 @@ public interface DeliveryRepository {
 
     Optional<Delivery> findActiveByOrderId(UUID orderId);
     Optional<Delivery> findActiveByDeliveryId(UUID deliveryId);
-    Delivery save(Delivery delivery);
+    Optional<Delivery> findActiveByIdAndHubId(UUID deliveryId, UUID hubId);
+    Optional<Delivery> findActiveByIdAndDriver(UUID deliveryId, DeliveryDriver deliveryDriver);
+    Optional<Delivery> findActiveByIdAndSlackId(UUID deliveryId, String slackId);
 
+    Delivery save(Delivery delivery);
     Page<Delivery> findAllActive(Pageable pageable);
     Page<Delivery> findAllActiveByHub(UUID hubId, Pageable pageable);
+
     Page<Delivery> findAllActiveByDriver(DeliveryDriver driver, Pageable pageable);
 }
