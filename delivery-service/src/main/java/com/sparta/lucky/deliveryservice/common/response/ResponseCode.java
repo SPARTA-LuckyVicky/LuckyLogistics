@@ -21,7 +21,8 @@ public enum ResponseCode {
     DELIVERY_ALREADY_PROCESSED("DELIVERY_103", HttpStatus.CONFLICT, "Delivery Already Processed"),
 
     // DELIVERY ROUTE (2)
-    ROUTE_RESPONSE_NULL("DELIVERY_203", HttpStatus.INTERNAL_SERVER_ERROR, "Route Response is Null"),
+    ROUTE_NOT_FOUND("DELIVERY_203", HttpStatus.NOT_FOUND, "Delivery route Not Found"),
+    ROUTE_RESPONSE_NULL("DELIVERY_204", HttpStatus.INTERNAL_SERVER_ERROR, "Route Response is Null"),
 
     // DRIVER(3),
     DRIVER_CREATED("DELIVERY_300", HttpStatus.CREATED, "Driver Created"),

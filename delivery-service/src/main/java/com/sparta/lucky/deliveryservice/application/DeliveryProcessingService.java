@@ -1,5 +1,6 @@
 package com.sparta.lucky.deliveryservice.application;
 
+import com.sparta.lucky.deliveryservice.application.event.DeliveryProcessedEvent;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.CommonException;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.ConflictException;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.NotFoundException;
@@ -15,6 +16,7 @@ import com.sparta.lucky.deliveryservice.infrastructure.client.dto.HubRouteRespon
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,7 @@ public class DeliveryProcessingService {
     private final HubRouteClient  hubRouteClient;
     private final DeliveryRouteService  deliveryRouteService;
     private final DeliveryFailureService deliveryFailureService;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 배송 생성시, 기본 배송 정보 생성후, 배송 담당자 배정, 배송 경로 저장 등의 후처리 작업을 처리하는 오케스트레이터
@@ -73,6 +76,9 @@ public class DeliveryProcessingService {
 
             // 3. change status of delivery to WAITING
             delivery.updateStatus(DeliveryStatus.WAITING);
+
+            // 4. send request to notification-service
+            eventPublisher.publishEvent(new DeliveryProcessedEvent(deliveryId));
         } catch (Exception e) {
             log.error("[ERROR] DeliveryProcessingService :: processing failed. deliveryId={}", deliveryId, e);
 

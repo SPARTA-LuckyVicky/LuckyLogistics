@@ -1,6 +1,7 @@
 package com.sparta.lucky.deliveryservice.domain.delivery;
 
 import com.sparta.lucky.deliveryservice.application.dto.DeliveryRouteCreateDto;
+import com.sparta.lucky.deliveryservice.common.entity.BaseEntity;
 import com.sparta.lucky.deliveryservice.domain.delivery.code.DeliveryRouteStatus;
 import com.sparta.lucky.deliveryservice.domain.driver.DeliveryDriver;
 import jakarta.persistence.Column;
@@ -24,7 +25,7 @@ import org.hibernate.annotations.UuidGenerator;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "p_delivery_route", schema = "delivery_schema")
-public class DeliveryRoute {
+public class DeliveryRoute extends BaseEntity {
 
     @Id
     @GeneratedValue
