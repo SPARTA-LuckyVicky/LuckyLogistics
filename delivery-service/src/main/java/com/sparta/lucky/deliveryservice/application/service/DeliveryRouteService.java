@@ -24,7 +24,7 @@ public class DeliveryRouteService {
     @Transactional
     public void createDeliveryRoute(HubRouteResponse hubRouteResponse, Delivery delivery, DeliveryDriver deliveryDriver) {
         List<DeliveryRoute> routeList = new ArrayList<>();
-        for(int i = 0; i <= hubRouteResponse.route().size(); i++){
+        for(int i = 0; i < hubRouteResponse.route().size(); i++){
             DeliveryRoute route = DeliveryRoute.create(DeliveryRouteCreateDto.from(
                 hubRouteResponse.route().get(i),
                 delivery, deliveryDriver, i+1
