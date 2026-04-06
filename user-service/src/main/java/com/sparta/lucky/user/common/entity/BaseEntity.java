@@ -23,7 +23,7 @@ public abstract class BaseEntity {
     private LocalDateTime createdAt;
 
     @CreatedBy
-    @Column(name = "created_by", nullable = false, updatable = false, columnDefinition = "uuid")
+    @Column(name = "created_by", updatable = false, columnDefinition = "uuid")
     private UUID createdBy; // Expand commentComment on lines R25 to R27Resolved
 
     @LastModifiedDate
