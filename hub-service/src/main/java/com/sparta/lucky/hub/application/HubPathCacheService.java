@@ -21,7 +21,7 @@ public class HubPathCacheService {
      * 예: 서울 → 대전 → 부산 이면 [서울UUID, 대전UUID, 부산UUID]
      * 시간/거리는 포함하지 않아 routes 캐시의 최신값을 항상 반영 가능.
      */
-    @Cacheable(cacheNames = "path", key = "#originHubId + '-' + #destinationHubId")
+    @Cacheable(cacheNames = "path", key = "#originHubId + '-' + #destinationHubId", sync = true)
     @Transactional(readOnly = true)
     public List<UUID> getPathHubIds(UUID originHubId, UUID destinationHubId) {
         List<HubRoute> routes = hubRouteService.getHubRoutes();
