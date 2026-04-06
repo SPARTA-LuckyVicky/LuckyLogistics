@@ -5,6 +5,8 @@ import com.sparta.lucky.deliveryservice.common.error.exceptions.ForbiddenExcepti
 import com.sparta.lucky.deliveryservice.common.error.exceptions.NotFoundException;
 import com.sparta.lucky.deliveryservice.common.response.ResponseCode;
 import com.sparta.lucky.deliveryservice.domain.driver.DeliveryDriver;
+import com.sparta.lucky.deliveryservice.domain.driver.code.DriverStatus;
+import com.sparta.lucky.deliveryservice.domain.driver.code.DriverType;
 import com.sparta.lucky.deliveryservice.domain.repos.DeliveryDriverRepository;
 import com.sparta.lucky.deliveryservice.infrastructure.client.UserClient;
 import java.util.UUID;
@@ -73,6 +75,25 @@ public class DeliveryDriverReadService {
     public DeliveryDriver getActiveDriverOrThrow(UUID driverId) {
         return deliveryDriverRepository.findActiveByUserId(driverId)
             .orElseThrow(() -> new NotFoundException(ResponseCode.DRIVER_NOT_FOUND));
+    }
+
+    /**
+     * 배송가능한 업체 배송 담당자의 id를 반환합니다.
+     * @param hubId 소속 hubId
+     * @return {@code UUID} driverId
+     */
+    public DeliveryDriver getOneCompanyDriver(UUID hubId) {
+        return deliveryDriverRepository.findFirstActiveByHubId(hubId, DriverStatus.IDLE, DriverType.COMPANY)
+            .orElseThrow(() -> new NotFoundException(ResponseCode.NO_DRIVER_AVAILABLE));
+    }
+
+    /**
+     * 배송 가능한 허브 배송담당자의 ID를 반환합니다.
+     * @return {@code UUID} driverId
+     */
+    public DeliveryDriver getOneHubDriver() {
+        return deliveryDriverRepository.findFirstActiveByStatusAndType(DriverStatus.IDLE, DriverType.HUB)
+            .orElseThrow(() -> new NotFoundException(ResponseCode.NO_DRIVER_AVAILABLE));
     }
 
     // Validator =======================================================================

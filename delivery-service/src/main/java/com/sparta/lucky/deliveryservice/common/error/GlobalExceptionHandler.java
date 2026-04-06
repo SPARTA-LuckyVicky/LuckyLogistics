@@ -1,5 +1,6 @@
 package com.sparta.lucky.deliveryservice.common.error;
 
+import com.sparta.lucky.deliveryservice.common.error.exceptions.BusinessException;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.ConflictException;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.ForbiddenException;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.NotFoundException;
@@ -45,6 +46,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.FORBIDDEN)
             .body(CommonApiResponse.error(ResponseCode.FORBIDDEN));
+    }
+
+    // Business
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<CommonApiResponse<String>> businessExceptionHandler(
+        BusinessException ex
+    ) {
+        log.error(ex.getMessage(), ex);
+        return ResponseEntity
+            .status(ex.code().status())
+            .body(CommonApiResponse.error(ex.code(), ex.getMessage()));
     }
 
     // Request - unexpected api errors
