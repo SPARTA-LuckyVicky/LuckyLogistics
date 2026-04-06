@@ -23,9 +23,10 @@ public record DeliveryReadResult(
 ) {
 
     public static DeliveryReadResult from(Delivery delivery) {
+        UUID driverId = delivery.getDeliveryDriver() != null ? delivery.getDeliveryDriver().getId() : null;
         return DeliveryReadResult.builder()
             .id(delivery.getId())
-            .companyDriverId(delivery.getDeliveryDriver().getId())
+            .companyDriverId(driverId)
             .orderId(delivery.getOrderId())
             .currentHub(delivery.getCurrentHub())
             .status(delivery.getStatus())
