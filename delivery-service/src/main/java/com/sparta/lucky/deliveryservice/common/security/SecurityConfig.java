@@ -5,6 +5,7 @@ import com.sparta.lucky.deliveryservice.common.security.filter.ExternalAuthentic
 import com.sparta.lucky.deliveryservice.common.security.filter.InternalAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -24,6 +25,7 @@ public class SecurityConfig {
                     .requestMatchers("/internal/**").hasRole("INTERNAL")
                     .requestMatchers("/api/v1/drivers/me").hasRole(Role.DELIVERY_DRIVER.toString())
                     .requestMatchers("/api/v1/drivers/**").hasAnyRole(Role.MASTER.toString(), Role.HUB_MANAGER.toString())
+                    .requestMatchers(HttpMethod.POST, "/api/v1/deliveries").hasRole(Role.MASTER.toString())
                 // permit all while dev
                     .anyRequest().permitAll()
 //                .anyRequest().authenticated()
