@@ -1,6 +1,7 @@
 package com.sparta.lucky.hub.presentation.dto;
 
 import com.sparta.lucky.hub.application.dto.GetRouteResult;
+import com.sparta.lucky.hub.application.dto.GetRouteResult.RouteSegment;
 import lombok.Getter;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public class GetRouteResDto {
     private final UUID destinationHubId;
     private final Integer totalDuration;
     private final Integer totalDistance;
-    private final List<UUID> route;
+    private final List<RouteSegment> route;
 
     private GetRouteResDto(GetRouteResult result) {
         this.originHubId = result.getOriginHubId();

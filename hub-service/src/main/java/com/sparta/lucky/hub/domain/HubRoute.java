@@ -35,6 +35,15 @@ public class HubRoute extends BaseEntity {
     @Column(name = "distance", nullable = false)
     private Integer distance;
 
+    public static HubRoute create(UUID originHubId, UUID destinationHubId, int distance, int duration) {
+        HubRoute route = new HubRoute();
+        route.originHubId = originHubId;
+        route.destinationHubId = destinationHubId;
+        route.distance = distance;
+        route.duration = duration;
+        return route;
+    }
+
     /** 그래프 탐색 전용 역방향 인스턴스 생성 (DB 저장 X) */
     public HubRoute reverse() {
         HubRoute reversed = new HubRoute();

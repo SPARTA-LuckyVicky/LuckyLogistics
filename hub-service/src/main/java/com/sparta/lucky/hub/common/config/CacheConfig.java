@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.sparta.lucky.hub.application.dto.GetHubResult;
+import com.sparta.lucky.hub.application.dto.GetRouteResult;
+import com.sparta.lucky.hub.domain.HubRoute;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -47,9 +49,29 @@ public class CacheConfig {
                         new Jackson2JsonRedisSerializer<>(objectMapper, hubsType)
                 ));
 
+        // routes 캐시: List<HubRoute>
+        JavaType routesType = objectMapper.getTypeFactory()
+                .constructCollectionType(List.class, HubRoute.class);
+        RedisCacheConfiguration routesConfig = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofMinutes(30))
+                .serializeKeysWith(keySerializer)
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(
+                        new Jackson2JsonRedisSerializer<>(objectMapper, routesType)
+                ));
+
+        // path 캐시: path 단건 (origin-destination 쌍)
+        RedisCacheConfiguration routeResultConfig = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofMinutes(30))
+                .serializeKeysWith(keySerializer)
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(
+                        new Jackson2JsonRedisSerializer<>(objectMapper, GetRouteResult.class)
+                ));
+
         return RedisCacheManager.builder(connectionFactory)
                 .withCacheConfiguration("hub", hubConfig)
                 .withCacheConfiguration("hubs", hubsConfig)
+                .withCacheConfiguration("routes", routesConfig)
+                .withCacheConfiguration("path", routeResultConfig)
                 .build();
     }
 }

@@ -20,6 +20,12 @@ spring:
   threads:
     virtual:
       enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:9090/realms/lucky}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://lucky-keycloak:8080/realms/lucky/protocol/openid-connect/certs}
 
 eureka:
   client:
@@ -32,6 +38,9 @@ management:
   tracing:
     sampling:
       probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://lucky-zipkin:9411/api/v2/spans
 
 feign:
   client:

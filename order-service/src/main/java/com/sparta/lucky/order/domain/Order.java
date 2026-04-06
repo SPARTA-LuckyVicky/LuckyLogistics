@@ -51,6 +51,8 @@ public class Order extends BaseEntity {
     private UUID deliveryId;
 
     // 알림용 저장
+    private UUID originHubId;
+    private UUID destinationHubId;
     private String originHubName;
     private String destinationHubName;
     private String deliveryAddress;
@@ -103,6 +105,8 @@ public class Order extends BaseEntity {
     // 배송 정보 받아오면 정보 업데이트
     public void updateDeliveryInfo(
             UUID deliveryId,
+            UUID originHubId,       // 추가
+            UUID destinationHubId,  // 추가
             String originHubName,
             String destinationHubName,
             String deliveryAddress,
@@ -114,6 +118,8 @@ public class Order extends BaseEntity {
         this.deliveryId = deliveryId;
         this.originHubName = originHubName;
         this.destinationHubName = destinationHubName;
+        this.originHubId = originHubId;         // 추가
+        this.destinationHubId = destinationHubId; // 추가
         this.deliveryAddress = deliveryAddress;
         this.recipientName = recipientName;
         this.recipientSlackId = recipientSlackId;

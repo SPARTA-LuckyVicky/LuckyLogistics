@@ -41,6 +41,13 @@ public class HubService {
     }
 
     @Transactional(readOnly = true)
+    public GetHubResult getHubByManagerId(UUID managerId) {
+        Hub hub = hubRepository.findByManagerIdAndDeletedAtIsNull(managerId)
+                .orElseThrow(() -> new BusinessException(HubErrorCode.HUB_NOT_FOUND));
+        return GetHubResult.from(hub);
+    }
+
+    @Transactional(readOnly = true)
     public Page<GetHubResult> getHubsByPage(Pageable pageable) {
         return hubRepository.findAllByDeletedAtIsNull(pageable)
                 .map(GetHubResult::from);
