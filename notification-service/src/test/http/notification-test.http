@@ -17,7 +17,7 @@
 ### - SlackMessage + AiMessage DB 저장
 ### ================================================================
 ### @name sendOrderAlert
-POST {{notiUrl}}/internal/v1/notifications/order-alert
+POST {{notiUrl}}/internal/api/v1/notifications/order-alert
 Content-Type: application/json
 X-Internal-Request: true
 
@@ -26,9 +26,8 @@ X-Internal-Request: true
   "expectedTotalDurationSeconds": 23400,
   "expectedTotalDistanceMeter": 428000,
   "routes": [
-    "실제-허브-UUID-1",
-    "실제-허브-UUID-2",
-    "실제-허브-UUID-3"
+    "cccccccc-cccc-cccc-cccc-cccccccccccc",
+    "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
   ]
 }
 

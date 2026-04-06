@@ -118,7 +118,7 @@ Authorization: Bearer {{accessToken}}
 ### [7] 주문 수정 (MASTER / HUB_MANAGER - CREATED 상태만 가능)
 ### ================================================================
 ### @name updateOrder
-PATCH {{baseUrl}}/api/v1/orders/55555555-5555-5555-5555-555555555555
+PATCH {{baseUrl}}/api/v1/orders/{{orderId}}
 Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
@@ -133,7 +133,6 @@ Content-Type: application/json
         client.assert(response.body.data.requestNote === "수정된 요청사항: 새벽 배송 불가");
     });
 %}
-
 
 ### ================================================================
 ### [8] 주문 취소 (MASTER / HUB_MANAGER)
