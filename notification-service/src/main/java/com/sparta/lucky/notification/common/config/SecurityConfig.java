@@ -38,8 +38,7 @@ public class SecurityConfig {
                 .addFilterBefore(headerAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(internalRequestFilter,
-                        HeaderAuthenticationFilter.class)
-                .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()));
+                        HeaderAuthenticationFilter.class);
         return http.build();
     }
 }
