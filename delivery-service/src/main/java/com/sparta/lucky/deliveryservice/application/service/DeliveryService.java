@@ -67,7 +67,7 @@ public class DeliveryService {
             .orElseThrow(() -> new NotFoundException(ResponseCode.DELIVERY_NOT_FOUND));
 
         // check is delivery already in transit
-        if(delivery.getStatus().equals(DeliveryStatus.PENDING) || delivery.getStatus().equals(DeliveryStatus.WAITING)) {
+        if(!delivery.getStatus().equals(DeliveryStatus.PENDING) && !delivery.getStatus().equals(DeliveryStatus.WAITING)) {
             throw new BusinessException(ResponseCode.DELIVERY_DELETE_NOT_ALLOWED);
         }
 
