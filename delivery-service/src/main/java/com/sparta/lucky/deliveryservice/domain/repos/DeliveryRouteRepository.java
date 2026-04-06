@@ -13,7 +13,6 @@ public interface DeliveryRouteRepository {
     Optional<DeliveryRoute> findByDeliveryIdAndSequenceAndHubId(UUID deliveryId, Integer sequence, UUID hubId);
     Optional<DeliveryRoute> findByDeliveryIdAndSequenceAndDriverId(UUID deliveryId, Integer sequence, UUID driverId);
 
-    List<DeliveryRoute> saveAll(List<DeliveryRoute> deliveryRoutes);
     List<DeliveryRoute> findActiveAllByDeliveryId(UUID deliveryId);
     Page<DeliveryRoute> findAllByDeliveryId(UUID deliveryId, Pageable pageable);
     Page<DeliveryRoute> findAllByDeliveryIdAndHubId(UUID deliveryId, UUID hubId, Pageable pageable);

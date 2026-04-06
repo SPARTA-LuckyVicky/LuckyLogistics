@@ -4,8 +4,8 @@ import com.sparta.lucky.deliveryservice.application.dto.DeliveryRouteCreateDto;
 import com.sparta.lucky.deliveryservice.domain.delivery.Delivery;
 import com.sparta.lucky.deliveryservice.domain.delivery.DeliveryRoute;
 import com.sparta.lucky.deliveryservice.domain.driver.DeliveryDriver;
-import com.sparta.lucky.deliveryservice.domain.repos.DeliveryRouteRepository;
 import com.sparta.lucky.deliveryservice.infrastructure.client.dto.HubRouteResponse;
+import com.sparta.lucky.deliveryservice.infrastructure.jpa.JpaDeliveryRouteRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class DeliveryRouteService {
 
-    private final DeliveryRouteRepository deliveryRouteRepository;
+    private final JpaDeliveryRouteRepository deliveryRouteRepository;
 
     @Transactional
     public void createDeliveryRoute(HubRouteResponse hubRouteResponse, Delivery delivery, DeliveryDriver deliveryDriver) {

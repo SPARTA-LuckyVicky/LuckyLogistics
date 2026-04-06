@@ -1,6 +1,5 @@
 package com.sparta.lucky.deliveryservice.infrastructure.jpa;
 
-import com.sparta.lucky.deliveryservice.domain.delivery.Delivery;
 import com.sparta.lucky.deliveryservice.domain.delivery.DeliveryRoute;
 import com.sparta.lucky.deliveryservice.domain.repos.DeliveryRouteRepository;
 import java.util.List;
