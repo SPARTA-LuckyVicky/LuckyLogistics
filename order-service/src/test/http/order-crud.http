@@ -1,0 +1,226 @@
+### ================================================================
+### Order Service - Gateway 경유 외부 API 테스트
+###
+### 사전 조건:
+###   1. docker-compose로 인프라 (PostgreSQL, Gateway, Keycloak, Eureka) 실행
+###   2. docker-compose로 전체 서비스 실행
+###   3. 환경 드롭다운에서 'gateway' 선택
+###   4. keycloak-auth.http 실행 → accessToken 확보
+###
+### 흐름:
+### Client
+###  → Gateway (JWT 검증 + X-User-Id, X-User-Role 헤더 주입)
+###    → OrderService
+###
+### Gateway 책임:
+### - JWT 검증
+### - X-User-Id, X-User-Role 자동 주입
+### ================================================================
+
+### ================================================================
+### [1] 주문 생성 (COMPANY_MANAGER)
+### - product/company/hub/user 서비스 연쇄 호출 + 재고 차감 + 배송 생성
+### - 배송 생성 완료 후 notification-service로 Slack 알림 자동 발송
+### ================================================================
+### @name createOrder
+POST {{baseUrl}}/api/v1/orders
+Authorization: Bearer {{companyManagerToken}}
+Content-Type: application/json
+
+{
+  "requesterCompanyId": "실제-공급업체-UUID",
+  "receiverCompanyId": "실제-수령업체-UUID",
+  "productId": "실제-상품-UUID",
+  "quantity": 5,
+  "requestNote": "신선도 유지 필요. 지정 시간 내 도착 필수",
+  "requestedDeadline": "2026-04-20T15:00:00"
+}
+
+> {%
+    client.test("주문 생성 성공", function() {
+        client.assert(response.status === 201, "status 201 expected");
+        client.assert(response.body.data.id !== undefined, "orderId 반환 필요");
+        client.assert(response.body.data.status === "CREATED", "status CREATED 필요");
+    });
+    if (response.status === 201 && response.body.data) {
+        client.global.set("orderId", response.body.data.id);
+    }
+%}
+
+### ================================================================
+### [2] 주문 목록 조회 - MASTER (전체 조회)
+### ================================================================
+### @name getOrdersMaster
+GET {{baseUrl}}/api/v1/orders?size=10
+Authorization: Bearer {{accessToken}}
+
+> {%
+    client.test("MASTER 전체 주문 조회 성공", function() {
+        client.assert(response.status === 200);
+        client.assert(response.body.data.content !== undefined);
+    });
+%}
+
+### ================================================================
+### [3] 주문 목록 조회 - MASTER (status 필터)
+### ================================================================
+### @name getOrdersByStatus
+GET {{baseUrl}}/api/v1/orders?status=CREATED&size=10
+Authorization: Bearer {{accessToken}}
+
+> {%
+    client.test("status 필터 조회 성공", function() {
+        client.assert(response.status === 200);
+    });
+%}
+
+### ================================================================
+### [4] 주문 목록 조회 - COMPANY_MANAGER (담당 업체 주문만)
+### ================================================================
+### @name getOrdersCompanyManager
+GET {{baseUrl}}/api/v1/orders
+Authorization: Bearer {{companyManagerToken}}
+
+> {%
+    client.test("COMPANY_MANAGER 담당 업체 주문 조회 성공", function() {
+        client.assert(response.status === 200);
+    });
+%}
+
+### ================================================================
+### [5] 주문 목록 조회 - HUB_MANAGER (담당 허브 주문만)
+### ================================================================
+### @name getOrdersHubManager
+GET {{baseUrl}}/api/v1/orders
+Authorization: Bearer {{hubManagerToken}}
+
+> {%
+    client.test("HUB_MANAGER 담당 허브 주문 조회 성공", function() {
+        client.assert(response.status === 200);
+    });
+%}
+
+### ================================================================
+### [6] 주문 단건 조회
+### ================================================================
+### @name getOrder
+GET {{baseUrl}}/api/v1/orders/{{orderId}}
+Authorization: Bearer {{accessToken}}
+
+> {%
+    client.test("주문 단건 조회 성공", function() {
+        client.assert(response.status === 200);
+        client.assert(response.body.data.id === client.global.get("orderId"));
+    });
+%}
+
+### ================================================================
+### [7] 주문 수정 (MASTER / HUB_MANAGER - CREATED 상태만 가능)
+### ================================================================
+### @name updateOrder
+PATCH {{baseUrl}}/api/v1/orders/55555555-5555-5555-5555-555555555555
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "requestNote": "수정된 요청사항: 새벽 배송 불가",
+  "requestedDeadline": "2026-04-21T12:00:00"
+}
+
+> {%
+    client.test("주문 수정 성공", function() {
+        client.assert(response.status === 200);
+        client.assert(response.body.data.requestNote === "수정된 요청사항: 새벽 배송 불가");
+    });
+%}
+
+
+### ================================================================
+### [8] 주문 취소 (MASTER / HUB_MANAGER)
+### - CREATED 상태 + 배송 WAITING 상태만 취소 가능
+### - 재고 복원 + 배송 취소 처리
+### ================================================================
+### @name cancelOrder
+PATCH {{baseUrl}}/api/v1/orders/{{orderId}}/cancel
+Authorization: Bearer {{accessToken}}
+
+> {%
+    client.test("주문 취소 성공", function() {
+        client.assert(response.status === 200);
+        client.assert(response.body.data.status === "CANCELLED");
+    });
+%}
+
+### ================================================================
+### [9] 주문 삭제 (MASTER - Soft Delete, CANCELLED/COMPLETED 상태만)
+### ================================================================
+### @name deleteOrder
+DELETE {{baseUrl}}/api/v1/orders/{{orderId}}
+Authorization: Bearer {{accessToken}}
+
+> {%
+    client.test("주문 삭제 성공 (Soft Delete)", function() {
+        client.assert(response.status === 200);
+    });
+%}
+
+### ================================================================
+### 오류 케이스
+### ================================================================
+
+### [10] 인증 토큰 없이 요청 → 401 expected
+### @name unauthorizedRequest
+GET {{baseUrl}}/api/v1/orders
+
+> {%
+    client.test("인증 실패 (401)", function() {
+        client.assert(response.status === 401);
+    });
+%}
+
+### [11] 존재하지 않는 주문 조회 → 404 expected
+### @name notFoundOrder
+GET {{baseUrl}}/api/v1/orders/00000000-0000-0000-0000-000000000099
+Authorization: Bearer {{accessToken}}
+
+> {%
+    client.test("주문 없음 (404)", function() {
+        client.assert(response.status === 404);
+    });
+%}
+
+### [12] CANCELLED 주문 수정 시도 → 409 expected
+### @name updateCancelledOrder
+PATCH {{baseUrl}}/api/v1/orders/{{orderId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "requestNote": "취소된 주문 수정 시도"
+}
+
+> {%
+    client.test("취소된 주문 수정 불가 (409)", function() {
+        client.assert(response.status === 409);
+    });
+%}
+
+### [13] COMPANY_MANAGER가 다른 업체 주문 생성 시도 → 403 expected
+### @name forbiddenCreateOrder
+POST {{baseUrl}}/api/v1/orders
+Authorization: Bearer {{companyManagerToken}}
+Content-Type: application/json
+
+{
+  "requesterCompanyId": "다른-업체-UUID",
+  "receiverCompanyId": "00000000-0000-0000-0000-000000000099",
+  "productId": "실제-상품-UUID",
+  "quantity": 1,
+  "requestNote": "권한 없는 업체 주문 시도"
+}
+
+> {%
+    client.test("권한 없는 업체 주문 생성 거부 (403)", function() {
+        client.assert(response.status === 403);
+    });
+%}
