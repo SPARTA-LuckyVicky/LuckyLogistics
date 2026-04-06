@@ -1,0 +1,8 @@
+PATCH http://localhost:19500/api/v1/orders/55555555-5555-5555-5555-555555555555
+X-User-Id: 00000000-0000-0000-0000-000000000001
+X-User-Role: MASTER
+Content-Type: application/json
+
+{
+  "requestNote": "수정 테스트"
+}

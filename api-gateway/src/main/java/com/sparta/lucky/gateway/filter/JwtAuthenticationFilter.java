@@ -43,7 +43,8 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
         return path.startsWith("/api/v1/auth/login") ||
                 path.startsWith("/api/v1/auth/signup") ||
                 path.startsWith("/swagger-ui") ||
-                path.startsWith("/v3/api-docs");
+                path.startsWith("/v3/api-docs") ||
+                path.startsWith("/internal/");
     }
 
     // 토큰 추출 로직 , "Bearer " 뒷부분의 문자열만 추출

@@ -42,7 +42,13 @@ services:
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-    command: start-dev
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false" # 실제 서버 운영시에는 true
+      KC_HTTP_ENABLED: "true"
+    command: start-dev --import-realm
+    volumes:
+      - ./keycloak/realm-export-2.json:/opt/keycloak/data/import/realm.json
+      - keycloak_data:/opt/keycloak/data # user 데이터 저장
     ports:
       - "9090:8080" #(접속할 때 http://localhost:9090 사용)
     networks:
@@ -216,3 +222,4 @@ networks:
 
 volumes:
   postgres_data:
+  keycloak_data:

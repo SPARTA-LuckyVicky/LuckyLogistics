@@ -52,4 +52,12 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("INTERNAL_ERROR", "서버 오류가 발생했습니다."));
     }
+
+    @ExceptionHandler(org.springframework.security.authorization.AuthorizationDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDenied(Exception e) {
+        log.warn("Access Denied: {}", e.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.error("ORDER_ACCESS_DENIED", "접근 권한이 없습니다."));
+    }
 }

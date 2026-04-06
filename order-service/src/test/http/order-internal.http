@@ -1,0 +1,66 @@
+### ================================================================
+### Order Service - 내부 API 테스트 (서비스 간 직접 호출 시뮬레이션)
+###
+### 사전 조건:
+###   1. docker-compose로 인프라 + 전체 서비스 실행
+###   2. order-crud.http [1] 실행 → orderId 글로벌 변수 확보
+###   3. 환경 드롭다운에서 'local' 선택 (내부 API는 Gateway 미경유, JWT 불필요)
+###
+### 내부 API 계약:
+### - X-Internal-Request: true 헤더 필수
+### - JWT 인증 없음
+### ================================================================
+
+### ================================================================
+### [1] 주문 단건 조회 (내부) — notification-service 호출 시뮬레이션
+### ================================================================
+### @name getOrderInternal
+GET {{baseUrl}}/internal/api/v1/orders/{{orderId}}
+X-Internal-Request: true
+
+> {%
+    client.test("내부 주문 조회 성공", function() {
+        client.assert(response.status === 200);
+        client.assert(response.body.data.id !== undefined, "orderId 반환 필요");
+        client.assert(response.body.data.hubManagerSlackId !== undefined, "hubManagerSlackId 반환 필요");
+    });
+%}
+
+### ================================================================
+### [2] 주문 완료 처리 (내부) — delivery-service 배송 완료 시 호출
+### ================================================================
+### @name completeOrder
+PATCH {{baseUrl}}/internal/api/v1/orders/{{orderId}}/complete
+X-Internal-Request: true
+
+> {%
+    client.test("주문 완료 처리 성공", function() {
+        client.assert(response.status === 200);
+        client.assert(response.body.data.status === "COMPLETED");
+    });
+%}
+
+### ================================================================
+### 오류 케이스
+### ================================================================
+
+### [3] 내부 API 헤더 누락 → 403 expected
+### @name missingInternalHeader
+GET {{baseUrl}}/internal/api/v1/orders/{{orderId}}
+
+> {%
+    client.test("헤더 누락 시 403", function() {
+        client.assert(response.status === 403);
+    });
+%}
+
+### [4] 존재하지 않는 주문 내부 조회 → 404 expected
+### @name notFoundOrderInternal
+GET {{baseUrl}}/internal/api/v1/orders/00000000-0000-0000-0000-000000000099
+X-Internal-Request: true
+
+> {%
+    client.test("주문 없음 (404)", function() {
+        client.assert(response.status === 404);
+    });
+%}
