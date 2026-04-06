@@ -3,6 +3,7 @@ package com.sparta.lucky.hub.domain;
 import com.sparta.lucky.hub.common.entity.BaseEntity;
 import com.sparta.lucky.hub.common.exception.BusinessException;
 import com.sparta.lucky.hub.common.exception.HubErrorCode;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -15,6 +16,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "p_hub_route", schema = "hub_schema")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class HubRoute extends BaseEntity {
 
     @Id
