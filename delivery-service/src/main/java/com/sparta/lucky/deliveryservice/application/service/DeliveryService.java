@@ -61,6 +61,7 @@ public class DeliveryService {
      * 또한, 이미 배송중인 주문은 삭제할 수 없습니다.
      * @param deliveryId 삭제하려는 배송 데이터의 ID
      */
+    @Transactional
     public void deleteDelivery(UUID deliveryId, UUID accessId, Role role) {
         Delivery delivery = deliveryRepository.findActiveByDeliveryId(deliveryId)
             .orElseThrow(() -> new NotFoundException(ResponseCode.DELIVERY_NOT_FOUND));
