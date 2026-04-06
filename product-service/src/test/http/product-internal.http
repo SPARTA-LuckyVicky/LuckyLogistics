@@ -1,14 +1,38 @@
 ### ================================================================
 ### Product Service - 내부 API 테스트 (order-service / company-service 호출 시뮬레이션)
+###
+### 사전 조건:
+###   1. docker-compose 로 인프라 (PostgreSQL, Gateway, Keycloak, Eureka) 실행
+###   2. docker-compose 로 Company / Product 서비스 실행
+###   3. product-crud.http [1] 실행 → productId 글로벌 변수 확보
+###   4. company-crud.http [1] 실행 → companyId 글로벌 변수 확보
+###   5. 환경 드롭다운에서 'local' 선택 → 내부 API는 Gateway 미경유, JWT 불필요
+###
+### 내부 API 계약:
+### - X-Internal-Request: true 헤더 필수
+### - JWT 인증 없음
 ### ================================================================
 
-### [1] 상품 단건 조회 (내부)
+
+### ================================================================
+### [1] 상품 단건 조회 (내부) — order-service 호출 시뮬레이션
+### ================================================================
+### @name getProductInternal
 GET {{baseUrl}}/internal/api/v1/products/{{productId}}
 X-Internal-Request: true
 
-### ================================================================
+> {%
+    client.test("내부 상품 조회 성공", function () {
+        client.assert(response.status === 200);
+        client.assert(response.body.data.id !== undefined, "productId 반환 필요");
+    });
+%}
 
-### [2] 재고 차감 (order-service 주문 생성 시뮬레이션)
+
+### ================================================================
+### [2] 재고 차감 — order-service 주문 생성 시뮬레이션
+### ================================================================
+### @name decreaseStock
 PATCH {{baseUrl}}/internal/api/v1/products/{{productId}}/stock/decrease
 Content-Type: application/json
 X-Internal-Request: true
@@ -17,7 +41,17 @@ X-Internal-Request: true
   "quantity": 10
 }
 
-### [3] 재고 복원 (order-service 주문 취소 시뮬레이션)
+> {%
+    client.test("재고 차감 성공", function () {
+        client.assert(response.status === 200);
+    });
+%}
+
+
+### ================================================================
+### [3] 재고 복원 — order-service 주문 취소 시뮬레이션
+### ================================================================
+### @name restoreStock
 PATCH {{baseUrl}}/internal/api/v1/products/{{productId}}/stock/restore
 Content-Type: application/json
 X-Internal-Request: true
@@ -26,9 +60,19 @@ X-Internal-Request: true
   "quantity": 10
 }
 
+> {%
+    client.test("재고 복원 성공", function () {
+        client.assert(response.status === 200);
+    });
+%}
+
+
+### ================================================================
+### 오류 케이스
 ### ================================================================
 
-### [4] 재고 차감 실패 - 재고 초과
+### [4] 재고 차감 실패 - 재고 초과 → 409 expected
+### @name decreaseStockInsufficient
 PATCH {{baseUrl}}/internal/api/v1/products/{{productId}}/stock/decrease
 Content-Type: application/json
 X-Internal-Request: true
@@ -37,7 +81,15 @@ X-Internal-Request: true
   "quantity": 99999
 }
 
-### [5] 재고 차감 실패 - 음수 수량 (INVALID_STOCK_QUANTITY)
+> {%
+    client.test("재고 부족 시 409", function () {
+        client.assert(response.status === 409);
+    });
+%}
+
+
+### [5] 재고 차감 실패 - 음수 수량 → 400 expected (@Valid: INVALID_STOCK_QUANTITY)
+### @name decreaseStockNegative
 PATCH {{baseUrl}}/internal/api/v1/products/{{productId}}/stock/decrease
 Content-Type: application/json
 X-Internal-Request: true
@@ -46,7 +98,15 @@ X-Internal-Request: true
   "quantity": -1
 }
 
-### [6] 내부 API 헤더 누락 (PRODUCT_003 접근 거부)
+> {%
+    client.test("음수 수량 시 400", function () {
+        client.assert(response.status === 400);
+    });
+%}
+
+
+### [6] 내부 API 헤더 누락 → 400 expected (Spring: MissingRequestHeaderException)
+### @name missingInternalHeader
 PATCH {{baseUrl}}/internal/api/v1/products/{{productId}}/stock/decrease
 Content-Type: application/json
 
@@ -54,9 +114,25 @@ Content-Type: application/json
   "quantity": 5
 }
 
-### ================================================================
+> {%
+    client.test("헤더 누락 시 400", function () {
+        client.assert(response.status === 400);
+    });
+%}
 
-### [7] 업체 소속 상품 일괄 삭제 (company-service 업체 삭제 시뮬레이션)
+
+### ================================================================
+### [7] 업체 소속 상품 일괄 삭제 — company-service 업체 삭제 시뮬레이션
+### - 소속 상품이 없어도 deletedCount: 0 으로 200 반환 (멱등성)
+### ================================================================
+### @name deleteProductsByCompany
 DELETE {{baseUrl}}/internal/api/v1/products/company/{{companyId}}
 X-Internal-Request: true
 X-User-Id: {{masterId}}
+
+> {%
+    client.test("업체 소속 상품 일괄 삭제 성공", function () {
+        client.assert(response.status === 200);
+        client.assert(response.body.data.deletedCount !== undefined, "deletedCount 반환 필요");
+    });
+%}

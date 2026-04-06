@@ -14,9 +14,9 @@ public class SendOrderAlertCommand {
     @NotNull
     private UUID orderId;
 
-    private Long totalDurationMinutes;
-    private Long totalDistanceKm;
-    private List<String> waypointNames;
+    private Long expectedTotalDurationSeconds;
+    private Long expectedTotalDistanceMeter;
+    private List<UUID> routes; // 허브 UUID 목록
 
 }
 
