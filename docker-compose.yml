@@ -42,6 +42,8 @@ services:
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_ADMIN_SECRET: ${KEYCLOAK_ADMIN_SECRET}
+      KEYCLOAK_USER_SECRET: ${KEYCLOAK_USER_SECRET}
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false" # 실제 서버 운영시에는 true
       KC_HTTP_ENABLED: "true"
@@ -179,7 +181,6 @@ services:
     environment:
       GATEWAY_NAME: ${GATEWAY_NAME}
       GATEWAY_PORT: ${GATEWAY_PORT}
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       EUREKA_SERVER: lucky-eureka
     env_file:
       - .env
@@ -207,6 +208,38 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - lucky-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ============ user-service ==============
+  user-service:
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    container_name: lucky-user
+    ports:
+      - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"
+    environment:
+      USER_SERVICE_PORT: ${USER_SERVICE_PORT}
+      USER_SERVICE_NAME: ${USER_SERVICE_NAME}
+      USER_SERVICE_SCHEMA: ${USER_SERVICE_SCHEMA}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      KEYCLOAK_SERVER_URL: http://lucky-keycloak:8080
+      KEYCLOAK_REALM: lucky
+      # 회원가입용 (관리자 권한)
+      KEYCLOAK_ADMIN_SECRET: ${KEYCLOAK_ADMIN_SECRET}
+      # 로그인용 (일반 클라이언트 권한)
+      KEYCLOAK_USER_SECRET: ${KEYCLOAK_USER_SECRET}
+    env_file:
+      - .env
     networks:
       - lucky-network
     depends_on:

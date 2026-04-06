@@ -1,0 +1,5 @@
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.keycloak:keycloak-admin-client:24.0.0'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+}

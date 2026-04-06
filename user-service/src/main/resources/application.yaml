@@ -1,0 +1,60 @@
+server:
+  port: ${USER_SERVICE_PORT}
+
+keycloak:
+  server-url: ${KEYCLOAK_SERVER_URL}
+  realm: ${KEYCLOAK_REALM}
+  # 회원가입용 (관리자 권한)
+  admin-client-id: admin-cli
+  admin-client-secret: ${KEYCLOAK_ADMIN_SECRET}
+  # 로그인용 (일반 클라이언트 권한)
+  user-client-id: lucky-client
+  user-client-secret: ${KEYCLOAK_USER_SECRET}
+
+spring:
+  application:
+    name: ${USER_SERVICE_NAME}
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://lucky-keycloak:8080/realms/lucky
+          jwk-set-uri: http://lucky-keycloak:8080/realms/lucky/protocol/openid-connect/certs
+
+  datasource:
+    url: jdbc:postgresql://lucky-postgres:5432/${POSTGRES_DB}?currentSchema=${USER_SERVICE_SCHEMA}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        default_schema: ${USER_SERVICE_SCHEMA}
+    show-sql: true
+
+  threads:
+    virtual:
+      enabled: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://lucky-eureka:19090/eureka
+  instance:
+    prefer-ip-address: true
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
