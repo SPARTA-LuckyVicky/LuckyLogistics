@@ -47,7 +47,7 @@ services:
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false" # 실제 서버 운영시에는 true
       KC_HTTP_ENABLED: "true"
-      command: start-dev --import-realm
+    command: start-dev --import-realm
     volumes:
       - ./keycloak/realm-export-2.json:/opt/keycloak/data/import/realm.json
       - keycloak_data:/opt/keycloak/data # user 데이터 저장
@@ -243,6 +243,8 @@ services:
     networks:
       - lucky-network
     depends_on:
+      postgres:
+        condition: service_healthy
       eureka-server:
         condition: service_healthy
     restart: unless-stopped
