@@ -33,10 +33,17 @@ public class HubService {
         return CreateHubResult.from(hubRepository.save(hub));
     }
 
-    @Cacheable(cacheNames = "hub", key = "#hubId")
+    @Cacheable(cacheNames = "hub", key = "#hubId", sync = true)
     @Transactional(readOnly = true)
     public GetHubResult getHub(UUID hubId) {
         Hub hub = findActiveHub(hubId);
+        return GetHubResult.from(hub);
+    }
+
+    @Transactional(readOnly = true)
+    public GetHubResult getHubByManagerId(UUID managerId) {
+        Hub hub = hubRepository.findByManagerIdAndDeletedAtIsNull(managerId)
+                .orElseThrow(() -> new BusinessException(HubErrorCode.HUB_NOT_FOUND));
         return GetHubResult.from(hub);
     }
 
@@ -46,7 +53,7 @@ public class HubService {
                 .map(GetHubResult::from);
     }
 
-    @Cacheable(cacheNames = "hubs", key = "'all'")
+    @Cacheable(cacheNames = "hubs", key = "'all'", sync = true)
     @Transactional(readOnly = true)
     public List<GetHubResult> getHubs() {
         return hubRepository.findAllByDeletedAtIsNull().stream()

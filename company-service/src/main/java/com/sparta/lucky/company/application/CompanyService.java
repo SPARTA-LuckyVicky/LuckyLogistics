@@ -6,6 +6,10 @@ import com.sparta.lucky.company.domain.Company;
 import com.sparta.lucky.company.domain.CompanyErrorCode;
 import com.sparta.lucky.company.domain.CompanyRepository;
 import com.sparta.lucky.company.domain.CompanyType;
+import com.sparta.lucky.company.infrastructure.feign.HubClient;
+import com.sparta.lucky.company.infrastructure.feign.ProductInternalClient;
+import com.sparta.lucky.company.infrastructure.feign.dto.BulkDeleteResponse;
+import com.sparta.lucky.company.infrastructure.feign.dto.FeignApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,8 +36,8 @@ public class CompanyService {
     private static final String ROLE_COMPANY_MANAGER = "COMPANY_MANAGER";
 
     private final CompanyRepository companyRepository;
-    // TODO: HubClient hubClient — hub 존재 여부 검증 (hub-service 구현 후 추가)
-    // TODO: ProductInternalClient productClient — 업체 삭제 시 상품 일괄 삭제
+    private final HubClient hubClient;
+    private final ProductInternalClient productInternalClient;
 
     @Transactional
     public CreateCompanyResult createCompany(CreateCompanyCommand command) {
@@ -57,7 +61,7 @@ public class CompanyService {
             }
         }
 
-        // TODO: hubClient.getHub(command.getHubId()) — 허브 실존 여부 검증
+        validateHub(command.getHubId());
 
         Company company = Company.builder()
                 .name(command.getName())
@@ -111,7 +115,7 @@ public class CompanyService {
                         command.getRequesterId(), command.getRequesterRole());
                 throw new BusinessException(CompanyErrorCode.COMPANY_ACCESS_DENIED);
             }
-            // TODO: 변경할 hub 존재 여부 검증
+            validateHub(command.getHubId());
             company.changeHub(command.getHubId());
         }
 
@@ -149,8 +153,7 @@ public class CompanyService {
         company.softDelete(requesterId);
         log.info("업체 삭제 완료 - companyId: {}, deletedBy: {}", companyId, requesterId);
 
-        // TODO: productClient.deleteByCompanyId(companyId) — 하위 product 일괄 soft delete
-        // 실패 시 부분 삭제 상태 발생 가능
+        deleteProductsByCompany(companyId, requesterId);
 
         return DeleteCompanyResult.of(company.getDeletedAt(), company.getDeletedBy());
     }
@@ -203,6 +206,47 @@ public class CompanyService {
                         command.getRequesterId(), command.getRequesterRole());
                 throw new BusinessException(CompanyErrorCode.COMPANY_ACCESS_DENIED);
             }
+        }
+    }
+
+    /**
+     * hub-service 내부 API로 허브 실존 여부 검증
+     * FeignException.NotFound → HUB_NOT_FOUND 변환
+     */
+    private void validateHub(UUID hubId) {
+        log.info("[Feign] hub-service 허브 검증 요청 - hubId: {}", hubId);
+        try {
+            hubClient.getHub(hubId, "true")
+                    .requireData(() -> new BusinessException(CompanyErrorCode.HUB_NOT_FOUND));
+            log.info("[Feign] hub-service 허브 검증 성공 - hubId: {}", hubId);
+        } catch (feign.FeignException.NotFound e) {
+            // 404 — 실제로 허브가 없는 경우
+            log.warn("[Feign] hub-service 허브 없음 - hubId: {}", hubId);
+            throw new BusinessException(CompanyErrorCode.HUB_NOT_FOUND);
+        } catch (feign.FeignException e) {
+            // 5xx, 타임아웃 등 - "허브 없음"이 아니라 hub-service 장애
+            // 원본 예외를 그대로 재발생시켜 장애 원인이 숨겨지지 않도록 함
+            log.error("[Feign] hub-service 호출 실패 - hubId: {}, status: {}, message: {}",
+                    hubId, e.status(), e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * product-service 내부 API로 소속 상품 일괄 soft delete
+     * 실패해도 업체 삭제는 완료된 상태 — Known Limitation (분산 트랜잭션 없음)
+     */
+    private void deleteProductsByCompany(UUID companyId, UUID deletedBy) {
+        log.info("[Feign] product-service 상품 일괄 삭제 요청 - companyId: {}", companyId);
+        try {
+            FeignApiResponse<BulkDeleteResponse> response =
+                    productInternalClient.deleteProductsByCompany(companyId, "true", deletedBy);
+            log.info("[Feign] product-service 상품 일괄 삭제 완료 - companyId: {}, deletedCount: {}",
+                    companyId, response.getData() != null ? response.getData().getDeletedCount() : 0);
+        } catch (feign.FeignException e) {
+            // 실패해도 업체 삭제는 이미 커밋됨 — 부분 삭제 상태 발생 가능 (Known Limitation)
+            log.error("[Feign] product-service 상품 일괄 삭제 실패 - companyId: {}, status: {}, message: {}",
+                    companyId, e.status(), e.getMessage());
         }
     }
 }

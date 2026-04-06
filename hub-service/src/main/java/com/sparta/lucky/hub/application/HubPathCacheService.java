@@ -3,18 +3,32 @@ package com.sparta.lucky.hub.application;
 import com.sparta.lucky.hub.common.exception.BusinessException;
 import com.sparta.lucky.hub.common.exception.HubErrorCode;
 import com.sparta.lucky.hub.domain.HubRoute;
-import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
-@Component
-public class HubToHubPathFinder {
+@Service
+@RequiredArgsConstructor
+public class HubPathCacheService {
 
-    public record PathResult(List<UUID> path, int totalDistance, int totalDuration) {}
+    private final HubRouteService hubRouteService;
 
-    // 시작 Hub에서 도착 Hub 최단거리 찾기
-    public PathResult findShortestPath(List<HubRoute> routes, UUID originId, UUID destinationId) {
-        // 양방향 그래프 구성: 두 허브 간 연결은 양방향으로 취급
+    /**
+     * 다익스트라로 구한 최단 경로를 허브 ID 순서 목록으로 캐싱.
+     * 예: 서울 → 대전 → 부산 이면 [서울UUID, 대전UUID, 부산UUID]
+     * 시간/거리는 포함하지 않아 routes 캐시의 최신값을 항상 반영 가능.
+     */
+    @Cacheable(cacheNames = "path", key = "#originHubId + '-' + #destinationHubId", sync = true)
+    @Transactional(readOnly = true)
+    public List<UUID> getPathHubIds(UUID originHubId, UUID destinationHubId) {
+        List<HubRoute> routes = hubRouteService.getHubRoutes();
+        return findShortestPathHubIds(routes, originHubId, destinationHubId);
+    }
+
+    private List<UUID> findShortestPathHubIds(List<HubRoute> routes, UUID originId, UUID destinationId) {
         Map<UUID, List<HubRoute>> graph = new HashMap<>();
         for (HubRoute route : routes) {
             graph.computeIfAbsent(route.getOriginHubId(), k -> new ArrayList<>()).add(route);
@@ -22,31 +36,25 @@ public class HubToHubPathFinder {
         }
 
         Map<UUID, Integer> distMap = new HashMap<>();
-        Map<UUID, Integer> duraMap = new HashMap<>();
-        Map<UUID, UUID> prev = new HashMap<>();
+        Map<UUID, UUID> prevHub = new HashMap<>();
         PriorityQueue<UUID> pq = new PriorityQueue<>(
                 Comparator.comparingInt(id -> distMap.getOrDefault(id, Integer.MAX_VALUE))
         );
 
         distMap.put(originId, 0);
-        duraMap.put(originId, 0);
         pq.offer(originId);
 
         while (!pq.isEmpty()) {
             UUID cur = pq.poll();
-
             if (cur.equals(destinationId)) break;
 
             int currentDist = distMap.getOrDefault(cur, Integer.MAX_VALUE);
-
             for (HubRoute edge : graph.getOrDefault(cur, List.of())) {
                 UUID next = edge.getDestinationHubId();
                 int newDist = currentDist + edge.getDistance();
-
                 if (newDist < distMap.getOrDefault(next, Integer.MAX_VALUE)) {
                     distMap.put(next, newDist);
-                    duraMap.put(next, duraMap.getOrDefault(cur, 0) + edge.getDuration());
-                    prev.put(next, cur);
+                    prevHub.put(next, cur);
                     pq.offer(next);
                 }
             }
@@ -56,26 +64,22 @@ public class HubToHubPathFinder {
             throw new BusinessException(HubErrorCode.HUB_ROUTE_NOT_FOUND);
         }
 
-        return new PathResult(
-                reconstructPath(prev, originId, destinationId),
-                distMap.get(destinationId),
-                duraMap.get(destinationId)
-        );
+        return reconstructHubIds(prevHub, originId, destinationId);
     }
 
-    private List<UUID> reconstructPath(Map<UUID, UUID> prev, UUID originId, UUID destinationId) {
-        LinkedList<UUID> path = new LinkedList<>();
+    private List<UUID> reconstructHubIds(Map<UUID, UUID> prevHub, UUID originId, UUID destinationId) {
+        LinkedList<UUID> hubIds = new LinkedList<>();
         UUID cur = destinationId;
 
         while (cur != null) {
-            path.addFirst(cur);
-            cur = prev.get(cur);
+            hubIds.addFirst(cur);
+            cur = prevHub.get(cur);
         }
 
-        if (path.isEmpty() || !path.getFirst().equals(originId)) {
+        if (!hubIds.getFirst().equals(originId)) {
             throw new BusinessException(HubErrorCode.HUB_ROUTE_NOT_FOUND);
         }
 
-        return Collections.unmodifiableList(path);
+        return Collections.unmodifiableList(hubIds);
     }
 }

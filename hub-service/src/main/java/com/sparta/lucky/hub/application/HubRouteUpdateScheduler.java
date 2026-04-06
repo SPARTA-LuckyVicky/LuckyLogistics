@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class HubRouteUpdateScheduler {
 
-    private final RouteService routeService;
+    private final HubRouteService hubRouteService;
     private final HubService hubService;
     private final TmapRouteClient tmapRouteClient;
 
@@ -27,7 +27,7 @@ public class HubRouteUpdateScheduler {
     public void updateHubRouteInfo() {
         log.info("[HubRouteUpdateScheduler] 허브 경로 distance/duration 업데이트 시작");
 
-        List<HubRoute> routes = routeService.getHubRoutes();
+        List<HubRoute> routes = hubRouteService.getHubRoutes();
         Map<UUID, GetHubResult> hubMap = hubService.getHubs().stream()
                 .collect(Collectors.toMap(GetHubResult::getId, hub -> hub));
 
@@ -51,7 +51,7 @@ public class HubRouteUpdateScheduler {
                 );
 
                 route.updateRouteInfo(response.getTotalDistance(), response.getTotalTime());
-                routeService.saveHubRoute(route);
+                hubRouteService.saveHubRoute(route);
                 successCount++;
 
                 Thread.sleep(100);

@@ -1,0 +1,133 @@
+### ================================================================
+### Company Service - Gateway 경유 외부 API 테스트
+###
+### 사전 조건
+### 1. docker-compose 로 인프라 (PostgreSQL, Gateway, Keycloak, Eureka) 실행
+### 2. docker-compose 로 Company / Product 서비스 실행
+### 3. 환경 드롭다운에서 'gateway' 선택
+### 4. keycloak-auth.http 실행 → accessToken 확보
+###
+### 흐름:
+### Client
+###  → Gateway (JWT 검증 + Header 주입)
+###    → CompanyService
+###
+### Gateway 책임:
+### - JWT 검증
+### - X-User-Id, X-User-Role 자동 주입
+### ================================================================
+
+
+### ================================================================
+### [1] 업체 생성 (MASTER)
+### ================================================================
+### @name createCompany
+POST {{baseUrl}}/api/v1/companies
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Gateway 테스트 업체",
+  "companyType": "SUPPLIER",
+  "hubId": "{{hubId}}",
+  "address": "서울시 게이트웨이구 테스트로 1"
+}
+
+> {%
+  client.test("업체 생성 성공", function () {
+      client.assert(response.status === 201);
+      client.assert(response.body.data.id !== undefined, "company id must exist");
+    });
+    client.global.set("companyId", response.body.data.id);
+  %}
+
+
+### ================================================================
+### [2] 업체 목록 조회
+### ================================================================
+### @name getCompanies
+GET {{baseUrl}}/api/v1/companies
+Authorization: Bearer {{accessToken}}
+
+> {%
+    client.test("업체 목록 조회 성공", function () {
+        client.assert(response.status === 200);
+    });
+%}
+
+
+### ================================================================
+### [3] 업체 단건 조회
+### ================================================================
+### @name getCompany
+GET {{baseUrl}}/api/v1/companies/{{companyId}}
+Authorization: Bearer {{accessToken}}
+
+> {%
+    client.test("업체 단건 조회 성공", function () {
+        client.assert(response.status === 200);
+        client.assert(response.body.data.id === client.global.get("companyId"));
+    });
+%}
+
+
+### ================================================================
+### [4] 업체 수정 (이름 변경)
+### ================================================================
+### @name updateCompany
+PATCH {{baseUrl}}/api/v1/companies/{{companyId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Gateway 수정 업체명"
+}
+
+> {%
+    client.test("업체 수정 성공", function () {
+        client.assert(response.status === 200);
+        client.assert(response.body.data.name === "Gateway 수정 업체명");
+    });
+%}
+
+
+### ================================================================
+### [5] 업체 삭제
+### - product-service 상품 일괄 soft delete 트리거 확인
+### ================================================================
+### @name deleteCompany
+DELETE {{baseUrl}}/api/v1/companies/{{companyId}}
+Authorization: Bearer {{accessToken}}
+
+> {%
+    client.test("업체 삭제 성공", function () {
+        client.assert(response.status === 200);
+    });
+%}
+
+
+### ================================================================
+### 오류 케이스
+### ================================================================
+
+### [6] 인증 토큰 없이 요청 → 401 expected
+### @name unauthorizedRequest
+GET {{baseUrl}}/api/v1/companies
+
+> {%
+    client.test("인증 실패 (401)", function () {
+        client.assert(response.status === 401);
+    });
+%}
+
+
+### [7] 존재하지 않는 업체 조회 → 404 expected
+### @name notFoundCompany
+GET {{baseUrl}}/api/v1/companies/00000000-0000-0000-0000-000000000099
+Authorization: Bearer {{accessToken}}
+
+> {%
+    client.test("업체 없음 (404)", function () {
+        client.assert(response.status === 404);
+    });
+%}
