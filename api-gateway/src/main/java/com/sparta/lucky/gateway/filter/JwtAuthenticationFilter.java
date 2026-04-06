@@ -99,9 +99,11 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                             return onError(exchange, AuthErrorCode.INVALID_TOKEN);
                         }
 
-                        //role 추출
-                        String originalRole = jwt.getClaimAsString("authorities");
-                        final String finalRole = StringUtils.hasText(originalRole) ? originalRole : "USER";
+                        String finalRole = jwt.getClaimAsString("authorities");
+                        if (!StringUtils.hasText(finalRole)) {
+                            log.error("Missing authorities claim");
+                            return onError(exchange, AuthErrorCode.INVALID_TOKEN);
+                        }
 
                         // hubId와 companyId 추출
                         String hubId = jwt.getClaimAsString("hub_id");
