@@ -55,7 +55,7 @@ public class User extends BaseEntity {
 
     @Builder
     public User(UUID userId, String username, String password, String name, String receiverSlackId,
-                UserRole role, String hubId, String companyId){
+                UserRole role, String hubId, String companyId, UserStatus status){
         validateRole(role, hubId, companyId);
         this.userId = userId;
         this.username = username;
@@ -65,5 +65,7 @@ public class User extends BaseEntity {
         this.role = role;
         this.hubId = hubId;
         this.companyId = companyId;
+        this.status = (status != null) ? status : UserStatus.PENDING;
+    }
     }
 }

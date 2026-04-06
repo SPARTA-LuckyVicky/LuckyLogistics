@@ -19,9 +19,6 @@ public class AuthController {
 
     @Operation(summary = "회원가입")
     @PostMapping("/signup")
-    public ApiResponse<SignupResult> signup(@Valid @RequestBody SignupReqDto reqDto){
-        SignupResult signupResult = authService.signup(reqDto);
-        return ApiResponse.success(signupResult);
     public ResponseEntity<ApiResponse<SignupResDto>> signup(@Valid @RequestBody SignupReqDto reqDto) {
 
         SignupCommand command = SignupCommand.from(reqDto);
@@ -29,5 +26,27 @@ public class AuthController {
                 .body(ApiResponse.success(SignupResDto.from(authService.signUp(command))));
     }
 
+    @Operation(summary = "로그인")
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<LoginResDto>> login(@RequestBody LoginReqDto reqDto) {
+        LoginCommand command = new LoginCommand(reqDto.getUsername(), reqDto.getPassword());
+
+        return ResponseEntity.ok(
+                ApiResponse.success(LoginResDto.from(authService.login(command)))
+        );
+    }
+
+    @Operation(summary = "토큰 재발급")
+    @PostMapping("/refresh")
+    public ResponseEntity<TokenResDto> refresh(@RequestBody TokenRefreshReqDto request) {
+        TokenResDto response = authService.refresh(request.getRefreshToken());
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "로그아웃")
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestBody LogoutReqDto request) {
+        authService.logout(request.getRefreshToken());
+        return ResponseEntity.ok("로그아웃 되었습니다.");
     }
 }

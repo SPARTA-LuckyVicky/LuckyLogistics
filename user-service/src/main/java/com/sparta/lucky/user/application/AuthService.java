@@ -61,6 +61,36 @@ public class AuthService {
         }
     }
 
+    // 로그인
+    public LoginResult login(LoginCommand command) {
+        try (Keycloak loginKeycloak = KeycloakBuilder.builder()
+                .serverUrl(serverUrl)
+                .realm(realm)
+                .clientId(clientId)
+                .clientSecret(clientSecret)
+                .username(command.getUsername())
+                .password(command.getPassword())
+                .grantType(OAuth2Constants.PASSWORD)
+                .build()) {
+
+            AccessTokenResponse response = loginKeycloak.tokenManager().getAccessToken();
+
+            return LoginResult.from(response);
+
+        } catch (Exception e) {
+            throw new BusinessException(UserErrorCode.LOGIN_FAILED);
+        }
+    }
+
+    // 로그아웃
+    public void logout(String refreshToken) {
+        try {
+            // Keycloak의 로그아웃 엔드포인트 호출을 위한 설정
+            String logoutUrl = serverUrl + "/realms/" + realm + "/protocol/openid-connect/logout";
+
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         String encodedPassword = passwordEncoder.encode(reqDto.getPassword());
         SignupCommand signupCommand = SignupCommand.from(reqDto, encodedPassword);
