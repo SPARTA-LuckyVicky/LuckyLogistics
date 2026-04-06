@@ -14,11 +14,14 @@ Content-Type: application/x-www-form-urlencoded
 grant_type=password&client_id=lucky-client&username=master-user&password={{masterPassword}}
 
 > {%
-    client.global.set("accessToken", response.body.access_token);
+
     client.test("MASTER 토큰 발급 성공", function() {
         client.assert(response.status === 200, "status 200 expected");
         client.assert(response.body.access_token !== undefined, "access_token 반환 필요");
     });
+    if (response.status === 200 && response.body.access_token) {
+        client.global.set("accessToken", response.body.access_token);
+    }
 %}
 
 ### [2] COMPANY_MANAGER 토큰 발급
@@ -28,10 +31,14 @@ Content-Type: application/x-www-form-urlencoded
 grant_type=password&client_id=lucky-client&username=company-manager-user&password={{masterPassword}}
 
 > {%
-    client.global.set("companyManagerToken", response.body.access_token);
+
     client.test("COMPANY_MANAGER 토큰 발급 성공", function() {
         client.assert(response.status === 200, "status 200 expected");
+        client.assert(response.body.access_token !== undefined, "access_token 반환 필요");
     });
+    if (response.status === 200 && response.body.access_token) {
+        client.global.set("companyManagerToken", response.body.access_token);
+    }
 %}
 
 ### [3] HUB_MANAGER 토큰 발급
@@ -41,8 +48,12 @@ Content-Type: application/x-www-form-urlencoded
 grant_type=password&client_id=lucky-client&username=hub-manager-user&password={{masterPassword}}
 
 > {%
-    client.global.set("hubManagerToken", response.body.access_token);
+
     client.test("HUB_MANAGER 토큰 발급 성공", function() {
         client.assert(response.status === 200, "status 200 expected");
+        client.assert(response.body.access_token !== undefined, "access_token 반환 필요");
     });
+    if (response.status === 200 && response.body.access_token) {
+        client.global.set("hubManagerToken", response.body.access_token);
+    }
 %}

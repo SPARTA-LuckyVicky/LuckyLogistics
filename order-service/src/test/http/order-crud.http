@@ -150,6 +150,22 @@ Authorization: Bearer {{accessToken}}
     });
 %}
 
+### [12] CANCELLED 주문 수정 시도 → 409 expected
+### @name updateCancelledOrder
+PATCH {{baseUrl}}/api/v1/orders/{{orderId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "requestNote": "취소된 주문 수정 시도"
+}
+
+> {%
+    client.test("취소된 주문 수정 불가 (409)", function() {
+        client.assert(response.status === 409);
+    });
+%}
+
 ### ================================================================
 ### [9] 주문 삭제 (MASTER - Soft Delete, CANCELLED/COMPLETED 상태만)
 ### ================================================================
@@ -188,21 +204,7 @@ Authorization: Bearer {{accessToken}}
     });
 %}
 
-### [12] CANCELLED 주문 수정 시도 → 409 expected
-### @name updateCancelledOrder
-PATCH {{baseUrl}}/api/v1/orders/{{orderId}}
-Authorization: Bearer {{accessToken}}
-Content-Type: application/json
 
-{
-  "requestNote": "취소된 주문 수정 시도"
-}
-
-> {%
-    client.test("취소된 주문 수정 불가 (409)", function() {
-        client.assert(response.status === 409);
-    });
-%}
 
 ### [13] COMPANY_MANAGER가 다른 업체 주문 생성 시도 → 403 expected
 ### @name forbiddenCreateOrder

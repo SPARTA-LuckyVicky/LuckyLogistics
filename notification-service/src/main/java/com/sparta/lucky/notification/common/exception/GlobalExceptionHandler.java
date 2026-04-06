@@ -58,6 +58,6 @@ public class GlobalExceptionHandler {
         log.warn("Access Denied: {}", e.getMessage());
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.error("ORDER_ACCESS_DENIED", "접근 권한이 없습니다."));
+                .body(ApiResponse.error(NotificationErrorCode.ACCESS_DENIED.getCode(), NotificationErrorCode.ACCESS_DENIED.getMessage()));
     }
 }

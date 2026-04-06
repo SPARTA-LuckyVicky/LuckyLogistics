@@ -152,7 +152,7 @@ Authorization: Bearer {{accessToken}}
 
 ### [9] 내부 API 헤더 없음 → 403 expected
 ### @name missingInternalHeader
-POST {{notiUrl}}/internal/v1/notifications/order-alert
+POST {{notiUrl}}/internal/api/v1/notifications/order-alert
 Content-Type: application/json
 
 {
