@@ -11,7 +11,7 @@
 POST {{keycloakUrl}}/realms/lucky/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=password&client_id=lucky-client&username=master-user&password={{masterPassword}}
+grant_type=password&client_id=lucky-client&username={{masterUsername}}&password={{masterPassword}}
 
 > {%
     client.global.set("accessToken", response.body.access_token);
@@ -25,7 +25,7 @@ grant_type=password&client_id=lucky-client&username=master-user&password={{maste
 POST {{keycloakUrl}}/realms/lucky/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=password&client_id=lucky-client&username=company-manager-user&password={{masterPassword}}
+grant_type=password&client_id=lucky-client&username=company&password={{masterPassword}}
 
 > {%
     client.global.set("companyManagerToken", response.body.access_token);
@@ -38,7 +38,7 @@ grant_type=password&client_id=lucky-client&username=company-manager-user&passwor
 POST {{keycloakUrl}}/realms/lucky/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=password&client_id=lucky-client&username=hub-manager-user&password={{masterPassword}}
+grant_type=password&client_id=lucky-client&username=hubr&password={{masterPassword}}
 
 > {%
     client.global.set("hubManagerToken", response.body.access_token);
