@@ -31,7 +31,8 @@ public enum ResponseCode {
     DRIVER_CREATED("DELIVERY_300", HttpStatus.CREATED, "Driver Created"),
     DRIVER_EXISTS("DELIVERY_301", HttpStatus.CONFLICT, "Driver already exists"),
     DRIVER_NOT_FOUND("DELIVERY_302", HttpStatus.NOT_FOUND, "Driver not found"),
-    NO_DRIVER_AVAILABLE("DELIVERY_303", HttpStatus.NOT_FOUND, "No Drivers Available");
+    NO_DRIVER_AVAILABLE("DELIVERY_303", HttpStatus.NOT_FOUND, "No Drivers Available"),
+    UNSUPPORTED_DRIVER_TYPE("DELIVERY_304", HttpStatus.BAD_REQUEST, "Unsupported Driver Type"),;
 
     private final String code;
     private final HttpStatus status;

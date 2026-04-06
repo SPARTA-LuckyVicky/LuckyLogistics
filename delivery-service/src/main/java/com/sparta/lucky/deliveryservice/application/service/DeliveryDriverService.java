@@ -4,6 +4,7 @@ import com.sparta.lucky.deliveryservice.application.dto.DeliveryDriverCreateComm
 import com.sparta.lucky.deliveryservice.application.dto.DeliveryDriverUpdateCommand;
 import com.sparta.lucky.deliveryservice.application.policy.HubAccessValidator;
 import com.sparta.lucky.deliveryservice.common.code.Role;
+import com.sparta.lucky.deliveryservice.common.error.exceptions.CommonException;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.ConflictException;
 import com.sparta.lucky.deliveryservice.common.response.ResponseCode;
 import com.sparta.lucky.deliveryservice.domain.driver.DeliveryDriver;
@@ -50,7 +51,6 @@ public class DeliveryDriverService {
             int nextOrder = maxOrder + 1;
             deliveryDriverRepository.save(DeliveryDriver.create(command, nextOrder));
         }
-
         // handle creating company driver
         else if(command.type().equals(DriverType.COMPANY)) {
             Integer maxOrder = deliveryDriverRepository.findMaxAssignmentOrder(
@@ -60,6 +60,7 @@ public class DeliveryDriverService {
             int nextOrder = maxOrder + 1;
             deliveryDriverRepository.save(DeliveryDriver.create(command, nextOrder));
         }
+        else throw new CommonException(ResponseCode.UNSUPPORTED_DRIVER_TYPE);
     }
 
     /**
