@@ -1,11 +1,21 @@
 package com.sparta.lucky.user.presentation;
 
 import com.sparta.lucky.user.application.AuthService;
-import com.sparta.lucky.user.application.dto.response.SignupResult;
+import com.sparta.lucky.user.application.dto.request.LoginCommand;
+import com.sparta.lucky.user.application.dto.request.SignupCommand;
 import com.sparta.lucky.user.common.response.ApiResponse;
+import com.sparta.lucky.user.presentation.dto.request.LoginReqDto;
+import com.sparta.lucky.user.presentation.dto.request.LogoutReqDto;
 import com.sparta.lucky.user.presentation.dto.request.SignupReqDto;
+import com.sparta.lucky.user.presentation.dto.request.TokenRefreshReqDto;
+import com.sparta.lucky.user.presentation.dto.response.LoginResDto;
+import com.sparta.lucky.user.presentation.dto.response.SignupResDto;
+import com.sparta.lucky.user.presentation.dto.response.TokenResDto;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
