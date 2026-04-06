@@ -41,7 +41,7 @@ public class DeliveryDriver extends BaseEntity {
     @Column(name="type", nullable = false)
     private DriverType type;
 
-    @Column(name="assignment_order", updatable = false, nullable = false, insertable = false)
+    @Column(name="assignment_order", nullable = false, insertable = false)
     private Integer assignmentOrder;
 
     @Enumerated(EnumType.STRING)
