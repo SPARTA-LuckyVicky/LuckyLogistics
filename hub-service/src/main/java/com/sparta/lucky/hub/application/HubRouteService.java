@@ -21,7 +21,7 @@ public class HubRouteService {
     private final HubService hubService;
     private final HubRouteRepository hubRouteRepository;
 
-    @Cacheable(cacheNames = "routes", key = "'all'")
+    @Cacheable(cacheNames = "routes", key = "'all'", sync = true)
     @Transactional(readOnly = true)
     public List<HubRoute> getHubRoutes() {
         return hubRouteRepository.findAllByDeletedAtIsNull();
