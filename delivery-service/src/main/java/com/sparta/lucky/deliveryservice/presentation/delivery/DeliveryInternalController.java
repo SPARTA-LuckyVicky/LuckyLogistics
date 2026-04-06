@@ -26,7 +26,7 @@ public class DeliveryInternalController {
     private final DeliveryService deliveryService;
     private final DeliveryReadService deliveryReadService;
 
-    @Operation(summary="배송 생성", description="배송 데이터를 생성합니다.<br>MASTER권한만 사용 가능합니다.")
+    @Operation(summary="배송 생성", description="배송 데이터를 생성합니다.<br>주문 생성시 호출합니다.")
     @PostMapping
     public ResponseEntity<CommonApiResponse<UUID>> createDelivery(
         @RequestBody @Valid DeliveryCreateRequest deliveryCreateRequest
