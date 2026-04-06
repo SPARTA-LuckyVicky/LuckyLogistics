@@ -19,7 +19,7 @@ public class TokenResDto {
     private String refreshToken;
 
     @JsonProperty("expires_in")
-    private String expiresIn;
+    private Long expiresIn;
 
     @JsonProperty("token_type")
     private String tokenType;
