@@ -113,29 +113,6 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                             headers.remove("X-User-Role");
                             headers.remove("X-Hub-Id");
                             headers.remove("X-Company-Id");
-
-                            headers.set("X-User-Id", userId);
-                            headers.set("X-User-Role", finalRole);
-
-                            if (StringUtils.hasText(hubId)) headers.set("X-Hub-Id", hubId);
-                            if (StringUtils.hasText(companyId)) headers.set("X-Company-Id", companyId);
-                        });
-                        return chain.filter(exchange.mutate().request(builder.build()).build());
-
-                        //role 추출
-                        String originalRole = jwt.getClaimAsString("authorities");
-                        final String finalRole = StringUtils.hasText(originalRole) ? originalRole : "USER";
-
-                        // hubId와 companyId 추출
-                        String hubId = jwt.getClaimAsString("hub_id");
-                        String companyId = jwt.getClaimAsString("company_id");
-
-                        ServerHttpRequest.Builder builder = exchange.getRequest().mutate();
-                        builder.headers(headers -> {
-                            headers.remove("X-User-Id");
-                            headers.remove("X-User-Role");
-                            headers.remove("X-Hub-Id");
-                            headers.remove("X-Company-Id");
                             headers.set("X-User-Id", userId);
                             headers.set("X-User-Role", finalRole);
 
