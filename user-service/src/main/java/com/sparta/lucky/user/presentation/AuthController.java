@@ -38,7 +38,7 @@ public class AuthController {
 
     @Operation(summary = "로그인")
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResDto>> login(@RequestBody LoginReqDto reqDto) {
+    public ResponseEntity<ApiResponse<LoginResDto>> login(@Valid @RequestBody LoginReqDto reqDto) {
         LoginCommand command = new LoginCommand(reqDto.getUsername(), reqDto.getPassword());
 
         return ResponseEntity.ok(
