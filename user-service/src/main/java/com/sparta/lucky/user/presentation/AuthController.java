@@ -48,14 +48,14 @@ public class AuthController {
 
     @Operation(summary = "토큰 재발급")
     @PostMapping("/refresh")
-    public ResponseEntity<TokenResDto> refresh(@RequestBody TokenRefreshReqDto request) {
+    public ResponseEntity<TokenResDto> refresh(@Valid @RequestBody TokenRefreshReqDto request) {
         TokenResDto response = authService.refresh(request.getRefreshToken());
         return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "로그아웃")
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(@RequestBody LogoutReqDto request) {
+    public ResponseEntity<String> logout(@Valid @RequestBody LogoutReqDto request) {
         authService.logout(request.getRefreshToken());
         return ResponseEntity.ok("로그아웃 되었습니다.");
     }
