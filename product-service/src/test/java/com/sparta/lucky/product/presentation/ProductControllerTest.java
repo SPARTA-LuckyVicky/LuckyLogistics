@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 3. validateInternalRequest — X-Internal-Request 누락/오류 → 400/403
  */
 @WebMvcTest(controllers = {ProductController.class, ProductInternalController.class})
+@AutoConfigureMockMvc(addFilters = false)  // Security 필터 비활성화 - 실제 인증은 Gateway 처리
 class ProductControllerTest {
 
     @Autowired
