@@ -13,6 +13,13 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # 로컬에서 Keycloak은 localhost:9090으로 접근
+          issuer-uri: http://localhost:9090/realms/lucky
+          jwk-set-uri: http://localhost:9090/realms/lucky/protocol/openid-connect/certs
 
 # 로깅 설정
 logging:
@@ -25,3 +32,7 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:19090/eureka
+  instance:
+    # Docker 컨테이너(Gateway)가 호스트 머신에서 실행 중인 company-service에 접근하기 위한 설정
+    hostname: host.docker.internal
+    prefer-ip-address: false

@@ -1,5 +1,6 @@
 package com.sparta.lucky.company.application;
 
+import com.sparta.lucky.company.application.dto.AssignManagerCommand;
 import com.sparta.lucky.company.application.dto.CreateCompanyCommand;
 import com.sparta.lucky.company.application.dto.CreateCompanyResult;
 import com.sparta.lucky.company.application.dto.UpdateCompanyCommand;
@@ -8,6 +9,9 @@ import com.sparta.lucky.company.domain.Company;
 import com.sparta.lucky.company.domain.CompanyErrorCode;
 import com.sparta.lucky.company.domain.CompanyRepository;
 import com.sparta.lucky.company.domain.CompanyType;
+import com.sparta.lucky.company.infrastructure.feign.HubClient;
+import com.sparta.lucky.company.infrastructure.feign.ProductInternalClient;
+import com.sparta.lucky.company.infrastructure.feign.dto.FeignApiResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -25,10 +29,13 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 
 /**
- * 2026-03-31 박동진
- * CRUD중 업체 생성, 업체 수정, 업체 삭제 테스트 코드
+ * 최종수정 : 2026-04-05 박동진
+ * assignManager 테스트 추가
+ *
  * 업체 단건 조회 - 프레임워크가 검증하므로 패스
  * 업체 목록 조회 - 서비스레이어에서는 Repository에 위임만 하는 형태로, @DataJpaTest에서 진행해야함
  *
@@ -42,6 +49,12 @@ class CompanyServiceTest {
 
     @Mock
     private CompanyRepository companyRepository;
+
+    @Mock
+    private HubClient hubClient;
+
+    @Mock
+    private ProductInternalClient productInternalClient;
 
     // 테스트용 고정 UUID
     private static final UUID COMPANY_ID = UUID.randomUUID();
@@ -67,6 +80,14 @@ class CompanyServiceTest {
     @Nested
     @DisplayName("업체 생성")
     class CreateCompany {
+
+        @BeforeEach
+        void stubHub() {
+            // 예외 분기 테스트는 validateHub 도달 전 예외 던지므로 해당 스텁 사용하지 않음
+            // FeignApiRepsopnse mock은 requireData() 호출 시 기본값 null 반환 -> 예외 없이 통과
+            lenient().when(hubClient.getHub(any(), any()))
+                    .thenReturn(mock(FeignApiResponse.class));
+        }
 
         @Test
         @DisplayName("MASTER는 어떤 허브에도 업체 생성 가능")
@@ -128,6 +149,24 @@ class CompanyServiceTest {
                     .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
                             .isEqualTo(CompanyErrorCode.COMPANY_HUB_MISMATCH.getCode()));
         }
+
+        @Test
+        @DisplayName("COMPANY_MANAGER는 업체 생성 불가 — 예외 발생")
+        void companyManager_cannotCreate() {
+            CreateCompanyCommand command = CreateCompanyCommand.builder()
+                    .name("테스트업체").companyType(CompanyType.SUPPLIER)
+                    .hubId(HUB_A).address("주소")
+                    .requesterId(REQUESTER_ID).requesterRole("COMPANY_MANAGER")
+                    .requesterHubId(null)
+                    .build();
+
+            assertThatThrownBy(() -> companyService.createCompany(command))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
+                            .isEqualTo(CompanyErrorCode.COMPANY_ACCESS_DENIED.getCode()));
+        }
+
+
     }
 
     //updateCompany
@@ -228,12 +267,32 @@ class CompanyServiceTest {
                     .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
                             .isEqualTo(CompanyErrorCode.COMPANY_NOT_FOUND.getCode()));
         }
+
+        // CompanyService.validateUpdateAccess()의 default분기 테스트용
+        @Test
+        @DisplayName("허용되지 않는 역할(DELIVERY_DRIVER 등)이 수정 시 예외 발생")
+        void invalidRole_cannotUpdate() {
+            given(companyRepository.findByIdAndDeletedAtIsNull(COMPANY_ID))
+                    .willReturn(Optional.of(company));
+            UpdateCompanyCommand command = updateCommand("DELIVERY_DRIVER", null, null);
+
+            assertThatThrownBy(() -> companyService.updateCompany(command))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
+                            .isEqualTo(CompanyErrorCode.COMPANY_ACCESS_DENIED.getCode()));
+        }
     }
 
     // deleteCompany
     @Nested
     @DisplayName("업체 삭제")
     class DeleteCompany {
+
+        @BeforeEach
+        void stubProductClient() {
+            lenient().when(productInternalClient.deleteProductsByCompany(any(), any(), any()))
+                    .thenReturn(mock(FeignApiResponse.class));
+        }
 
         @Test
         @DisplayName("MASTER는 모든 업체 삭제 가능")
@@ -301,5 +360,44 @@ class CompanyServiceTest {
                 .requesterHubId(requesterHubId)
                 .requesterCompanyId(requesterCompanyId)
                 .build();
+    }
+
+    @Nested
+    @DisplayName("담당자 배정")
+    class AssignManager {
+
+        @Test
+        @DisplayName("정상 배정 - 업체 존재 검증 통과 후 manager 필드 업데이트")
+        void assignManager_success() {
+            UUID managerId = UUID.randomUUID();
+            given(companyRepository.findByIdAndDeletedAtIsNull(COMPANY_ID))
+                    .willReturn(Optional.of(company));
+
+            AssignManagerCommand command = AssignManagerCommand.builder()
+                    .companyId(COMPANY_ID)
+                    .managerId(managerId)
+                    .build();
+
+            assertThatCode(() -> companyService.assignManager(command))
+                    .doesNotThrowAnyException();
+            assertThat(company.getManager()).isEqualTo(managerId);
+        }
+
+        @Test
+        @DisplayName("배정 실패 - 존재하지 않는 업체로 담당자 배정 시 예외 발생")
+        void assignManager_companyNotFound() {
+            given(companyRepository.findByIdAndDeletedAtIsNull(COMPANY_ID))
+                    .willReturn(Optional.empty());
+
+            AssignManagerCommand command = AssignManagerCommand.builder()
+                    .companyId(COMPANY_ID)
+                    .managerId(UUID.randomUUID())
+                    .build();
+
+            assertThatThrownBy(() -> companyService.assignManager(command))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(e -> assertThat(((BusinessException) e).getErrorCode())
+                            .isEqualTo(CompanyErrorCode.COMPANY_NOT_FOUND.getCode()));
+        }
     }
 }

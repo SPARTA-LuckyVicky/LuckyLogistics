@@ -1,10 +1,11 @@
 package com.sparta.lucky.order.presentation;
 
 import com.sparta.lucky.order.application.OrderService;
-import com.sparta.lucky.order.application.dto.response.OrderResponse;
+import com.sparta.lucky.order.application.dto.OrderResponse;
+import com.sparta.lucky.order.common.response.ApiResponse;
 import com.sparta.lucky.order.domain.OrderStatus;
-import com.sparta.lucky.order.presentation.dto.request.PostOrderReqDto;
-import com.sparta.lucky.order.presentation.dto.request.PatchOrderReqDto;
+import com.sparta.lucky.order.presentation.dto.PostOrderReqDto;
+import com.sparta.lucky.order.presentation.dto.PatchOrderReqDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -16,6 +17,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -30,64 +33,72 @@ public class OrderController {
 
     @Operation(summary = "주문 생성")
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(
-            @RequestBody @Valid PostOrderReqDto request
+    public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
+            @RequestBody @Valid PostOrderReqDto request,
+            @AuthenticationPrincipal String userId,
+            @RequestHeader(value = "X-User-Role", required = false) String role
+
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(orderService.createOrder(request.toCommand()));
+                .body(ApiResponse.success(orderService.createOrder(request.toCommand(),userId,role)));
     }
 
     @Operation(summary = "주문 목록 조회", description = "status 필터 가능. 페이지 사이즈: 10 / 30 / 50 (그 외는 10으로 고정)")
     @GetMapping
-    public ResponseEntity<Page<OrderResponse>> getOrders(
+    public ResponseEntity<ApiResponse<Page<OrderResponse>>> getOrders(
             @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) UUID hubId,
+            @RequestParam(required = false) UUID companyId,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
-            Pageable pageable
+            Pageable pageable,
+            @AuthenticationPrincipal String userId,
+            @RequestHeader(value = "X-User-Role", required = false) String role
     ) {
-        // 허용 페이지 사이즈: 10, 30, 50 — 그 외는 10으로 고정
         int pageSize = pageable.getPageSize();
         if (pageSize != 10 && pageSize != 30 && pageSize != 50) {
-            pageable = PageRequest.of(
-                    pageable.getPageNumber(),
-                    10,
-                    pageable.getSort()
-            );
+            pageable = PageRequest.of(pageable.getPageNumber(), 10, pageable.getSort());
         }
-        return ResponseEntity.ok(orderService.getOrders(status, pageable));
+        UUID userUUID = userId != null ? UUID.fromString(userId) : null;
+        return ResponseEntity.ok(ApiResponse.success(
+                orderService.getOrders(status, role, hubId, companyId, userUUID, pageable)));
     }
 
     @Operation(summary = "주문 단건 조회")
     @GetMapping("/{id}")
-    public ResponseEntity<OrderResponse> getOrder(
+    public ResponseEntity<ApiResponse<OrderResponse>> getOrder(
             @PathVariable UUID id
     ) {
-        return ResponseEntity.ok(orderService.getOrder(id));
+        return ResponseEntity.ok(ApiResponse.success(orderService.getOrder(id)));
     }
 
     @Operation(summary = "주문 수정", description = "requestNote, requestedDeadline 수정 가능 (CREATED 상태만)")
+    @PreAuthorize("hasAnyRole('MASTER', 'HUB_MANAGER')")
     @PatchMapping("/{id}")
-    public ResponseEntity<OrderResponse> updateOrder(
+    public ResponseEntity<ApiResponse<OrderResponse>> updateOrder(
             @PathVariable UUID id,
             @RequestBody @Valid PatchOrderReqDto request
     ) {
-        return ResponseEntity.ok(orderService.updateOrder(id, request.toCommand()));
+        return ResponseEntity.ok(ApiResponse.success(orderService.updateOrder(id, request.toCommand())));
     }
 
     @Operation(summary = "주문 취소", description = "상태를 CANCELLED로 변경 (CREATED 상태만 가능, 노출 유지)")
+    @PreAuthorize("hasAnyRole('MASTER', 'HUB_MANAGER')")
     @PatchMapping("/{id}/cancel")
-    public ResponseEntity<OrderResponse> cancelOrder(
+    public ResponseEntity<ApiResponse<OrderResponse>> cancelOrder(
             @PathVariable UUID id
     ) {
-        return ResponseEntity.ok(orderService.cancelOrder(id));
+        return ResponseEntity.ok(ApiResponse.success(orderService.cancelOrder(id)));
     }
 
+
     @Operation(summary = "주문 삭제", description = "Soft delete (CANCELLED / COMPLETED 상태만 가능)")
+    @PreAuthorize("hasRole('MASTER')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrder(
+    public ResponseEntity<ApiResponse<Void>> deleteOrder(
             @PathVariable UUID id,
-            @RequestHeader(value = "X-User-Id", required = true) UUID deletedBy
+            @AuthenticationPrincipal String deletedBy
     ) {
-        orderService.deleteOrder(id, deletedBy);
-        return ResponseEntity.noContent().build();
+        orderService.deleteOrder(id, UUID.fromString(deletedBy));
+        return ResponseEntity.ok(ApiResponse.success());
     }
 }
