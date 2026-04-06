@@ -3,6 +3,7 @@ bootJar {
 }
 
 dependencies {
+	implementation 'io.github.openfeign:feign-micrometer'
 	// Gateway JWT 인증 연동 — Gateway가 검증한 토큰을 각 서비스에서도 검증
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
