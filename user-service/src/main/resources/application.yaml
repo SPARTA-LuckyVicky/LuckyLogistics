@@ -1,17 +1,6 @@
 server:
   port: ${USER_SERVICE_PORT}
 
-spring:
-  application:
-    name: ${USER_SERVICE_NAME}
-
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:9090/realms/lucky
-          jwk-set-uri: http://lucky-keycloak:8080/realms/lucky/protocol/openid-connect/certs
-
 keycloak:
   server-url: ${KEYCLOAK_SERVER_URL}
   realm: ${KEYCLOAK_REALM}
@@ -21,6 +10,17 @@ keycloak:
   # 로그인용 (일반 클라이언트 권한)
   user-client-id: lucky-client
   user-client-secret: ${KEYCLOAK_USER_SECRET}
+
+spring:
+  application:
+    name: ${USER_SERVICE_NAME}
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://lucky-keycloak:8080/realms/lucky
+          jwk-set-uri: http://lucky-keycloak:8080/realms/lucky/protocol/openid-connect/certs
 
   datasource:
     url: jdbc:postgresql://lucky-postgres:5432/${POSTGRES_DB}?currentSchema=${USER_SERVICE_SCHEMA}
