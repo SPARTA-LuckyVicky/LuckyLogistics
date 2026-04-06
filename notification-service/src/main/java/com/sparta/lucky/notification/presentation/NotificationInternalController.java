@@ -5,6 +5,7 @@ import com.sparta.lucky.notification.application.dto.SendOrderAlertCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class NotificationInternalController {
 
     private final NotificationService notificationService;
+    private static final String INTERNAL_REQUEST = "true";
 
     @Operation(summary = "[내부] 주문 알림 발송", description = "delivery-service가 배송 경로 생성 완료 후 호출")
     @PostMapping("/order-alert")
@@ -22,6 +24,9 @@ public class NotificationInternalController {
             @RequestBody SendOrderAlertCommand request,
             @RequestHeader(value = "X-Internal-Request", required = false) String internalRequest
     ) {
+        if (!INTERNAL_REQUEST.equals(internalRequest)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         notificationService.sendOrderAlert(request);
         return ResponseEntity.ok().build();
     }
