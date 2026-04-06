@@ -20,12 +20,47 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public SignupResult signup(SignupReqDto reqDto){
-
-
-        if(userRepository.existsByUsername(reqDto.getUsername())){
+    public SignupResult signUp(SignupCommand command) {
+        if(userRepository.existsByUsername(command.getUsername())) {
             throw new BusinessException(UserErrorCode.DUPLICATE_USERNAME);
         }
+        // keycloak 유저 객체 생성
+        UserRepresentation userRepresentation = new UserRepresentation();
+        userRepresentation.setUsername(command.getUsername());
+        userRepresentation.setFirstName(command.getName());
+        userRepresentation.setEnabled(true);
+
+        // 비밀번호 설정
+        CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
+        credentialRepresentation.setType(CredentialRepresentation.PASSWORD);
+        credentialRepresentation.setValue(command.getPassword());
+        credentialRepresentation.setTemporary(false);
+        userRepresentation.setCredentials(List.of(credentialRepresentation));
+
+        // 커스텀 attributes 설정 (mapper가 읽을 값들)
+        Map<String, List<String>> attributes = new HashMap<>();
+        attributes.put("role", List.of(command.getRole().name()));
+        attributes.put("hubId", List.of(command.getHubId() != null ? command.getHubId() : ""));
+        attributes.put("companyId", List.of(command.getCompanyId() != null ? command.getCompanyId() : ""));
+        userRepresentation.setAttributes(attributes);
+
+        Response response = keycloak.realm(realm).users().create(userRepresentation);
+
+        if (response.getStatus() == 201) {
+            String keycloakId = CreatedResponseUtil.getCreatedId(response);
+
+            User user = command.toEntity(
+                    UUID.fromString(keycloakId),
+                    passwordEncoder.encode(command.getPassword()));
+
+            userRepository.save(user);
+
+            return SignupResult.from(user);
+        } else {
+            throw new BusinessException(UserErrorCode.EXTERNAL_AUTH_ERROR);
+        }
+    }
+
 
         String encodedPassword = passwordEncoder.encode(reqDto.getPassword());
         SignupCommand signupCommand = SignupCommand.from(reqDto, encodedPassword);

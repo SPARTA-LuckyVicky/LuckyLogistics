@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class SignupReqDto {
 
     @NotBlank(message = "아이디는 필수 입력 값입니다.")
@@ -36,7 +36,7 @@ public class SignupReqDto {
     @NotNull(message = "권한 선택은 필수입니다.")
     private UserRole role;
 
-    private UUID hubId;
+    private String hubId;
 
-    private UUID companyId;
+    private String companyId;
 }

@@ -17,9 +17,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final AuthService authService;
 
+    @Operation(summary = "회원가입")
     @PostMapping("/signup")
     public ApiResponse<SignupResult> signup(@Valid @RequestBody SignupReqDto reqDto){
         SignupResult signupResult = authService.signup(reqDto);
         return ApiResponse.success(signupResult);
+    public ResponseEntity<ApiResponse<SignupResDto>> signup(@Valid @RequestBody SignupReqDto reqDto) {
+
+        SignupCommand command = SignupCommand.from(reqDto);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(SignupResDto.from(authService.signUp(command))));
+    }
+
     }
 }
