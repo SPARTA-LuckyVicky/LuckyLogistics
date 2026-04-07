@@ -12,6 +12,7 @@ import com.sparta.lucky.user.presentation.dto.response.LoginResDto;
 import com.sparta.lucky.user.presentation.dto.response.SignupResDto;
 import com.sparta.lucky.user.presentation.dto.response.TokenResDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Auth", description = "Auth 관련 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
@@ -48,15 +50,15 @@ public class AuthController {
 
     @Operation(summary = "토큰 재발급")
     @PostMapping("/refresh")
-    public ResponseEntity<TokenResDto> refresh(@Valid @RequestBody TokenRefreshReqDto request) {
+    public ResponseEntity<ApiResponse<TokenResDto>> refresh(@Valid @RequestBody TokenRefreshReqDto request) {
         TokenResDto response = authService.refresh(request.getRefreshToken());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @Operation(summary = "로그아웃")
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(@Valid @RequestBody LogoutReqDto request) {
+    public ResponseEntity<ApiResponse<String>> logout(@Valid @RequestBody LogoutReqDto request) {
         authService.logout(request.getRefreshToken());
-        return ResponseEntity.ok("로그아웃 되었습니다.");
+        return ResponseEntity.ok(ApiResponse.success("로그아웃 되었습니다."));
     }
 }

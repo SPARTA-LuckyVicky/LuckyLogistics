@@ -49,8 +49,8 @@ services:
       KC_HTTP_ENABLED: "true"
     command: start-dev --import-realm
     volumes:
-      - ./keycloak/realm-export-2.json:/opt/keycloak/data/import/realm.json
-      - keycloak_data:/opt/keycloak/data # user 데이터 저장
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm.json
+#      - keycloak_data:/opt/keycloak/data # user 데이터 저장
     ports:
       - "9090:8080" #(접속할 때 http://localhost:9090 사용)
     networks:

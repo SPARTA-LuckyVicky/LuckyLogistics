@@ -8,6 +8,8 @@ import com.sparta.lucky.user.common.exception.BusinessException;
 import com.sparta.lucky.user.common.exception.UserErrorCode;
 import com.sparta.lucky.user.domain.User;
 import com.sparta.lucky.user.domain.UserRepository;
+import com.sparta.lucky.user.domain.UserRole;
+import com.sparta.lucky.user.domain.UserStatus;
 import com.sparta.lucky.user.presentation.dto.response.TokenResDto;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
@@ -63,6 +65,12 @@ public class AuthService {
         if(userRepository.existsByUsername(command.getUsername())) {
             throw new BusinessException(UserErrorCode.DUPLICATE_USERNAME);
         }
+
+        //회원가입 첫번째 유저는 권한은 MASTER, 가입상태는 APPROVED 로 주입
+        long userCount = userRepository.count();
+        UserRole finalRole = (userCount == 0) ? UserRole.MASTER : command.getRole();
+        UserStatus finalStatus = (userCount == 0) ? UserStatus.APPROVED : UserStatus.PENDING;
+
         // keycloak 유저 객체 생성
         UserRepresentation userRepresentation = new UserRepresentation();
         userRepresentation.setUsername(command.getUsername());
@@ -78,7 +86,7 @@ public class AuthService {
 
         // 커스텀 attributes 설정 (mapper가 읽을 값들)
         Map<String, List<String>> attributes = new HashMap<>();
-        attributes.put("role", List.of(command.getRole().name()));
+        attributes.put("role", List.of(finalRole.name()));
         attributes.put("hubId", List.of(command.getHubId() != null ? command.getHubId() : ""));
         attributes.put("companyId", List.of(command.getCompanyId() != null ? command.getCompanyId() : ""));
         userRepresentation.setAttributes(attributes);
@@ -90,10 +98,11 @@ public class AuthService {
 
             User user = command.toEntity(
                     UUID.fromString(keycloakId),
-                    passwordEncoder.encode(command.getPassword()));
-
+                    passwordEncoder.encode(command.getPassword()),
+                    finalRole,
+                    finalStatus
+            );
             userRepository.save(user);
-
             return SignupResult.from(user);
         } else {
             throw new BusinessException(UserErrorCode.EXTERNAL_AUTH_ERROR);
