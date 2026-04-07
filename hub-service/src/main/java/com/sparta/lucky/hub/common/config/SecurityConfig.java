@@ -41,9 +41,9 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new SecurityExceptionHandlerFilter(handlerExceptionResolver), InternalRequestFilter.class)
                 .addFilterBefore(new InternalRequestFilter(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new HeaderAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new HeaderAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new SecurityExceptionHandlerFilter(handlerExceptionResolver), InternalRequestFilter.class);
         return http.build();
     }
 }
