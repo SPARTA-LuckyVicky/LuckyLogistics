@@ -1,10 +1,12 @@
-package com.sparta.lucky.deliveryservice.application;
+package com.sparta.lucky.deliveryservice.application.service;
 
 import com.sparta.lucky.deliveryservice.application.dto.DeliveryDriverReadResult;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.ForbiddenException;
 import com.sparta.lucky.deliveryservice.common.error.exceptions.NotFoundException;
 import com.sparta.lucky.deliveryservice.common.response.ResponseCode;
 import com.sparta.lucky.deliveryservice.domain.driver.DeliveryDriver;
+import com.sparta.lucky.deliveryservice.domain.driver.code.DriverStatus;
+import com.sparta.lucky.deliveryservice.domain.driver.code.DriverType;
 import com.sparta.lucky.deliveryservice.domain.repos.DeliveryDriverRepository;
 import com.sparta.lucky.deliveryservice.infrastructure.client.UserClient;
 import java.util.UUID;
@@ -65,7 +67,7 @@ public class DeliveryDriverReadService {
      * @return
      */
     public Page<DeliveryDriverReadResult> getDrivers(Pageable pageable, UUID accessId) {
-        UUID hubId = userClient.getUserHubId(accessId).hubId();
+        UUID hubId = userClient.getUser(accessId).hubId();
         return deliveryDriverRepository.findAllActiveByHubId(hubId, pageable).map(DeliveryDriverReadResult::from);
     }
 
@@ -75,9 +77,28 @@ public class DeliveryDriverReadService {
             .orElseThrow(() -> new NotFoundException(ResponseCode.DRIVER_NOT_FOUND));
     }
 
+    /**
+     * 배송가능한 업체 배송 담당자의 id를 반환합니다.
+     * @param hubId 소속 hubId
+     * @return {@code UUID} driverId
+     */
+    public DeliveryDriver getOneCompanyDriver(UUID hubId) {
+        return deliveryDriverRepository.findFirstActiveByHubId(hubId, DriverStatus.IDLE, DriverType.COMPANY)
+            .orElseThrow(() -> new NotFoundException(ResponseCode.NO_DRIVER_AVAILABLE));
+    }
+
+    /**
+     * 배송 가능한 허브 배송담당자의 ID를 반환합니다.
+     * @return {@code UUID} driverId
+     */
+    public DeliveryDriver getOneHubDriver() {
+        return deliveryDriverRepository.findFirstActiveByStatusAndType(DriverStatus.IDLE, DriverType.HUB)
+            .orElseThrow(() -> new NotFoundException(ResponseCode.NO_DRIVER_AVAILABLE));
+    }
+
     // Validator =======================================================================
     private void validateSameHubOrThrow(UUID accessId, UUID hubId) {
-        UUID userHubId = userClient.getUserHubId(accessId).hubId();
+        UUID userHubId = userClient.getUser(accessId).hubId();
         if (!hubId.equals(userHubId)) {
             throw new ForbiddenException(ResponseCode.FORBIDDEN);
         }

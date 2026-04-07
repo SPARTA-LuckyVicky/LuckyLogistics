@@ -1,6 +1,6 @@
 package com.sparta.lucky.deliveryservice.infrastructure.client;
 
-import com.sparta.lucky.deliveryservice.infrastructure.client.dto.UserHubResponse;
+import com.sparta.lucky.deliveryservice.infrastructure.client.dto.UserResponse;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,5 +10,5 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface UserClient {
 
     @GetMapping("/internal/v1/users/{userId}")
-    UserHubResponse getUserHubId(@PathVariable UUID userId);
+    UserResponse getUser(@PathVariable UUID userId);
 }

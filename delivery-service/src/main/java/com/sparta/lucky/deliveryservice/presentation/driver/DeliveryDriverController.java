@@ -1,7 +1,7 @@
 package com.sparta.lucky.deliveryservice.presentation.driver;
 
-import com.sparta.lucky.deliveryservice.application.DeliveryDriverReadService;
-import com.sparta.lucky.deliveryservice.application.DeliveryDriverService;
+import com.sparta.lucky.deliveryservice.application.service.DeliveryDriverReadService;
+import com.sparta.lucky.deliveryservice.application.service.DeliveryDriverService;
 import com.sparta.lucky.deliveryservice.common.code.Role;
 import com.sparta.lucky.deliveryservice.common.response.CommonApiResponse;
 import com.sparta.lucky.deliveryservice.common.response.ResponseCode;
