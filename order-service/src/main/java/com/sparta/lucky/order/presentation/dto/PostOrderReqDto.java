@@ -13,9 +13,6 @@ import java.util.UUID;
 @NoArgsConstructor
 public class PostOrderReqDto {
 
-    @NotNull(message = "요청 업체 ID는 필수입니다.")
-    private UUID requesterCompanyId;
-
     @NotNull(message = "수령 업체 ID는 필수입니다.")
     private UUID receiverCompanyId;
 
@@ -32,7 +29,6 @@ public class PostOrderReqDto {
 
     public CreateOrderCommand toCommand() {
         return new CreateOrderCommand(
-                requesterCompanyId,
                 receiverCompanyId,
                 productId,
                 quantity,

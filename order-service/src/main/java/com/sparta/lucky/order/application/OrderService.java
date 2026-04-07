@@ -45,15 +45,9 @@ public class OrderService {
         if (product == null) {
             throw new BusinessException(OrderErrorCode.PRODUCT_NOT_FOUND);
         }
+
         // 재고 차감 후 순위로 미룸
 
-        // 2. 업체가 요청한 주문일 때 → 인증 사용자와 대조
-        CompanyResponse requesterCompany = companyClient
-                .getCompany(request.getRequesterCompanyId(), INTERNAL_REQUEST)
-                .getData();
-        if (requesterCompany == null) {
-            throw new BusinessException(OrderErrorCode.COMPANY_NOT_FOUND);
-        }
         // 업체에서 요청한 주문일 때는 해당 검증 확인
         if ("COMPANY_MANAGER".equals(role)) {
             UserResponse user = userClient
@@ -62,7 +56,7 @@ public class OrderService {
             if (user == null || user.getCompanyId() == null) {
                 throw new BusinessException(OrderErrorCode.COMPANY_NOT_FOUND);
             }
-            // 본인 업체가 수령업체인지 확인
+            // 본인 업체가 수령 업체인지 확인
             if (!user.getCompanyId().equals(request.getReceiverCompanyId())) {
                 throw new BusinessException(OrderErrorCode.ORDER_ACCESS_DENIED);
             }
@@ -104,7 +98,7 @@ public class OrderService {
 
         // 5. 주문 생성
         Order order = Order.create(
-                request.getRequesterCompanyId(),
+                product.getCompanyId(),
                 request.getReceiverCompanyId(),
                 request.getProductId(),
                 product.getName(),
