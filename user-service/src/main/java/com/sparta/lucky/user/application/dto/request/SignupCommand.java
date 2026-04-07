@@ -42,17 +42,17 @@ public class SignupCommand {
                 .build();
     }
 
-    public User toEntity(UUID keycloakId, String encodedPassword) {
+    public User toEntity(UUID keycloakId, String encodedPassword, UserRole finalRole, UserStatus finalstatus) {
         return User.builder()
                 .userId(keycloakId)
                 .username(this.username)
                 .password(encodedPassword) // 암호화된 비밀번호 사용
                 .name(this.name)
                 .receiverSlackId(this.receiverSlackId)
-                .role(this.role)
+                .role(finalRole)
                 .hubId(this.hubId)
                 .companyId(this.companyId)
-                .status(UserStatus.PENDING) // 가입 시 기본 상태는 PENDING
+                .status(finalstatus)
                 .build();
     }
 }

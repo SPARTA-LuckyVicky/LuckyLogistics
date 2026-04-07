@@ -67,5 +67,19 @@ public class User extends BaseEntity {
         this.companyId = companyId;
         this.status = (status != null) ? status : UserStatus.PENDING;
     }
+
+    public void updateInfo(String name, String slackId, String hubId, String companyId) {
+        if (name != null) this.name = name;
+        if (slackId != null) this.receiverSlackId = slackId;
+        this.hubId = hubId;
+        this.companyId = companyId;
+    }
+
+    public void updateStatus(UserStatus newStatus) {
+
+        if (this.status == UserStatus.APPROVED && newStatus == UserStatus.PENDING) {
+            throw new BusinessException(UserErrorCode.INVALID_STATUS_CHANGE);
+        }
+        this.status = newStatus;
     }
 }

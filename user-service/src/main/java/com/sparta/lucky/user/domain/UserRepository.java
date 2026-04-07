@@ -1,5 +1,7 @@
 package com.sparta.lucky.user.domain;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -11,11 +13,12 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     // 아이디로 조회
     Optional<User> findByUsername(String username);
 
-    // 특정 status의 사용자 목록 조회 ( 가입 신청 목록 조회용 등 )
-    List<User> findAllByStatus(UserStatus status);
-
     // 아이디 중복 확인
     boolean existsByUsername(String username);
 
-    Optional<User> findByUsernameAndDeletedAtIsNull(String username);
+    // 전체 유저 페이징 조회 ( 삭제되지 않은 유저만 )
+    Page<User> findAllByDeletedAtIsNull(Pageable pageable);
+
+    // 가입 대기 유저 페이징 조회
+    Page<User> findAllByStatusAndDeletedAtIsNull(UserStatus status, Pageable pageable);
 }

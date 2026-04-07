@@ -18,15 +18,16 @@ public enum UserErrorCode implements ErrorCode{
 
     // status (가입 상태) 관련
     UNAUTHORIZED_ACCESS("USER_006", "승인되지 않은 사용자입니다.", 403),
-
+    PENDING_USER_APPROVAL("USER_016", "관리자의 가입 승인이 대기중입니다.",403),
     // 권한 관련
     FORBIDDEN_ACCESS("USER_007", "해당 작업에 대한 권한이 없습니다.", 403),
 
     // 유저 상태 관련
     DELETED_USER("USER_008", "이미 탈퇴 처리된 사용자입니다.", 400),
+    DELETED_USER_ACCOUNT("USER_009","삭제된 계정입니다.", 403),
 
     // 데이터 무결성
-    IMMUTABLE_FIELD("USER_009", "변경할 수 없는 정보가 포함되어 있습니다.", 400),
+    IMMUTABLE_FIELD("USER_010", "변경할 수 없는 정보가 포함되어 있습니다.", 400),
 
     // 서버 내부 에러 (Keycloak 등 외부 연동 실패 상세)
     KEYCLOAK_USER_CREATION_FAILED("USER_011", "인증 서버 유저 생성에 실패했습니다.", 500),
