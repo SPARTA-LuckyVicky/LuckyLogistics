@@ -10,7 +10,7 @@ import java.util.UUID;
 @FeignClient(name = "company-service")
 public interface CompanyClient {
 
-    @PatchMapping("/internal/api/v1/companies/{companyId}/manager")
+    @PutMapping("/internal/api/v1/companies/{companyId}/manager")
     ApiResponse<Void> assignManager(
             @PathVariable("companyId") UUID companyId,
             @RequestBody AssignManagerReqBody body,
