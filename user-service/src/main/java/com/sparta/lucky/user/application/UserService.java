@@ -71,6 +71,10 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
+        if (user.isDeleted()) {
+            throw new BusinessException(UserErrorCode.DELETED_USER);
+        }
+
         user.updateStatus(newStatus);
     }
 
