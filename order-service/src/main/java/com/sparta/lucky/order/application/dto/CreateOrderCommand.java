@@ -10,8 +10,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class CreateOrderCommand {
 
-    private UUID requesterCompanyId;
-
     private UUID receiverCompanyId;
 
     private UUID productId;

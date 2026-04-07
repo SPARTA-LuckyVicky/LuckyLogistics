@@ -23,6 +23,11 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
+    public void delete(Order order) {
+        jpaRepository.delete(order);
+    }
+
+    @Override
     public Optional<Order> findById(UUID id) {
         return jpaRepository.findById(id);
     }

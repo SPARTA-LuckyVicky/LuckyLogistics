@@ -35,7 +35,7 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
             @RequestBody @Valid PostOrderReqDto request,
-            @AuthenticationPrincipal String userId,
+            @AuthenticationPrincipal UUID userId,
             @RequestHeader(value = "X-User-Role", required = false) String role
 
     ) {

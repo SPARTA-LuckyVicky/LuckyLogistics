@@ -45,24 +45,18 @@ public class OrderService {
         if (product == null) {
             throw new BusinessException(OrderErrorCode.PRODUCT_NOT_FOUND);
         }
+
         // 재고 차감 후 순위로 미룸
 
-        // 2. 업체가 요청한 주문일 때 → 인증 사용자와 대조
-        CompanyResponse requesterCompany = companyClient
-                .getCompany(request.getRequesterCompanyId(), INTERNAL_REQUEST)
-                .getData();
-        if (requesterCompany == null) {
-            throw new BusinessException(OrderErrorCode.COMPANY_NOT_FOUND);
-        }
         // 업체에서 요청한 주문일 때는 해당 검증 확인
+        UserResponse user = userClient
+                .getUser(UUID.fromString(userId), INTERNAL_REQUEST)
+                .getData();
         if ("COMPANY_MANAGER".equals(role)) {
-            UserResponse user = userClient
-                    .getUser(UUID.fromString(userId), INTERNAL_REQUEST)
-                    .getData();
             if (user == null || user.getCompanyId() == null) {
                 throw new BusinessException(OrderErrorCode.COMPANY_NOT_FOUND);
             }
-            // 본인 업체가 수령업체인지 확인
+            // 본인 업체가 수령 업체인지 확인
             if (!user.getCompanyId().equals(request.getReceiverCompanyId())) {
                 throw new BusinessException(OrderErrorCode.ORDER_ACCESS_DENIED);
             }
@@ -93,9 +87,7 @@ public class OrderService {
         }
 
         // 4. 유저 조회 : 수령자 조회 → recipientName, recipientSlackId 확보
-        UserResponse recipient = userClient
-                .getUser(receiverCompany.getManager(), INTERNAL_REQUEST)
-                .getData();
+        // 이미 위에서 조회함 user사용
 
         // 4-1. 유저 조회 : 출발 허브 매니저 슬랙ID 조회
         UserResponse hubManager = userClient
@@ -104,7 +96,7 @@ public class OrderService {
 
         // 5. 주문 생성
         Order order = Order.create(
-                request.getRequesterCompanyId(),
+                product.getCompanyId(),
                 request.getReceiverCompanyId(),
                 request.getProductId(),
                 product.getName(),
@@ -113,6 +105,7 @@ public class OrderService {
                 request.getRequestNote(),
                 request.getRequestedDeadline()
         );
+        orderRepository.save(order);
 
         // 6. 재고 차감 (실패 시 주문 롤백) <- 이동
         StockResponse stock = productClient
@@ -121,56 +114,58 @@ public class OrderService {
                         INTERNAL_REQUEST)
                 .getData();
         if (stock == null) {
+            orderRepository.delete(order);
             throw new BusinessException(OrderErrorCode.OUT_OF_STOCK);
         }
 
         // 7. 배송 생성 → deliveryId 확보
-        DeliveryCreateResponse delivery;
+        UUID deliveryId;
         try {
-            delivery = deliveryClient
+            deliveryId = deliveryClient
                     .createDelivery(new DeliveryCreateRequest(
                             order.getId(),
                             request.getReceiverCompanyId(),
                             product.getHubId(),
-                            recipient != null ? recipient.getName() : "미확인",
-                            recipient != null ? recipient.getReceiverSlackId() : ""
+                            user != null ? user.getName() : "미확인",
+                            user != null ? user.getReceiverSlackId() : ""
                     ), INTERNAL_REQUEST)
                     .getData();
         } catch (RuntimeException ex) {
-            // 보상 트랜잭션: 배송 생성 실패 시 재고 복원
+            // 보상 트랜잭션: 배송 생성 실패 시 재고 복원 + 주문 삭제
             log.error("배송 생성 실패 - 재고 복원 시작", ex);
             productClient.restoreStock(
                     request.getProductId(),
                     new StockUpdateRequest(request.getQuantity()),
                     INTERNAL_REQUEST
             );
+            orderRepository.delete(order);
             throw new BusinessException(OrderErrorCode.DELIVERY_CREATE_FAILED);
         }
-        if (delivery == null || delivery.getDeliveryId() == null) {
-            // 보상 트랜잭션: 재고 복원
+        if (deliveryId == null) {
+            // 보상 트랜잭션: 재고 복원 + 주문 삭제
             productClient.restoreStock(
                     request.getProductId(),
                     new StockUpdateRequest(request.getQuantity()),
                     INTERNAL_REQUEST
             );
+            orderRepository.delete(order);
             throw new BusinessException(OrderErrorCode.DELIVERY_CREATE_FAILED);
         }
 
         // 8. 주문에 배송 정보 업데이트
         order.updateDeliveryInfo(
-                delivery.getDeliveryId(),
+                deliveryId,
                 originHub.getHubId(),
                 destHub.getHubId(),
                 originHub.getName(),
                 destHub.getName(),
                 receiverCompany.getAddress(),
-                recipient != null ? recipient.getName() : "미확인",
-                recipient != null ? recipient.getReceiverSlackId() : "",
+                user != null ? user.getName() : "미확인",
+                user != null ? user.getReceiverSlackId() : "",
                 hubManager != null ? hubManager.getReceiverSlackId() : ""
         );
 
-        Order savedOrder = orderRepository.save(order);
-        return OrderResponse.from(savedOrder);
+        return OrderResponse.from(order);
 
     }
 

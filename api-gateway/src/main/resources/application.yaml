@@ -60,7 +60,7 @@ spring:
             - id: delivery-service
               uri: lb://DELIVERY-SERVICE
               predicates:
-                - Path=/api/v1/deliveries/**, /api/v1/admin/deliveries/**, /internal/api/v1/deliveries/**
+                - Path=/api/v1/deliveries/**, /api/v1/admin/deliveries/**, /internal/api/v1/deliveries/**, /internal/v1/deliveries/**
 
             # Product Service 라우팅
             - id: product-service

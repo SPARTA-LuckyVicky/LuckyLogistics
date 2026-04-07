@@ -36,7 +36,7 @@ public class CompanyInternalController {
 
     // user-service가 COMPANY_MANAGER 배정 시 호출
     @Operation(summary = "[내부] 담당자 배정", description = "user-service가 COMPANY_MANAGER 계정 생성 후 업체 담당자를 배정할 때 호출")
-    @PatchMapping("/{companyId}/manager")
+    @PutMapping("/{companyId}/manager")
     public ApiResponse<Void> assignManager(
             @PathVariable UUID companyId,
             @Valid @RequestBody AssignManagerReqBody body,  // @Valid 추가

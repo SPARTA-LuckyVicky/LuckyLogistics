@@ -17,6 +17,9 @@ public class UserUpdateCommand {
     private String receiverSlackId;
     private String hubId;
     private String companyId;
+    private String updateHubId;
+    private String updateCompanyId;
+
 
     public static UserUpdateCommand of(UUID userId, String role, String hubId,
                                        String companyId, UserUpdateReqDto reqDto) {
@@ -27,6 +30,8 @@ public class UserUpdateCommand {
                 .receiverSlackId(reqDto.getReceiverSlackId())
                 .hubId(hubId)
                 .companyId(companyId)
+                .updateHubId(reqDto.getHubId())
+                .updateCompanyId(reqDto.getCompanyId())
                 .build();
     }
 }

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name="hub-service")
 public interface HubRouteClient {
 
-    @GetMapping("/internal/v1/paths")
+    @GetMapping("/internal/api/v1/paths")
     HubRouteResponse getHubRoute(
         @RequestParam("originHubId") UUID originHubId,
         @RequestParam("destinationHubId") UUID destinationHubId

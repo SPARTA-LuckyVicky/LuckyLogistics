@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public interface OrderRepository {
     Order save(Order order);
+    void delete(Order order);
     Optional<Order> findById(UUID id);
     Page<Order> findAll(Pageable pageable);
     Page<Order> findByStatus(OrderStatus status, Pageable pageable);

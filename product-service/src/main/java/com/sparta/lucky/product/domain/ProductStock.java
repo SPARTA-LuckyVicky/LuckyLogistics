@@ -11,7 +11,7 @@ import org.hibernate.annotations.UuidGenerator;
 import java.util.UUID;
 
 @Entity
-@Table(name = "p_product_stock")
+@Table(name = "p_product_stock",schema = "product_schema")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
