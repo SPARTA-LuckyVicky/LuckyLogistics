@@ -32,6 +32,7 @@ public class OrderService {
     private final HubClient hubClient;
     private final UserClient userClient;
     private final DeliveryClient deliveryClient;
+    private final OrderDeliveryAsyncService orderDeliveryAsyncService;
 
     private static final String INTERNAL_REQUEST = "true";
     // 주문 생성
@@ -115,55 +116,11 @@ public class OrderService {
         if (stock == null) {
             throw new BusinessException(OrderErrorCode.OUT_OF_STOCK);
         }
-
-        // 7. 배송 생성 → deliveryId 확보
-        DeliveryCreateResponse delivery;
-        try {
-            delivery = deliveryClient
-                    .createDelivery(new DeliveryCreateRequest(
-                            order.getId(),
-                            request.getReceiverCompanyId(),
-                            product.getHubId(),
-                            user != null ? user.getName() : "미확인",
-                            user != null ? user.getReceiverSlackId() : ""
-                    ), INTERNAL_REQUEST)
-                    .getData();
-        } catch (RuntimeException ex) {
-            // 보상 트랜잭션: 배송 생성 실패 시 재고 복원
-            log.error("배송 생성 실패 - 재고 복원 시작", ex);
-            productClient.restoreStock(
-                    request.getProductId(),
-                    new StockUpdateRequest(request.getQuantity()),
-                    INTERNAL_REQUEST
-            );
-            throw new BusinessException(OrderErrorCode.DELIVERY_CREATE_FAILED);
-        }
-        if (delivery == null || delivery.getDeliveryId() == null) {
-            // 보상 트랜잭션: 재고 복원
-            productClient.restoreStock(
-                    request.getProductId(),
-                    new StockUpdateRequest(request.getQuantity()),
-                    INTERNAL_REQUEST
-            );
-            throw new BusinessException(OrderErrorCode.DELIVERY_CREATE_FAILED);
-        }
-
-        // 8. 주문에 배송 정보 업데이트
-        order.updateDeliveryInfo(
-                delivery.getDeliveryId(),
-                originHub.getHubId(),
-                destHub.getHubId(),
-                originHub.getName(),
-                destHub.getName(),
-                receiverCompany.getAddress(),
-                user != null ? user.getName() : "미확인",
-                user != null ? user.getReceiverSlackId() : "",
-                hubManager != null ? hubManager.getReceiverSlackId() : ""
-        );
-
+        // 1차 저장
         Order savedOrder = orderRepository.save(order);
-        return OrderResponse.from(savedOrder);
 
+        // 9. 배송이 10초가 걸리든 10분이 걸리든, 사용자는 0.1초 만에 200 OK 응답을 받습니다!
+        return OrderResponse.from(savedOrder);
     }
 
     // 주문 목록 조회 (페이징 + status 필터 + 역할별 조회 결과 다르게)
