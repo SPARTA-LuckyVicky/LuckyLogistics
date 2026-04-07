@@ -1,6 +1,7 @@
 package com.sparta.lucky.hub.common.config;
 
 import com.sparta.lucky.hub.common.filter.HeaderAuthenticationFilter;
+import com.sparta.lucky.hub.common.filter.InternalRequestFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final HeaderAuthenticationFilter headerAuthenticationFilter;
+    private final InternalRequestFilter internalRequestFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -32,10 +34,11 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",
                                 "/api-docs/**",
-                                "/internal/api/**"
+                                "/internal/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(internalRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(headerAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
