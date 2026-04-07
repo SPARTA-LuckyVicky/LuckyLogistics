@@ -10,6 +10,7 @@ import com.sparta.lucky.user.presentation.dto.request.UserStatusUpdateRequest;
 import com.sparta.lucky.user.presentation.dto.request.UserUpdateReqDto;
 import com.sparta.lucky.user.presentation.dto.response.UserResDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -21,7 +22,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.UUID;
 
-@Slf4j
+@Tag(name = "User", description = "User 관련 API")
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
