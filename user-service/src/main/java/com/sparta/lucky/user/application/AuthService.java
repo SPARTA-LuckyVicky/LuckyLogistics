@@ -67,7 +67,7 @@ public class AuthService {
         }
 
         //회원가입 첫번째 유저는 권한은 MASTER, 가입상태는 APPROVED 로 주입
-        long userCount = userRepository.countWithLock();
+        long userCount = userRepository.count();
         UserRole finalRole = (userCount == 0) ? UserRole.MASTER : command.getRole();
         UserStatus finalStatus = (userCount == 0) ? UserStatus.APPROVED : UserStatus.PENDING;
 
