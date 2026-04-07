@@ -13,6 +13,9 @@ RUN chmod +x ./gradlew && sed -i 's/\r$//' gradlew
 RUN ./gradlew :user-service:dependencies --no-daemon
 
 COPY user-service user-service
+
+RUN chmod +x ./gradlew
+
 RUN ./gradlew :user-service:clean :user-service:bootJar -x test --no-daemon
 
 FROM eclipse-temurin:21-jre-alpine
