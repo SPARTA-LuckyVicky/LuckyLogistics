@@ -49,10 +49,10 @@ public class OrderService {
         // 재고 차감 후 순위로 미룸
 
         // 업체에서 요청한 주문일 때는 해당 검증 확인
+        UserResponse user = userClient
+                .getUser(UUID.fromString(userId), INTERNAL_REQUEST)
+                .getData();
         if ("COMPANY_MANAGER".equals(role)) {
-            UserResponse user = userClient
-                    .getUser(UUID.fromString(userId), INTERNAL_REQUEST)
-                    .getData();
             if (user == null || user.getCompanyId() == null) {
                 throw new BusinessException(OrderErrorCode.COMPANY_NOT_FOUND);
             }
@@ -87,9 +87,7 @@ public class OrderService {
         }
 
         // 4. 유저 조회 : 수령자 조회 → recipientName, recipientSlackId 확보
-        UserResponse recipient = userClient
-                .getUser(receiverCompany.getManager(), INTERNAL_REQUEST)
-                .getData();
+        // 이미 위에서 조회함 user사용
 
         // 4-1. 유저 조회 : 출발 허브 매니저 슬랙ID 조회
         UserResponse hubManager = userClient
@@ -126,8 +124,8 @@ public class OrderService {
                             order.getId(),
                             request.getReceiverCompanyId(),
                             product.getHubId(),
-                            recipient != null ? recipient.getName() : "미확인",
-                            recipient != null ? recipient.getReceiverSlackId() : ""
+                            user != null ? user.getName() : "미확인",
+                            user != null ? user.getReceiverSlackId() : ""
                     ), INTERNAL_REQUEST)
                     .getData();
         } catch (RuntimeException ex) {
@@ -158,8 +156,8 @@ public class OrderService {
                 originHub.getName(),
                 destHub.getName(),
                 receiverCompany.getAddress(),
-                recipient != null ? recipient.getName() : "미확인",
-                recipient != null ? recipient.getReceiverSlackId() : "",
+                user != null ? user.getName() : "미확인",
+                user != null ? user.getReceiverSlackId() : "",
                 hubManager != null ? hubManager.getReceiverSlackId() : ""
         );
 
