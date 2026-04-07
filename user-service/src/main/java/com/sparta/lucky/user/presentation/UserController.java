@@ -85,7 +85,6 @@ public class UserController {
     @PatchMapping("/{userId}")
     public ResponseEntity<ApiResponse<UserResDto>> updateUserProfile(
             @PathVariable UUID userId, // 수정 대상 유저
-            @RequestHeader(value = "X-User-Id") UUID operatorId, // 수정을 시도하는 사람
             @RequestHeader(value = "X-User-Role") String role,   // 수정을 시도하는 사람의 권한
             @RequestHeader(value = "X-Company-Id", required = false) String companyId,
             @RequestHeader(value = "X-Hub-Id", required = false) String hubId,

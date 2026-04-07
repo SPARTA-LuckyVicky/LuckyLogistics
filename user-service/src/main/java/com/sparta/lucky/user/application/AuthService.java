@@ -111,6 +111,20 @@ public class AuthService {
 
     // 로그인
     public LoginResult login(LoginCommand command) {
+
+        User user = userRepository.findByUsername(command.getUsername())
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        if (user.isDeleted()) {
+            throw new BusinessException(UserErrorCode.DELETED_USER);
+        }
+        if (user.getStatus() == UserStatus.PENDING) {
+            throw new BusinessException(UserErrorCode.PENDING_USER_APPROVAL);
+        }
+        if(user.getStatus() == UserStatus.REJECTED){
+            throw new BusinessException(UserErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
         try (Keycloak loginKeycloak = KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
                 .realm(realm)
