@@ -71,8 +71,8 @@ public class User extends BaseEntity {
     public void updateInfo(String name, String slackId, String hubId, String companyId) {
         if (name != null) this.name = name;
         if (slackId != null) this.receiverSlackId = slackId;
-        this.hubId = hubId;
-        this.companyId = companyId;
+        if (hubId != null) this.hubId = hubId;
+        if (companyId != null) this.companyId = companyId;
     }
 
     public void updateStatus(UserStatus newStatus) {
