@@ -6,7 +6,7 @@ import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CompanyResponse {
 
-    private CompanyData data;
+    public CompanyData data;
 
     // 기존 호출부(DeliveryService) 변경 없이 호환
     public UUID hubId() { return data != null ? data.hubId : null; }
