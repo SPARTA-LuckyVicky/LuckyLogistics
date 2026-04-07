@@ -38,6 +38,7 @@ public class UserService {
                 .map(UserResult::from);
     }
 
+    @Transactional
     // 가입 대기 유저 페이징 조회 ( 삭제되지 않은 유저만 )
     public Page<UserResult> getPendingUsers(Pageable pageable) {
         return userRepository.findAllByStatusAndDeletedAtIsNull(UserStatus.PENDING, pageable)
