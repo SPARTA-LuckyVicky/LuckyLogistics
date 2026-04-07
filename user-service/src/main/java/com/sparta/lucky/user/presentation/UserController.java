@@ -94,7 +94,7 @@ public class UserController {
         if (!UserRole.MASTER.name().equals(role)) {
             throw new BusinessException(UserErrorCode.FORBIDDEN_ACCESS);
         }
-        UserUpdateCommand command = UserUpdateCommand.of(userId, role, companyId, hubId, reqDto);
+        UserUpdateCommand command = UserUpdateCommand.of(userId, operatorId, role, hubId, companyId, reqDto);
         return ResponseEntity.ok(
                 ApiResponse.success(UserResDto.from(userService.updateUser(command)))
         );

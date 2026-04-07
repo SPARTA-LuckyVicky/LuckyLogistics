@@ -50,3 +50,4 @@ build/
 # IntelliJ HTTP Client 환경변수 (로컬 전용)
 http-client.env.json
 http-client.private.env.json
+.claude/worktrees/
