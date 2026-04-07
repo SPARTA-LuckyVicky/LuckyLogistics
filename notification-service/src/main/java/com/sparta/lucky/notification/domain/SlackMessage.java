@@ -15,7 +15,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "p_slack_message")
+@Table(name = "p_slack_message", schema = "notification_schema")
 @SQLRestriction("deleted_at IS NULL")
 public class SlackMessage extends BaseEntity {
 
