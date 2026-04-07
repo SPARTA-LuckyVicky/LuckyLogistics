@@ -15,12 +15,6 @@ spring:
   application:
     name: ${USER_SERVICE_NAME}
 
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://lucky-keycloak:8080/realms/lucky
-          jwk-set-uri: http://lucky-keycloak:8080/realms/lucky/protocol/openid-connect/certs
 
   datasource:
     url: jdbc:postgresql://lucky-postgres:5432/${POSTGRES_DB}?currentSchema=${USER_SERVICE_SCHEMA}
