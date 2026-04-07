@@ -4,6 +4,7 @@ import com.sparta.lucky.hub.common.filter.HeaderAuthenticationFilter;
 import com.sparta.lucky.hub.common.filter.InternalRequestFilter;
 import com.sparta.lucky.hub.common.filter.SecurityExceptionHandlerFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -12,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @Configuration
 @EnableWebSecurity
@@ -19,9 +21,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final SecurityExceptionHandlerFilter securityExceptionHandlerFilter;
-    private final HeaderAuthenticationFilter headerAuthenticationFilter;
-    private final InternalRequestFilter internalRequestFilter;
+    @Qualifier("handlerExceptionResolver")
+    private final HandlerExceptionResolver handlerExceptionResolver;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -40,9 +41,9 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(securityExceptionHandlerFilter, InternalRequestFilter.class)
-                .addFilterBefore(internalRequestFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(headerAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new SecurityExceptionHandlerFilter(handlerExceptionResolver), InternalRequestFilter.class)
+                .addFilterBefore(new InternalRequestFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new HeaderAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }

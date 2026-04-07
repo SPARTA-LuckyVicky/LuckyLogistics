@@ -5,12 +5,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
@@ -18,14 +14,11 @@ import java.io.IOException;
 
 // 필터 체인에서 발생한 인증/인가 예외를 GlobalExceptionHandler로 위임하는 필터
 @Slf4j
-@Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
 public class SecurityExceptionHandlerFilter extends OncePerRequestFilter {
 
     private final HandlerExceptionResolver resolver;
 
-    public SecurityExceptionHandlerFilter(
-            @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) {
+    public SecurityExceptionHandlerFilter(HandlerExceptionResolver resolver) {
         this.resolver = resolver;
     }
 
