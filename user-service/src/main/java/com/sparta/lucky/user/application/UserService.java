@@ -3,12 +3,10 @@ package com.sparta.lucky.user.application;
 import com.sparta.lucky.user.application.dto.request.UserUpdateCommand;
 import com.sparta.lucky.user.application.dto.response.UserResult;
 import com.sparta.lucky.user.common.exception.BusinessException;
-import com.sparta.lucky.user.common.exception.ErrorCode;
 import com.sparta.lucky.user.common.exception.UserErrorCode;
 import com.sparta.lucky.user.domain.User;
 import com.sparta.lucky.user.domain.UserRepository;
 import com.sparta.lucky.user.domain.UserStatus;
-import com.sparta.lucky.user.presentation.dto.response.UserResDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,18 +33,15 @@ public class UserService {
 
     // 전체 유저 페이징 조회 ( 삭제되지 않은 유저만 )
     @Transactional(readOnly = true)
-    public Page<UserResDto> getAllUsers(Pageable pageable) {
+    public Page<UserResult> getAllUsers(Pageable pageable) {
         return userRepository.findAllByDeletedAtIsNull(pageable)
-                .map(UserResult::from)
-                .map(UserResDto::from);
+                .map(UserResult::from);
     }
 
     // 가입 대기 유저 페이징 조회 ( 삭제되지 않은 유저만 )
-    public Page<UserResDto> getPendingUsers(Pageable pageable) {
-        Page<User> pendingUserPage = userRepository.findAllByStatusAndDeletedAtIsNull(UserStatus.PENDING, pageable);
-        return pendingUserPage
-                .map(UserResult::from)
-                .map(UserResDto::from);
+    public Page<UserResult> getPendingUsers(Pageable pageable) {
+        return userRepository.findAllByStatusAndDeletedAtIsNull(UserStatus.PENDING, pageable)
+                .map(UserResult::from);
     }
 
     // 회원 정보 수정

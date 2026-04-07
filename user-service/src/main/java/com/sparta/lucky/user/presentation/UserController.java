@@ -2,6 +2,7 @@ package com.sparta.lucky.user.presentation;
 
 import com.sparta.lucky.user.application.UserService;
 import com.sparta.lucky.user.application.dto.request.UserUpdateCommand;
+import com.sparta.lucky.user.application.dto.response.UserResult;
 import com.sparta.lucky.user.common.exception.BusinessException;
 import com.sparta.lucky.user.common.exception.UserErrorCode;
 import com.sparta.lucky.user.common.response.ApiResponse;
@@ -12,7 +13,6 @@ import com.sparta.lucky.user.presentation.dto.response.UserResDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -54,28 +54,31 @@ public class UserController {
 
     @Operation(summary = "전체 사용자 목록 조회 (페이징)")
     @GetMapping
-    public ResponseEntity<Page<UserResDto>> getAllUsers(
+    public ResponseEntity<ApiResponse<Page<UserResDto>>> getAllUsers(
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestHeader("X-User-Role") String role
     ) {
         if (!UserRole.MASTER.name().equals(role)) {
             throw new BusinessException(UserErrorCode.FORBIDDEN_ACCESS);
         }
+        Page<UserResult> userResults = userService.getAllUsers(pageable);
+        Page<UserResDto> response = userResults.map(UserResDto::from);
 
-        return ResponseEntity.ok(userService.getAllUsers(pageable));
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @Operation(summary = "가입 대기 사용자 목록 조회 (PENDING)")
     @GetMapping("/pending")
-    public ResponseEntity<Page<UserResDto>> getPendingUsers(
+    public ResponseEntity<ApiResponse<Page<UserResDto>>> getPendingUsers(
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestHeader("X-User-Role") String role
     ) {
         if (!UserRole.MASTER.name().equals(role)) {
             throw new BusinessException(UserErrorCode.FORBIDDEN_ACCESS);
         }
-        Page<UserResDto> response = userService.getPendingUsers(pageable);
-        return ResponseEntity.ok(response);
+        Page<UserResult> pendingResults = userService.getPendingUsers(pageable);
+        Page<UserResDto> response = pendingResults.map(UserResDto::from);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @Operation(summary = "유저 정보 수정 (MASTER 전용)")
@@ -98,7 +101,7 @@ public class UserController {
     }
     @Operation(summary = "유저 가입 상태 변경")
     @PatchMapping("/{userId}/status")
-    public ResponseEntity<String> updateUserStatus(
+    public ResponseEntity<ApiResponse<String>> updateUserStatus(
             @PathVariable UUID userId,
             @RequestBody UserStatusUpdateRequest request,
             @RequestHeader("X-User-Role") String role
@@ -108,12 +111,12 @@ public class UserController {
             throw new BusinessException(UserErrorCode.FORBIDDEN_ACCESS);
         }
         userService.updateStatus(userId, request.getStatus());
-        return ResponseEntity.ok("성공");
+        return ResponseEntity.ok(ApiResponse.success("가입 상태 변경 완료"));
     }
 
     @Operation(summary = "유저 삭제 (Soft Delete)")
     @DeleteMapping("/{userId}")
-    public ResponseEntity<String> deleteUser(
+    public ResponseEntity<ApiResponse<String>> deleteUser(
             @PathVariable UUID userId,
             @RequestHeader("X-User-Role") String role,
             @RequestHeader("X-User-Id") UUID loginUserId
@@ -124,6 +127,6 @@ public class UserController {
 
         userService.deleteUser(userId, loginUserId);
 
-        return ResponseEntity.ok("사용자가 성공적으로 삭제되었습니다.");
+        return ResponseEntity.ok(ApiResponse.success("사용자가 성공적으로 삭제되었습니다."));
     }
 }
