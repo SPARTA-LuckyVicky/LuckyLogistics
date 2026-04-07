@@ -58,8 +58,8 @@ public class UserService {
         user.updateInfo(
                 command.getName(),
                 command.getReceiverSlackId(),
-                command.getHubId(),
-                command.getCompanyId()
+                command.getUpdateHubId(),
+                command.getUpdateCompanyId()
         );
 
         return UserResult.from(user);
