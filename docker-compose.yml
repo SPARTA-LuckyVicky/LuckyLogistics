@@ -249,6 +249,30 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # ============ delivery-service ==============
+  delivery-service:
+    build:
+      context: .
+      dockerfile: delivery-service/Dockerfile
+    container_name: lucky-delivery
+    ports:
+      - "${DELIVERY_SERVICE_PORT}:${DELIVERY_SERVICE_PORT}"
+    environment:
+      DELIVERY_SERVICE_PORT: ${DELIVERY_SERVICE_PORT}
+      DELIVERY_SERVICE_NAME: ${DELIVERY_SERVICE_NAME}
+      DELIVERY_SERVICE_SCHEMA: ${DELIVERY_SERVICE_SCHEMA}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - lucky-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    restart: unless-stopped
+
 networks:
   lucky-network:
     driver: bridge

@@ -10,13 +10,13 @@ COPY settings.gradle .
 COPY delivery-service/build.gradle delivery-service/build.gradle
 COPY delivery-service/src delivery-service/src
 
-RUN gradle :delivery-service:bootJar --no-daemon
+RUN ./gradlew :delivery-service:bootJar --no-daemon -x test
 
 # RUN
 FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-COPY --from=builder /build/delivery-service/build/libs/*.jar app.jar
+COPY --from=builder /app/delivery-service/build/libs/*.jar app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
