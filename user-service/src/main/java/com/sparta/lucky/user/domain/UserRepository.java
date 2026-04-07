@@ -1,8 +1,11 @@
 package com.sparta.lucky.user.domain;
 
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,4 +24,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     // 가입 대기 유저 페이징 조회
     Page<User> findAllByStatusAndDeletedAtIsNull(UserStatus status, Pageable pageable);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select count(u) from User u")
+    long countWithLock();
+
 }

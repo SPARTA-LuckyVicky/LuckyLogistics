@@ -67,7 +67,7 @@ public class AuthService {
         }
 
         //회원가입 첫번째 유저는 권한은 MASTER, 가입상태는 APPROVED 로 주입
-        long userCount = userRepository.count();
+        long userCount = userRepository.countWithLock();
         UserRole finalRole = (userCount == 0) ? UserRole.MASTER : command.getRole();
         UserStatus finalStatus = (userCount == 0) ? UserStatus.APPROVED : UserStatus.PENDING;
 
@@ -111,15 +111,6 @@ public class AuthService {
 
     // 로그인
     public LoginResult login(LoginCommand command) {
-
-        User user = userRepository.findByUsername(command.getUsername())
-                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
-        if (user.isDeleted()) {
-            throw new BusinessException(UserErrorCode.DELETED_USER_ACCOUNT);
-        }
-        if (user.getStatus() == UserStatus.PENDING) {
-            throw new BusinessException(UserErrorCode.PENDING_USER_APPROVAL);
-        }
         try (Keycloak loginKeycloak = KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
                 .realm(realm)
