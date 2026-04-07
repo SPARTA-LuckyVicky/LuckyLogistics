@@ -37,7 +37,7 @@ public class OrderService {
     private static final String INTERNAL_REQUEST = "true";
     // 주문 생성
     @Transactional
-    public OrderResponse createOrder(CreateOrderCommand request,String userId,String role) {
+    public OrderResponse createOrder(CreateOrderCommand request,UUID userId,String role) {
 
         // 1. 상품 조회 → productName, unitPrice, originHubId 확보
         ProductResponse product = productClient
@@ -51,7 +51,7 @@ public class OrderService {
 
         // 업체에서 요청한 주문일 때는 해당 검증 확인
         UserResponse user = userClient
-                .getUser(UUID.fromString(userId), INTERNAL_REQUEST)
+                .getUser(userId, INTERNAL_REQUEST)
                 .getData();
         if ("COMPANY_MANAGER".equals(role)) {
             if (user == null || user.getCompanyId() == null) {
@@ -118,6 +118,17 @@ public class OrderService {
         }
         // 1차 저장
         Order savedOrder = orderRepository.save(order);
+
+        orderDeliveryAsyncService.processDeliveryInBackground(
+                savedOrder.getId(),
+                request,
+                product,
+                receiverCompany,
+                originHub,
+                destHub,
+                user,
+                hubManager
+        );
 
         // 9. 배송이 10초가 걸리든 10분이 걸리든, 사용자는 0.1초 만에 200 OK 응답을 받습니다!
         return OrderResponse.from(savedOrder);
