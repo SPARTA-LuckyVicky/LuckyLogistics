@@ -14,8 +14,8 @@ import java.util.UUID;
 public interface DeliveryClient {
 
     @PostMapping("/internal/api/v1/deliveries")
-    FeignApiResponse<DeliveryCreateResponse> createDelivery(@RequestBody DeliveryCreateRequest request,
-                                                            @RequestHeader("X-Internal-Request") String internalRequest);
+    FeignApiResponse<UUID> createDelivery(@RequestBody DeliveryCreateRequest request,
+                                          @RequestHeader("X-Internal-Request") String internalRequest);
 
     @GetMapping("/internal/api/v1/deliveries/{orderId}/status")
     FeignApiResponse<DeliveryStatusResponse> getDeliveryStatus(@PathVariable UUID orderId,
